@@ -19,18 +19,12 @@ import {
   TrendUp,
 } from '@phosphor-icons/react/dist/ssr';
 
-export const metadata: Metadata = {
-  title: 'Lingua Loop - Workplace English Coach',
-  description:
-    'An English learning and writing assistant for Vietnamese professionals.',
-};
-
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
       {/* Ambient background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] size-125 bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-[-10%] right-[-10%] size-125 bg-primary/5 rounded-full blur-3xl -z-10" />
 
       {/* Header */}
       <header className="w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-between border-b border-border/40">
@@ -56,7 +50,7 @@ export default function Home() {
           <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
             Vietnamese Professional Coach
           </span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-linear-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
             Workplace English, refined.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed">

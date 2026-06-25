@@ -107,8 +107,8 @@ export default function MessagePage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
       {/* Background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] size-125 bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-[-10%] right-[-10%] size-125 bg-primary/5 rounded-full blur-3xl -z-10" />
 
       {/* Header */}
       <header className="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-border/40">
@@ -314,7 +314,7 @@ export default function MessagePage() {
               </div>
 
               {/* 1. Recommended Message */}
-              <Card className="border border-primary/20 bg-primary/[0.02]">
+              <Card className="border border-primary/20 bg-primary/2">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-primary">

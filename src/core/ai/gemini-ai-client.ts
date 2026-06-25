@@ -11,6 +11,16 @@ function getApiKey() {
   return apiKey;
 }
 
+function getModel() {
+  const model = process.env.GEMINI_DEFAULT_MODEL;
+
+  if (!model) {
+    throw new Error('Missing GEMINI_DEFAULT_MODEL');
+  }
+
+  return model;
+}
+
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -77,12 +87,14 @@ export function createGeminiAiClient(): AiClient {
     apiKey: getApiKey(),
   });
 
+  const model = getModel();
+
   return {
     async generateJson(input: GenerateJsonInput): Promise<unknown> {
       const response = await withRetry(
         async () =>
           await ai.models.generateContent({
-            model: 'gemini-3.1-flash-lite',
+            model,
             contents: [
               {
                 role: 'user',
@@ -106,8 +118,6 @@ export function createGeminiAiClient(): AiClient {
             },
           })
       );
-
-      console.log(response);
 
       if (!response.text) {
         throw new Error('Gemini returned empty response');

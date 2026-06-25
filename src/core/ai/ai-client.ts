@@ -1,5 +1,3 @@
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
-
 export type GenerateJsonInput = {
   system: string;
   user: string;

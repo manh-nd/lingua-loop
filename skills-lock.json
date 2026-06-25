@@ -115,6 +115,12 @@
       "skillPath": "skills/misc/setup-pre-commit/SKILL.md",
       "computedHash": "f9aeedf0a1f560ec465c3939c54434c2d949ac8b958a0493db52216f688a0366"
     },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "ac9d0d69caac7de1d1e5647f3db3bcd2f13af355d6b3a78780fbf7fc80e8dca0"
+    },
     "tdd": {
       "source": "mattpocock/skills",
       "sourceType": "github",

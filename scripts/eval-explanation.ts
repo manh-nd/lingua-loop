@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createGeminiAiClient, sleep } from '@/core/ai/gemini-ai-client';
 import { runExplanationCoach } from '@/core/explanation/explanation.workflow';
 import { ExplanationCoachInput } from '@/core/explanation/explanation.schema';
+import { runMessageCoach } from '@/core/message/message.workflow';
 
 const cases: ExplanationCoachInput[] = [
   {
@@ -69,42 +70,31 @@ const cases: ExplanationCoachInput[] = [
   },
 ];
 
-async function main() {
-  const aiClient = createGeminiAiClient();
+const aiClient = createGeminiAiClient();
 
-  for (const input of cases) {
+async function main() {
+  for (const item of cases) {
     console.log('\n==============================');
     console.log('INPUT:');
-    console.log(input.text);
+    console.log(item.text);
 
     try {
-      const result = await runExplanationCoach(input, { aiClient });
+      const result = await runMessageCoach(item, { aiClient });
 
-      console.log('\nIMPROVED:');
-      console.log(result.improvedText);
+      console.log('\nRECOMMENDED:');
+      console.log(result.recommendedMessage);
 
-      console.log('\nSHORT VERSION:');
-      console.log(result.shortVersion);
+      console.log('\nALTERNATIVES:');
+      console.dir(result.alternatives, { depth: null });
 
-      if (result.detailedVersion) {
-        console.log('\nDETAILED VERSION:');
-        console.log(result.detailedVersion);
-      }
-
-      console.log('\nSTRUCTURE FEEDBACK:');
-      console.dir(result.structureFeedback, { depth: null });
-
-      console.log('\nCORRECTIONS:');
-      console.dir(result.corrections, { depth: null });
-
-      console.log('\nPHRASES:');
-      console.dir(result.reusablePhrases, { depth: null });
+      console.log('\nWHY:');
+      console.log(result.explanationVi);
 
       console.log('\nMISTAKES:');
       console.dir(result.mistakeCandidates, { depth: null });
     } catch (error) {
       console.error('\nFAILED CASE:');
-      console.error(input.text);
+      console.error(item.text);
       console.error(error);
     }
 

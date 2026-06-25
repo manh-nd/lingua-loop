@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MistakeCandidateSchema } from './mistake-candidate.schema';
 
 export const ExplanationCoachInputSchema = z.object({
   mode: z.enum(['write_from_vietnamese', 'improve_english_draft']),
@@ -96,33 +97,7 @@ export const ExplanationCoachResultSchema = z.object({
     )
     .max(8),
 
-  mistakeCandidates: z
-    .array(
-      z.object({
-        patternKey: z
-          .string()
-          .trim()
-          .regex(
-            /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
-            'patternKey must be lowercase_snake_case'
-          ),
-        wrongText: z.string().trim().min(1),
-        correctText: z.string().trim().min(1),
-        explanationVi: z.string().trim().min(1),
-        category: z.enum([
-          'grammar',
-          'tone',
-          'word_choice',
-          'naturalness',
-          'clarity',
-          'structure',
-        ]),
-        confidence: z.number().min(0).max(1),
-        source: z.enum(['observed', 'inferred']),
-        shouldSave: z.boolean(),
-      })
-    )
-    .max(3),
+  mistakeCandidates: MistakeCandidateSchema,
 });
 
 export type ExplanationCoachResult = z.infer<

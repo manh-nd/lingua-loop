@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { runMessageCoach } from '@/core/message/message.workflow';
+import { AiClient } from '@/core/ai/ai-client';
 
 describe('runMessageCoach', () => {
   it('returns structured message coaching result', async () => {
-    const fakeAiClient = {
+    const fakeAiClient: AiClient = {
       generateJson: async () => ({
         recommendedMessage:
           'Could you take a look at this when you have a chance?',

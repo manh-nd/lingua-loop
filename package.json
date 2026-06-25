@@ -12,7 +12,9 @@
     "eval:message": "tsx scripts/eval-message.ts",
     "eval:reading": "tsx scripts/eval-reading.ts",
     "eval:explanation": "tsx scripts/eval-explanation.ts",
-    "lint": "eslint"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "prepare": "husky"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -39,6 +41,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "prettier": "3.8.4",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",

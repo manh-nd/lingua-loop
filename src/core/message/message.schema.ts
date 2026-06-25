@@ -76,7 +76,7 @@ export const MessageCoachResultSchema = z.object({
     )
     .max(5),
 
-  mistakeCandidates: MistakeCandidateSchema,
+  mistakeCandidates: z.array(MistakeCandidateSchema),
 });
 
 export type MessageCoachResult = z.infer<typeof MessageCoachResultSchema>;

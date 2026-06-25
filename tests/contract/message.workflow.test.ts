@@ -40,6 +40,8 @@ describe('runMessageCoach', () => {
             explanationVi: "Trong tiếng Anh cần có động từ 'are'.",
             category: 'grammar',
             confidence: 0.95,
+            source: 'observed',
+            shouldSave: true,
           },
         ],
       }),

@@ -13,10 +13,7 @@ export async function runMessageCoach(
 ): Promise<MessageCoachResult> {
   const parsedInput = MessageCoachInputSchema.parse(input);
 
-  const jsonSchema = toJSONSchema(MessageCoachResultSchema) as Record<
-    string,
-    unknown
-  >;
+  const jsonSchema = toJSONSchema(MessageCoachResultSchema);
 
   const raw = await deps.aiClient.generateJson({
     system: buildMessageCoachSystemPrompt(),

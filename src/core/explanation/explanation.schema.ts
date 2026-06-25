@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MistakeCandidateSchema } from './mistake-candidate.schema';
+import { MistakeCandidateSchema } from '../memory/mistake-candidate.schema';
 
 export const ExplanationCoachInputSchema = z.object({
   mode: z.enum(['write_from_vietnamese', 'improve_english_draft']),
@@ -97,7 +97,7 @@ export const ExplanationCoachResultSchema = z.object({
     )
     .max(8),
 
-  mistakeCandidates: MistakeCandidateSchema,
+  mistakeCandidates: z.array(MistakeCandidateSchema).max(3),
 });
 
 export type ExplanationCoachResult = z.infer<

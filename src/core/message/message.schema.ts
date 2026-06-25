@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MistakeCandidateSchema } from '../explanation/mistake-candidate.schema';
+import { MistakeCandidateSchema } from '../memory/mistake-candidate.schema';
 
 export const MessageToneSchema = z.enum([
   'friendly',
@@ -76,7 +76,7 @@ export const MessageCoachResultSchema = z.object({
     )
     .max(5),
 
-  mistakeCandidates: z.array(MistakeCandidateSchema),
+  mistakeCandidates: z.array(MistakeCandidateSchema).max(3),
 });
 
 export type MessageCoachResult = z.infer<typeof MessageCoachResultSchema>;

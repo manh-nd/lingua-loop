@@ -1,0 +1,3 @@
+# Stage Writing Workflows Before Reading, Memory, and Review
+
+Lingua Loop's immediate implementation stage is MVP v0: Message Coach, Explanation Coach, eval scripts, and simple UI for those two workflows, with no persistence or only temporary local state. Reading Coach, Memory candidate review, manual save to Memory, and basic Review remain part of the product vision for MVP v1, but they are intentionally delayed until the writing workflows are useful in real daily usage. This avoids designing persistence, review mechanics, or spaced repetition around unproven coaching output while keeping those concepts visible in the staged product scope.

@@ -10,14 +10,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  ChatText,
+  MessageSquare,
   FileText,
   ArrowRight,
   BookOpen,
   Brain,
   Sparkle,
-  TrendUp,
-} from '@phosphor-icons/react/dist/ssr';
+  TrendingUp,
+} from 'lucide-react';
 
 export default function Home() {
   return (
@@ -66,7 +66,7 @@ export default function Home() {
           <Card className="flex flex-col h-full border border-border bg-card">
             <CardHeader className="flex flex-col gap-2">
               <div className="p-3 rounded bg-primary/5 w-fit border border-border/50">
-                <ChatText className="size-6 text-primary" />
+                <MessageSquare className="size-6 text-primary" />
               </div>
               <CardTitle>Message Coach</CardTitle>
               <CardDescription>
@@ -203,7 +203,7 @@ export default function Home() {
 
             <div className="border border-border/60 bg-muted/10 p-4 rounded flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <TrendUp className="size-4 text-muted-foreground" />
+                <TrendingUp className="size-4 text-muted-foreground" />
                 <h3 className="text-xs font-bold font-heading">
                   Spaced Review
                 </h3>

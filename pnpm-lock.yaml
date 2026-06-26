@@ -13,9 +13,6 @@ importers:
       '@google/genai':
         specifier: ^2.10.0
         version: 2.10.0(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))
-      '@phosphor-icons/react':
-        specifier: ^2.1.10
-        version: 2.1.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1196,16 +1193,6 @@ packages:
       {
         integrity: sha512-WT+Gb24i8hmvo85AIv2oEYouEXkRlKAlT9WaCa3TfLgNCN+GhrJOGZuIlMouAh38Qe4QOx26eUOVsq70qXrywA==,
       }
-
-  '@phosphor-icons/react@2.1.10':
-    resolution:
-      {
-        integrity: sha512-vt8Tvq8GLjheAZZYa+YG/pW7HDbov8El/MANW8pOAz4eGxrwhnbfrQZq0Cp4q8zBEu8NIhHdnr+r8thnfRSNYA==,
-      }
-    engines: { node: '>=10' }
-    peerDependencies:
-      react: '>= 16.8'
-      react-dom: '>= 16.8'
 
   '@protobufjs/aspromise@1.1.2':
     resolution:
@@ -6649,11 +6636,6 @@ snapshots:
   '@nolyfill/is-core-module@1.0.39': {}
 
   '@oxc-project/types@0.137.0': {}
-
-  '@phosphor-icons/react@2.1.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
-    dependencies:
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
 
   '@protobufjs/aspromise@1.1.2': {}
 

@@ -38,13 +38,9 @@ import {
   FileText,
   Copy,
   Check,
-  Warning,
-  Lightbulb,
+  TriangleAlert,
   ArrowRight,
-  ListChecks,
-  Article,
-  TextIndent,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 type ExplanationMode = 'write_from_vietnamese' | 'improve_english_draft';
 type ExplanationTone =
@@ -381,7 +377,7 @@ export default function ExplanationPage() {
         <section className="md:col-span-7 flex flex-col gap-6">
           {error && (
             <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded flex gap-2 items-center">
-              <Warning className="size-4 shrink-0" />
+              <TriangleAlert className="size-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}

@@ -27,14 +27,13 @@ import { MessageCoachResult } from '@/core/message/message.schema';
 import {
   ArrowLeft,
   Sparkle,
-  ChatText,
+  MessageSquare,
   Copy,
   Check,
-  Warning,
+  TriangleAlert,
   Lightbulb,
   ArrowRight,
-  BookOpen,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 type MessageMode = 'write_from_vietnamese' | 'improve_english_draft';
 type MessageTone = 'friendly' | 'polite' | 'direct' | 'professional' | 'casual';
@@ -123,7 +122,7 @@ export default function MessagePage() {
           <Separator orientation="vertical" className="h-4" />
           <div className="flex items-center gap-2">
             <div className="p-1 rounded bg-primary/10 border border-primary/20">
-              <ChatText className="size-4 text-primary" />
+              <MessageSquare className="size-4 text-primary" />
             </div>
             <span className="font-heading font-bold text-sm tracking-tight">
               MESSAGE COACH
@@ -281,7 +280,7 @@ export default function MessagePage() {
         <section className="md:col-span-7 flex flex-col gap-6">
           {error && (
             <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded flex gap-2 items-center">
-              <Warning className="size-4 shrink-0" />
+              <TriangleAlert className="size-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -490,7 +489,7 @@ export default function MessagePage() {
           ) : (
             /* Empty State */
             <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border/80 rounded bg-muted/5 text-center px-6">
-              <ChatText className="size-10 text-muted-foreground/60 mb-3" />
+              <MessageSquare className="size-10 text-muted-foreground/60 mb-3" />
               <h3 className="text-sm font-bold mb-1">
                 Chưa có nội dung tối ưu
               </h3>

@@ -6,16 +6,23 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 <!-- END:nextjs-agent-rules -->
 
-## Agent skills
+# Lingua Loop
 
-### Issue tracker
+Lingua Loop is an English learning and writing assistant for Vietnamese professionals.
 
-Issues are tracked locally as Markdown files under `.scratch/`. See `docs/agents/issue-tracker.md`.
+## Project Environment
 
-### Triage labels
+- **Package Manager**: `pnpm`
+- **Next.js & React versions**: Next.js 16 and React 19.
 
-Triage states map directly to their default canonical labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+## Framework Constraints
 
-### Domain docs
+- **Client-Side Navigation Optimization**: If fixing slow client-side navigations, `Suspense` alone is not enough. You must also export `unstable_instant` from the route. Read `node_modules/next/dist/docs/01-app/02-guides/instant-navigation.mdx` before making navigation changes.
 
-Uses a single-context domain layout with `CONTEXT.md` at the repo root. See `docs/agents/domain.md`.
+## Agent Guidelines
+
+Specific guidelines for development, tracking, and domain conventions:
+
+- [Development Quickstart & Commands](./docs/agents/development.md)
+- [Local Issue Tracking & Triage](./docs/agents/issue-tracking.md)
+- [Domain & Architecture Conventions](./docs/agents/domain-conventions.md)

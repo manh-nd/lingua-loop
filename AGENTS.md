@@ -26,3 +26,4 @@ Specific guidelines for development, tracking, and domain conventions:
 - [Development Quickstart & Commands](./docs/agents/development.md)
 - [Local Issue Tracking & Triage](./docs/agents/issue-tracking.md)
 - [Domain & Architecture Conventions](./docs/agents/domain-conventions.md)
+- [UI & Component Conventions](./docs/agents/ui-conventions.md)

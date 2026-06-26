@@ -1,17 +1,13 @@
 import { GoogleGenAI } from '@google/genai';
 import { AiClient, GenerateJsonInput } from './ai-client';
+import { ApiKeyLease, ApiKeyPool } from './api-key-pool';
+import { getGeminiApiKeyPool } from './gemini-api-key-pool';
 
-function getApiKey() {
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Missing GEMINI_API_KEY');
-  }
-
-  return apiKey;
-}
-
-function getModel() {
+/**
+ * Retrieves the default Gemini model from environment variables.
+ * Throws if the configuration is missing.
+ */
+function getModel(): string {
   const model = process.env.GEMINI_DEFAULT_MODEL;
 
   if (!model) {
@@ -21,93 +17,180 @@ function getModel() {
   return model;
 }
 
-export function sleep(ms: number) {
+/**
+ * Utility helper to sleep for a specified duration in milliseconds.
+ */
+export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getErrorStatus(error: unknown): number | undefined {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'status' in error &&
-    typeof (error as { status?: unknown }).status === 'number'
-  ) {
-    return (error as { status: number }).status;
-  }
+/**
+ * Manages the GoogleGenAI instance cache to reuse client connections
+ * and prevent SDK overhead.
+ */
+class GoogleGenAiCache {
+  private cache = new Map<string, GoogleGenAI>();
 
-  return undefined;
-}
+  /**
+   * Returns a cached GoogleGenAI instance or initializes a new one.
+   */
+  get(apiKey: string): GoogleGenAI {
+    let client = this.cache.get(apiKey);
 
-function isRetryableGeminiError(error: unknown) {
-  const status = getErrorStatus(error);
-
-  return status === 429 || status === 500 || status === 503 || status === 504;
-}
-
-async function withRetry<T>(
-  operation: () => Promise<T>,
-  options?: {
-    maxAttempts?: number;
-    baseDelayMs?: number;
-    maxDelayMs?: number;
-  }
-): Promise<T> {
-  const maxAttempts = options?.maxAttempts ?? 4;
-  const baseDelayMs = options?.baseDelayMs ?? 1_000;
-  const maxDelayMs = options?.maxDelayMs ?? 10_000;
-
-  let lastError: unknown;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error;
-
-      if (!isRetryableGeminiError(error) || attempt === maxAttempts) {
-        throw error;
-      }
-
-      const exponentialDelay = Math.min(
-        baseDelayMs * 2 ** (attempt - 1),
-        maxDelayMs
-      );
-
-      const jitter = Math.floor(Math.random() * 500);
-
-      await sleep(exponentialDelay + jitter);
+    if (!client) {
+      client = new GoogleGenAI({ apiKey });
+      this.cache.set(apiKey, client);
     }
-  }
 
-  throw lastError;
+    return client;
+  }
 }
 
-export function createGeminiAiClient(): AiClient {
-  const ai = new GoogleGenAI({
-    apiKey: getApiKey(),
-  });
+/**
+ * Handles security operations like redacting API keys from error outputs
+ * to avoid leaking credentials in console logs or error trackers.
+ */
+class ErrorRedactor {
+  /**
+   * Replaces raw API key values in messages and stacks with a masked ID.
+   */
+  static redact(error: unknown, lease: ApiKeyLease): unknown {
+    if (!lease.apiKey) {
+      return error;
+    }
 
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const redactedMessage = rawMessage.replaceAll(
+      lease.apiKey,
+      `[REDACTED:${lease.keyId}]`
+    );
+
+    const wrapped = new Error(redactedMessage);
+    wrapped.name = error instanceof Error ? error.name : 'Error';
+
+    if (error instanceof Error && error.stack) {
+      wrapped.stack = error.stack.replaceAll(
+        lease.apiKey,
+        `[REDACTED:${lease.keyId}]`
+      );
+    }
+
+    // Preserve status, code, and other custom HTTP properties on the error object
+    if (typeof error === 'object' && error !== null) {
+      for (const key of Object.keys(error)) {
+        if (key !== 'message' && key !== 'stack') {
+          (wrapped as unknown as Record<string, unknown>)[key] = (
+            error as unknown as Record<string, unknown>
+          )[key];
+        }
+      }
+    }
+
+    return wrapped;
+  }
+}
+
+/**
+ * Classifies Gemini API errors, determining retry behavior and cooldown actions.
+ */
+class GeminiErrorClassifier {
+  /**
+   * Safely extracts HTTP status code from a generic Gemini API error.
+   */
+  static getStatus(error: unknown): number | undefined {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      typeof (error as { status?: unknown }).status === 'number'
+    ) {
+      return (error as { status: number }).status;
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Determines whether an error is transient and retryable.
+   * - 429: Resource Exhausted / Rate limit hit
+   * - 500, 503, 504: Temporary server-side errors
+   */
+  static isRetryable(error: unknown): boolean {
+    const status = this.getStatus(error);
+
+    return status === 429 || status === 500 || status === 503 || status === 504;
+  }
+
+  /**
+   * Determines the target cooldown duration for specific error codes.
+   * Returns 60 seconds cooldown for rate limit (429) errors.
+   */
+  static getCooldownMs(error: unknown): number | undefined {
+    const status = this.getStatus(error);
+
+    if (status === 429) {
+      return 60_000;
+    }
+
+    return undefined;
+  }
+}
+
+/**
+ * Builds structured prompts for Gemini content generation.
+ */
+class StructuredPromptBuilder {
+  /**
+   * Assembles system prompt, user input, and JSON schema reminder.
+   */
+  static build(systemPrompt: string, userInput: string): string {
+    return [
+      systemPrompt,
+      '',
+      'User input:',
+      userInput,
+      '',
+      'Return only valid JSON that matches the provided schema.',
+    ].join('\n');
+  }
+}
+
+/**
+ * Creates the Gemini AI Client implementing the generic AiClient interface.
+ * Coordinates with the ApiKeyPool to lease keys, execute content generation,
+ * handle retryable failures, and redact API keys in logs/errors.
+ */
+export function createGeminiAiClient(options?: {
+  keyPool?: ApiKeyPool;
+  maxAttempts?: number;
+}): AiClient {
   const model = getModel();
+  const keyPool = options?.keyPool ?? getGeminiApiKeyPool();
+  const maxAttempts = options?.maxAttempts ?? 6;
+  const clientCache = new GoogleGenAiCache();
 
   return {
     async generateJson(input: GenerateJsonInput): Promise<unknown> {
-      const response = await withRetry(
-        async () =>
-          await ai.models.generateContent({
+      let lastError: unknown;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const lease = await keyPool.getNextKey();
+
+        try {
+          const ai = clientCache.get(lease.apiKey);
+          const promptText = StructuredPromptBuilder.build(
+            input.system,
+            input.user
+          );
+
+          const response = await ai.models.generateContent({
             model,
             contents: [
               {
                 role: 'user',
                 parts: [
                   {
-                    text: [
-                      input.system,
-                      '',
-                      'User input:',
-                      input.user,
-                      '',
-                      'Return only valid JSON that matches the provided schema.',
-                    ].join('\n'),
+                    text: promptText,
                   },
                 ],
               },
@@ -116,14 +199,31 @@ export function createGeminiAiClient(): AiClient {
               responseMimeType: 'application/json',
               responseSchema: input.schema,
             },
-          })
-      );
+          });
 
-      if (!response.text) {
-        throw new Error('Gemini returned empty response');
+          if (!response.text) {
+            throw new Error('Gemini returned empty response');
+          }
+
+          keyPool.reportSuccess(lease.keyId);
+
+          return JSON.parse(response.text);
+        } catch (error) {
+          const redacted = ErrorRedactor.redact(error, lease);
+          lastError = redacted;
+
+          // Non-retryable error -> propagate immediately without cooling down or retrying
+          if (!GeminiErrorClassifier.isRetryable(redacted)) {
+            throw redacted;
+          }
+
+          keyPool.reportFailure(lease.keyId, redacted, {
+            cooldownMs: GeminiErrorClassifier.getCooldownMs(redacted),
+          });
+        }
       }
 
-      return JSON.parse(response.text);
+      throw lastError;
     },
   };
 }

@@ -12,6 +12,7 @@
     "eval:message": "tsx scripts/eval-message.ts",
     "eval:reading": "tsx scripts/eval-reading.ts",
     "eval:explanation": "tsx scripts/eval-explanation.ts",
+    "eval:key-rotation": "tsx scripts/eval-key-rotation.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "prepare": "husky"

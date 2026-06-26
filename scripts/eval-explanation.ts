@@ -2,7 +2,6 @@ import 'dotenv/config';
 import { createGeminiAiClient, sleep } from '@/core/ai/gemini-ai-client';
 import { runExplanationCoach } from '@/core/explanation/explanation.workflow';
 import { ExplanationCoachInput } from '@/core/explanation/explanation.schema';
-import { runMessageCoach } from '@/core/message/message.workflow';
 
 const cases: ExplanationCoachInput[] = [
   {
@@ -79,16 +78,19 @@ async function main() {
     console.log(item.text);
 
     try {
-      const result = await runMessageCoach(item, { aiClient });
+      const result = await runExplanationCoach(item, { aiClient });
 
       console.log('\nRECOMMENDED:');
-      console.log(result.recommendedMessage);
+      console.log(result.improvedText);
 
-      console.log('\nALTERNATIVES:');
-      console.dir(result.alternatives, { depth: null });
+      console.log('\nSHORT VERSION:');
+      console.log(result.shortVersion);
 
-      console.log('\nWHY:');
-      console.log(result.explanationVi);
+      console.log('\nFEEDBACK:');
+      console.dir(result.structureFeedback, { depth: null });
+
+      console.log('\nWHY/CORRECTIONS:');
+      console.dir(result.corrections, { depth: null });
 
       console.log('\nMISTAKES:');
       console.dir(result.mistakeCandidates, { depth: null });

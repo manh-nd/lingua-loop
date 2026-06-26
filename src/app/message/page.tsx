@@ -3,14 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -495,7 +488,8 @@ export default function MessagePage() {
               </h3>
               <p className="text-xs text-muted-foreground max-w-sm">
                 Hãy soạn thảo hoặc dán nội dung tin nhắn của bạn ở cột bên trái
-                và nhấn nút "Gửi Coach" để trợ lý AI bắt đầu tối ưu hóa.
+                và nhấn nút &quot;Gửi Coach&quot; để trợ lý AI bắt đầu tối ưu
+                hóa.
               </p>
             </div>
           )}

@@ -4,7 +4,7 @@ import { messageSamples, explanationSamples } from '@/lib/samples';
 describe('samples', () => {
   it('has valid message coach samples', () => {
     expect(messageSamples).toBeInstanceOf(Array);
-    expect(messageSamples.length).toBe(4);
+    expect(messageSamples.length).toBe(8);
 
     messageSamples.forEach((sample) => {
       expect(sample).toHaveProperty('id');
@@ -19,7 +19,7 @@ describe('samples', () => {
 
   it('has valid explanation coach samples', () => {
     expect(explanationSamples).toBeInstanceOf(Array);
-    expect(explanationSamples.length).toBe(4);
+    expect(explanationSamples.length).toBe(8);
 
     explanationSamples.forEach((sample) => {
       expect(sample).toHaveProperty('id');

@@ -707,6 +707,7 @@ export default function ExplanationPage() {
             /* Empty State / Starter Screen */
             <StarterScreen
               type="explanation"
+              mode={mode}
               onSelectSample={handleSelectSample}
               className="py-8"
             />

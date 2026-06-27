@@ -12,16 +12,19 @@ import { cn } from '@/lib/utils';
 
 interface StarterScreenProps {
   type: 'message' | 'explanation';
+  mode: 'write_from_vietnamese' | 'improve_english_draft';
   onSelectSample: (sample: MessageSample | ExplanationSample) => void;
   className?: string;
 }
 
 export function StarterScreen({
   type,
+  mode,
   onSelectSample,
   className,
 }: StarterScreenProps) {
-  const samples = type === 'message' ? messageSamples : explanationSamples;
+  const allSamples = type === 'message' ? messageSamples : explanationSamples;
+  const samples = allSamples.filter((s) => s.mode === mode);
 
   return (
     <div

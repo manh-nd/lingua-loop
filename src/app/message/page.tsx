@@ -569,6 +569,7 @@ export default function MessagePage() {
             /* Empty State / Starter Screen */
             <StarterScreen
               type="message"
+              mode={mode}
               onSelectSample={handleSelectSample}
               className="py-8"
             />

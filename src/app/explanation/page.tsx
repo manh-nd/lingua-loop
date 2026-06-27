@@ -610,6 +610,7 @@ export default function ExplanationPage() {
                       >
                         <MistakeCandidateList
                           candidates={result.mistakeCandidates}
+                          sourceWorkflow="explanation"
                         />
                       </CollapsibleSection>
                     )}

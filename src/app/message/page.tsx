@@ -474,6 +474,7 @@ export default function MessagePage() {
                       >
                         <MistakeCandidateList
                           candidates={result.mistakeCandidates}
+                          sourceWorkflow="message"
                         />
                       </CollapsibleSection>
                     )}

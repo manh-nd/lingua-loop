@@ -65,6 +65,12 @@ export function CoachShell({
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            href="/memory"
+            className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+          >
+            Sổ tay lỗi (Memory)
+          </Link>
           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold">
             {badge}
           </div>

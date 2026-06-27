@@ -6,10 +6,15 @@ import {
   MessageCoachInput,
   MessageCoachResult,
 } from '@/core/message/message.schema';
+import { presentAiError } from '@/core/ai/ai-error-presenter';
 
 export async function submitMessageCoach(
   input: MessageCoachInput
 ): Promise<MessageCoachResult> {
-  const aiClient = createGeminiAiClient({ maxWaitMs: 5000 });
-  return await runMessageCoach(input, { aiClient });
+  try {
+    const aiClient = createGeminiAiClient({ maxWaitMs: 5000 });
+    return await runMessageCoach(input, { aiClient });
+  } catch (error) {
+    throw new Error(presentAiError(error));
+  }
 }

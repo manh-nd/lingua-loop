@@ -406,21 +406,27 @@ export default function Home() {
             </Link>
 
             {/* Bento Card 2: Memory Candidates */}
-            <div className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/30 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/[0.02] transition-all duration-300">
-              <div className="flex items-center gap-2 border-b border-border/30 pb-2.5">
-                <Brain className="size-4 text-primary" />
-                <h3 className="text-xs font-bold font-heading text-foreground">
-                  Memory Candidates
-                </h3>
+            <Link
+              href="/memory"
+              className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/40 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-2 border-b border-border/30 pb-2.5 justify-between">
+                <div className="flex items-center gap-2">
+                  <Brain className="size-4 text-primary" />
+                  <h3 className="text-xs font-bold font-heading text-foreground group-hover:text-primary transition-colors">
+                    Sổ tay lỗi sai (Memory)
+                  </h3>
+                </div>
+                <ArrowRight className="size-3.5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground flex-1">
-                Tự động phát hiện lỗi sai tái diễn, gợi ý đưa vào bộ nhớ cá nhân
-                thay vì ghi nhớ thủ công rời rạc.
+                Lưu trữ và quản lý các lỗi sai từ Message Coach và Explanation
+                Coach để ôn tập theo vòng lặp, không bao giờ lặp lại lỗi cũ.
               </p>
-              <span className="text-[9px] uppercase tracking-wider text-primary font-bold mt-auto px-2 py-0.5 rounded-full bg-primary/10 w-fit border border-primary/20">
-                MVP v1
+              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20">
+                MỞ NGAY (READY)
               </span>
-            </div>
+            </Link>
 
             {/* Bento Card 3: Spaced Review */}
             <div className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/30 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/[0.02] transition-all duration-300">

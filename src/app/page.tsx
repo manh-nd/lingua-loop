@@ -258,8 +258,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-3 text-[11px] text-muted-foreground flex gap-2 border border-primary/10">
-            <span className="text-primary font-bold">💡 Code Coach:</span>
+          <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-3 text-[11px] text-muted-foreground flex gap-2 border border-primary/10 items-start">
+            <span className="text-primary font-bold shrink-0 whitespace-nowrap">
+              💡 Code Coach:
+            </span>
             <p className="leading-relaxed">
               {demoTabsData[activeTab].explanation}
             </p>

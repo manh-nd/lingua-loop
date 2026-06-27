@@ -37,6 +37,7 @@ import { CorrectionList } from '@/components/coach/CorrectionList';
 import { MistakeCandidateList } from '@/components/coach/MistakeCandidateList';
 import { MessageSample, ExplanationSample } from '@/lib/samples';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 type MessageMode = 'write_from_vietnamese' | 'improve_english_draft';
 type MessageTone = 'friendly' | 'polite' | 'direct' | 'professional' | 'casual';
@@ -197,8 +198,8 @@ export default function MessagePage() {
       </a>
 
       {/* Background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse duration-[8000ms]" />
-      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse duration-[8000ms]" />
+      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-gradient-to-tr from-primary/10 via-pink-500/5 to-transparent rounded-full blur-3xl -z-10 animate-float-1" />
+      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-gradient-to-br from-amber-500/5 via-primary/5 to-transparent rounded-full blur-3xl -z-10 animate-float-2" />
 
       {/* Header */}
       <header className="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-border/40">
@@ -215,13 +216,16 @@ export default function MessagePage() {
             <div className="p-1 rounded bg-primary/10 border border-primary/20">
               <MessageSquare className="size-4 text-primary" />
             </div>
-            <span className="font-heading font-bold text-sm tracking-tight">
+            <span className="font-heading font-bold text-sm tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
               MESSAGE COACH
             </span>
           </div>
         </div>
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-secondary text-secondary-foreground border border-border text-[10px] font-medium">
-          MVP v0
+        <div className="flex items-center gap-4">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold">
+            MVP v0
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -397,8 +401,8 @@ export default function MessagePage() {
               disabled={isPending || !text.trim()}
               className={cn(
                 'w-full h-9 font-bold uppercase tracking-wider text-xs cursor-pointer select-none active:scale-99 transition-all duration-300',
-                pulseSubmit &&
-                  'animate-bounce border-primary shadow-sm bg-primary/95',
+                'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30',
+                pulseSubmit && 'animate-bounce',
                 isPending && 'opacity-80 cursor-wait'
               )}
             >
@@ -457,8 +461,8 @@ export default function MessagePage() {
               </div>
 
               {/* 1. Recommended Message */}
-              <Card className="border border-primary/20 bg-primary/[0.01] shadow-xs relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+              <Card className="border border-primary/25 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl">
+                <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary to-indigo-500" />
                 <CardHeader className="pb-3 pt-3.5 px-4.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-primary flex items-center gap-1">
@@ -468,10 +472,10 @@ export default function MessagePage() {
                     <CopyButton
                       text={result.recommendedMessage}
                       size="icon-sm"
-                      className="bg-background border border-border/80 shadow-2xs hover:bg-muted"
+                      className="bg-background dark:bg-black/40 border border-border/80 shadow-2xs hover:bg-muted"
                     />
                   </div>
-                  <div className="text-sm font-semibold select-all font-mono leading-relaxed mt-2.5 text-foreground p-3.5 bg-background border border-border/60 rounded-md">
+                  <div className="text-sm font-semibold select-all font-mono leading-relaxed mt-2.5 text-foreground p-4 bg-white/70 dark:bg-black/50 border border-border/40 rounded-lg shadow-inner">
                     {result.recommendedMessage}
                   </div>
                 </CardHeader>
@@ -496,16 +500,16 @@ export default function MessagePage() {
                     {result.alternatives.map((alt, index) => (
                       <Card
                         key={index}
-                        className="border border-border/80 bg-card hover:border-border transition-colors shadow-none"
+                        className="border border-border/50 bg-white/30 dark:bg-black/10 hover:border-primary/20 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden"
                       >
-                        <CardHeader className="py-2 px-3 flex flex-row items-center justify-between gap-2 bg-muted/15 border-b border-border/30">
-                          <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border">
+                        <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 bg-muted/10 border-b border-border/30">
+                          <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                             {alt.label.replace('more_', 'Tông giọng ')}
                           </span>
                           <CopyButton text={alt.text} size="icon-xs" />
                         </CardHeader>
-                        <CardContent className="py-2.5 px-3 flex flex-col gap-1.5">
-                          <div className="text-xs font-mono font-medium p-2 bg-muted/30 border border-border/40 select-all rounded-sm">
+                        <CardContent className="py-3 px-3.5 flex flex-col gap-2">
+                          <div className="text-xs font-mono font-medium p-3 bg-white/50 dark:bg-black/30 border border-border/45 select-all rounded-lg shadow-xs">
                             {alt.text}
                           </div>
                           <p className="text-[10px] text-muted-foreground flex items-start gap-1">

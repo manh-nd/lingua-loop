@@ -383,21 +383,27 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Bento Card 1: Reading Coach */}
-            <div className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/30 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/[0.02] transition-all duration-300">
-              <div className="flex items-center gap-2 border-b border-border/30 pb-2.5">
-                <BookOpen className="size-4 text-primary" />
-                <h3 className="text-xs font-bold font-heading text-foreground">
-                  Reading Coach
-                </h3>
+            <Link
+              href="/reading"
+              className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/40 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-2 border-b border-border/30 pb-2.5 justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="size-4 text-primary" />
+                  <h3 className="text-xs font-bold font-heading text-foreground group-hover:text-primary transition-colors">
+                    Reading Coach
+                  </h3>
+                </div>
+                <ArrowRight className="size-3.5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground flex-1">
                 Hiểu ngữ cảnh, dịch sát nghĩa thành ngữ, từ lóng tiếng Anh và
                 phân tích hàm ý/tông giọng của người nói.
               </p>
-              <span className="text-[9px] uppercase tracking-wider text-primary font-bold mt-auto px-2 py-0.5 rounded-full bg-primary/10 w-fit border border-primary/20">
-                MVP v1
+              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20">
+                MỞ NGAY (READY)
               </span>
-            </div>
+            </Link>
 
             {/* Bento Card 2: Memory Candidates */}
             <div className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/30 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/[0.02] transition-all duration-300">

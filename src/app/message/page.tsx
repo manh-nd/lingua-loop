@@ -114,7 +114,7 @@ export default function MessagePage() {
   };
 
   // Sample prompt selection
-  const handleSelectSample = (sample: MessageSample | ExplanationSample) => {
+  const handleSelectSample = (sample: any) => {
     setMode(sample.mode);
     setTone(sample.tone);
 

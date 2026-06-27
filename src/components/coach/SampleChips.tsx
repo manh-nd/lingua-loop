@@ -3,16 +3,20 @@
 import {
   messageSamples,
   explanationSamples,
+  readingSamples,
   MessageSample,
   ExplanationSample,
+  ReadingSample,
 } from '@/lib/samples';
 import { Button } from '@/components/ui/button';
 import { Sparkle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SampleChipsProps {
-  type: 'message' | 'explanation';
-  onSelectSample: (sample: MessageSample | ExplanationSample) => void;
+  type: 'message' | 'explanation' | 'reading';
+  onSelectSample: (
+    sample: MessageSample | ExplanationSample | ReadingSample
+  ) => void;
   className?: string;
 }
 
@@ -21,7 +25,12 @@ export function SampleChips({
   onSelectSample,
   className,
 }: SampleChipsProps) {
-  const samples = type === 'message' ? messageSamples : explanationSamples;
+  const samples =
+    type === 'message'
+      ? messageSamples
+      : type === 'explanation'
+        ? explanationSamples
+        : readingSamples;
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>

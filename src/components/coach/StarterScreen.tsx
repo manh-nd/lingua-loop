@@ -3,17 +3,27 @@
 import {
   messageSamples,
   explanationSamples,
+  readingSamples,
   MessageSample,
   ExplanationSample,
+  ReadingSample,
 } from '@/lib/samples';
 import { Card, CardContent } from '@/components/ui/card';
-import { Sparkle, MessageSquare, FileText, ChevronRight } from 'lucide-react';
+import {
+  Sparkle,
+  MessageSquare,
+  FileText,
+  BookOpen,
+  ChevronRight,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StarterScreenProps {
-  type: 'message' | 'explanation';
-  mode: 'write_from_vietnamese' | 'improve_english_draft';
-  onSelectSample: (sample: MessageSample | ExplanationSample) => void;
+  type: 'message' | 'explanation' | 'reading';
+  mode?: 'write_from_vietnamese' | 'improve_english_draft';
+  onSelectSample: (
+    sample: MessageSample | ExplanationSample | ReadingSample
+  ) => void;
   className?: string;
 }
 
@@ -23,8 +33,12 @@ export function StarterScreen({
   onSelectSample,
   className,
 }: StarterScreenProps) {
-  const allSamples = type === 'message' ? messageSamples : explanationSamples;
-  const samples = allSamples.filter((s) => s.mode === mode);
+  const samples =
+    type === 'reading'
+      ? readingSamples
+      : type === 'message'
+        ? messageSamples.filter((s) => s.mode === mode)
+        : explanationSamples.filter((s) => s.mode === mode);
 
   return (
     <div
@@ -40,12 +54,16 @@ export function StarterScreen({
         <h2 className="text-lg font-bold tracking-tight text-foreground mb-2">
           {type === 'message'
             ? 'Bắt đầu tối ưu hóa tin nhắn'
-            : 'Sắp xếp & Chuẩn hóa tài liệu'}
+            : type === 'explanation'
+              ? 'Sắp xếp & Chuẩn hóa tài liệu'
+              : 'Phân tích & Hiểu sâu văn bản'}
         </h2>
         <p className="text-xs text-muted-foreground leading-relaxed">
           {type === 'message'
             ? 'Hãy nhập ý định của bạn ở form bên trái, hoặc chọn nhanh một tình huống mẫu công sở bên dưới để trải nghiệm ngay.'
-            : 'Chọn một mẫu văn bản thô bên dưới hoặc tự viết nội dung chi tiết để AI phân tích cấu trúc, cải thiện từ vựng.'}
+            : type === 'explanation'
+              ? 'Chọn một mẫu văn bản thô bên dưới hoặc tự viết nội dung chi tiết để AI phân tích cấu trúc, cải thiện từ vựng.'
+              : 'Hãy dán một đoạn hội thoại Slack/Teams, email, PR comment hoặc tài liệu tiếng Anh ở bên trái để phân tích ngữ nghĩa, tông giọng và lỗi sai nguồn.'}
         </p>
       </div>
 
@@ -56,10 +74,15 @@ export function StarterScreen({
               <MessageSquare className="size-3.5 text-primary" />
               Gợi ý tin nhắn nhanh công sở
             </>
-          ) : (
+          ) : type === 'explanation' ? (
             <>
               <FileText className="size-3.5 text-primary" />
               Mẫu tài liệu & Giải thích kỹ thuật
+            </>
+          ) : (
+            <>
+              <BookOpen className="size-3.5 text-primary" />
+              Mẫu tin nhắn & Tài liệu cần đọc
             </>
           )}
         </h3>
@@ -88,9 +111,11 @@ export function StarterScreen({
                     <span className="text-[9px] uppercase px-1.5 py-0.5 rounded-full font-bold bg-secondary text-secondary-foreground border border-border group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-all">
                       {type === 'message'
                         ? (sample as MessageSample).tone
-                        : (sample as ExplanationSample).purpose
-                            .replace('_explanation', '')
-                            .replace('explain_', '')}
+                        : type === 'explanation'
+                          ? (sample as ExplanationSample).purpose
+                              .replace('_explanation', '')
+                              .replace('explain_', '')
+                          : 'reading'}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">

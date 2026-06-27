@@ -152,7 +152,7 @@ export default function ExplanationPage() {
   };
 
   // Sample prompt selection
-  const handleSelectSample = (sample: MessageSample | ExplanationSample) => {
+  const handleSelectSample = (sample: any) => {
     const expSample = sample as ExplanationSample;
     setMode(expSample.mode);
     setTone(expSample.tone);

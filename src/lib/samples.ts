@@ -22,6 +22,12 @@ export type ExplanationSample = {
     | 'general_explanation';
   length?: 'short' | 'medium' | 'detailed';
 };
+export type ReadingSample = {
+  id: string;
+  label: string;
+  text: string;
+  context?: string;
+};
 
 export const messageSamples: MessageSample[] = [
   // Vietnamese Drafts
@@ -160,5 +166,32 @@ export const explanationSamples: ExplanationSample[] = [
     tone: 'professional',
     purpose: 'requirement_description',
     length: 'detailed',
+  },
+];
+
+export const readingSamples: ReadingSample[] = [
+  {
+    id: 'slack-pr-typo',
+    label: 'Slack PR (Có lỗi)',
+    text: 'hey team, can you check my PR? i fixed the bug we discuss yesterday about login crash. let me know if it ok.',
+    context: 'Slack message từ một developer trên team',
+  },
+  {
+    id: 'email-deploy',
+    label: 'Email thông báo bảo trì',
+    text: 'Dear team, please note that we are scheduled to deploy the payment gateway upgrade this Friday at 10 PM UTC. There might be a brief service interruption lasting up to 15 minutes. Please notify your clients accordingly if they raise any concerns regarding transaction failures during this window.',
+    context: 'Email thông báo từ team DevOps',
+  },
+  {
+    id: 'github-comment',
+    label: 'GitHub review comment',
+    text: "This implementation looks promising, but I am concerned about the database query inside the loop on line 143. If the active user list grows, this will cause a severe N+1 query problem and bottleneck performance. Could you refactor this to batch the query or fetch everything in a single SELECT? Let's discuss this before merging.",
+    context: 'Comment từ đồng nghiệp khi review Pull Request',
+  },
+  {
+    id: 'jira-spec',
+    label: 'Mô tả task (Jira spec)',
+    text: 'We need to support auto-saving of drafts in the editor. The requirements are: 1. Save every 30 seconds if there are unsaved changes. 2. Show a small "Draft saved" indicator in the bottom status bar. 3. If saving fails, show an offline warning and retry after connection is restored.',
+    context: 'Nội dung mô tả yêu cầu tính năng trên Jira',
   },
 ];

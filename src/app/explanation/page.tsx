@@ -25,6 +25,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { submitExplanationCoach } from './actions';
 import { ExplanationCoachResult } from '@/core/explanation/explanation.schema';
+import { HighlightedText } from '@/components/coach/HighlightedText';
 import {
   ArrowLeft,
   Sparkle,
@@ -569,7 +570,7 @@ export default function ExplanationPage() {
               </div>
 
               {/* 1. Recommended Message */}
-              <Card className="border border-primary/25 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl">
+              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl py-0">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary to-indigo-500" />
                 <CardHeader className="pb-3 pt-3.5 px-4.5">
                   <div className="flex items-center justify-between">
@@ -580,11 +581,14 @@ export default function ExplanationPage() {
                     <CopyButton
                       text={result.improvedText}
                       size="icon-sm"
-                      className="bg-background dark:bg-black/40 border border-border/80 shadow-2xs hover:bg-muted"
+                      className="bg-background dark:bg-black/40 border border-border shadow-2xs hover:bg-muted"
                     />
                   </div>
-                  <div className="text-xs font-mono whitespace-pre-wrap leading-relaxed mt-2.5 text-foreground p-4 bg-white/70 dark:bg-black/50 border border-border/40 rounded-lg shadow-inner max-h-96 overflow-y-auto select-all">
-                    {result.improvedText}
+                  <div className="text-xs whitespace-pre-wrap leading-relaxed mt-2.5 text-foreground p-4 bg-white/70 dark:bg-black/50 border border-border rounded-lg shadow-inner max-h-96 overflow-y-auto">
+                    <HighlightedText
+                      text={result.improvedText}
+                      corrections={result.corrections}
+                    />
                   </div>
                 </CardHeader>
               </Card>
@@ -592,15 +596,15 @@ export default function ExplanationPage() {
               {/* 2. Alternative Versions (Short / Detailed) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Short Version */}
-                <Card className="border border-border/50 bg-white/30 dark:bg-black/10 hover:border-primary/20 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden">
-                  <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 border-b border-border/30 bg-muted/10">
+                <Card className="border border-border bg-white/30 dark:bg-black/10 hover:border-primary/35 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden py-0">
+                  <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 border-b border-border bg-muted/10">
                     <span className="text-[9px] uppercase font-bold tracking-wider text-primary">
                       Bản rút gọn (Short version)
                     </span>
                     <CopyButton text={result.shortVersion} size="icon-xs" />
                   </CardHeader>
                   <CardContent className="py-3 px-3.5 flex flex-col gap-2">
-                    <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-white/50 dark:bg-black/30 border border-border/45 select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
+                    <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-white/50 dark:bg-black/30 border border-border select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
                       {result.shortVersion}
                     </div>
                   </CardContent>
@@ -608,8 +612,8 @@ export default function ExplanationPage() {
 
                 {/* Detailed Version */}
                 {result.detailedVersion && (
-                  <Card className="border border-border/50 bg-white/30 dark:bg-black/10 hover:border-primary/20 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden">
-                    <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 border-b border-border/30 bg-muted/10">
+                  <Card className="border border-border bg-white/30 dark:bg-black/10 hover:border-primary/35 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden py-0">
+                    <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 border-b border-border bg-muted/10">
                       <span className="text-[9px] uppercase font-bold tracking-wider text-primary">
                         Bản chi tiết (Detailed version)
                       </span>
@@ -619,7 +623,7 @@ export default function ExplanationPage() {
                       />
                     </CardHeader>
                     <CardContent className="py-3 px-3.5 flex flex-col gap-2">
-                      <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-white/50 dark:bg-black/30 border border-border/45 select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
+                      <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-white/50 dark:bg-black/30 border border-border select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
                         {result.detailedVersion}
                       </div>
                     </CardContent>

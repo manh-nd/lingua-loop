@@ -17,6 +17,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { submitMessageCoach } from './actions';
 import { MessageCoachResult } from '@/core/message/message.schema';
+import { HighlightedText } from '@/components/coach/HighlightedText';
 import {
   ArrowLeft,
   Sparkle,
@@ -461,7 +462,7 @@ export default function MessagePage() {
               </div>
 
               {/* 1. Recommended Message */}
-              <Card className="border border-primary/25 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl">
+              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl py-0">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary to-indigo-500" />
                 <CardHeader className="pb-3 pt-3.5 px-4.5">
                   <div className="flex items-center justify-between">
@@ -472,14 +473,17 @@ export default function MessagePage() {
                     <CopyButton
                       text={result.recommendedMessage}
                       size="icon-sm"
-                      className="bg-background dark:bg-black/40 border border-border/80 shadow-2xs hover:bg-muted"
+                      className="bg-background dark:bg-black/40 border border-border shadow-2xs hover:bg-muted"
                     />
                   </div>
-                  <div className="text-sm font-semibold select-all font-mono leading-relaxed mt-2.5 text-foreground p-4 bg-white/70 dark:bg-black/50 border border-border/40 rounded-lg shadow-inner">
-                    {result.recommendedMessage}
+                  <div className="text-sm font-semibold leading-relaxed mt-2.5 text-foreground p-4 bg-white/70 dark:bg-black/50 border border-border rounded-lg shadow-inner">
+                    <HighlightedText
+                      text={result.recommendedMessage}
+                      corrections={result.corrections}
+                    />
                   </div>
                 </CardHeader>
-                <CardContent className="pb-3.5 pt-0 px-4.5 border-t border-border/30 bg-muted/5">
+                <CardContent className="pb-3.5 pt-0 px-4.5 border-t border-border/80 bg-muted/5">
                   <div className="flex gap-2 items-start mt-2">
                     <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
                     <p className="text-[11px] leading-relaxed text-muted-foreground italic">
@@ -496,20 +500,20 @@ export default function MessagePage() {
                     <CheckCircle className="size-3.5 text-primary" />
                     Các lựa chọn khác (Alternatives)
                   </h3>
-                  <div className="grid grid-cols-1 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {result.alternatives.map((alt, index) => (
                       <Card
                         key={index}
-                        className="border border-border/50 bg-white/30 dark:bg-black/10 hover:border-primary/20 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden"
+                        className="border border-border bg-white/30 dark:bg-black/10 hover:border-primary/35 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden py-0"
                       >
-                        <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 bg-muted/10 border-b border-border/30">
+                        <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 bg-muted/10 border-b border-border">
                           <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                             {alt.label.replace('more_', 'Tông giọng ')}
                           </span>
                           <CopyButton text={alt.text} size="icon-xs" />
                         </CardHeader>
                         <CardContent className="py-3 px-3.5 flex flex-col gap-2">
-                          <div className="text-xs font-mono font-medium p-3 bg-white/50 dark:bg-black/30 border border-border/45 select-all rounded-lg shadow-xs">
+                          <div className="text-xs font-mono font-medium p-3 bg-white/50 dark:bg-black/30 border border-border select-all rounded-lg shadow-xs">
                             {alt.text}
                           </div>
                           <p className="text-[10px] text-muted-foreground flex items-start gap-1">

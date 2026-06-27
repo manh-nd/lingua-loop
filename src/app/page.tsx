@@ -118,25 +118,29 @@ export default function Home() {
   // Stream text effect on tab change
   useEffect(() => {
     const rawText = demoTabsData[activeTab].vietnamese;
-    let index = 0;
+    let interval: NodeJS.Timeout;
 
-    const interval = setInterval(() => {
-      if (index < rawText.length) {
-        if (index === 0) {
-          setStreamedInput(rawText[0]);
-          setIsStreaming(true);
+    const timer = setTimeout(() => {
+      let currentText = '';
+      let index = 0;
+      setStreamedInput('');
+      setIsStreaming(true);
+
+      interval = setInterval(() => {
+        if (index < rawText.length) {
+          currentText += rawText[index];
+          setStreamedInput(currentText);
+          index++;
         } else {
-          setStreamedInput((prev) => prev + rawText[index]);
+          clearInterval(interval);
+          setIsStreaming(false);
         }
-        index++;
-      } else {
-        clearInterval(interval);
-        setIsStreaming(false);
-      }
-    }, 15);
+      }, 15);
+    }, 0);
 
     return () => {
-      clearInterval(interval);
+      clearTimeout(timer);
+      if (interval) clearInterval(interval);
     };
   }, [activeTab]);
 

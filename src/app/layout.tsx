@@ -19,9 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Lingua Loop - Workplace English Coach',
+  title: 'Lingua Loop - Học theo vòng lặp, không quên lỗi cũ',
   description:
-    'An English learning and writing assistant for Vietnamese professionals.',
+    'English learning and writing assistant for Vietnamese professionals, built on the philosophy of learning in loops and not repeating old mistakes (học theo vòng lặp, không quên lỗi cũ).',
 };
 
 export default function RootLayout({

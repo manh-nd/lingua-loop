@@ -1,8 +1,12 @@
 # Lingua Loop
 
-Lingua Loop is an English learning and writing assistant for Vietnamese professionals. Its domain centers on workplace English coaching, reusable personal mistakes, and staged learning workflows.
+Lingua Loop is an English learning and writing assistant for Vietnamese professionals. Its domain centers on workplace English coaching, reusable personal mistakes, and staged learning workflows, built on the core philosophy of **"học theo vòng lặp, không quên lỗi cũ"** (learning in loops, never forget/repeat old mistakes).
 
 ## Language
+
+**Lingua Loop**:
+The core philosophy of the product: learning in loops (học theo vòng lặp), never repeating or forgetting old mistakes (không quên lỗi cũ). Every workflow is designed to feed into this learning loop.
+_Avoid_: Linear writing coach, simple translator
 
 **Message Coach**:
 A workflow for turning short workplace intentions or rough drafts into natural English messages. It is optimized for practical tone, short output, Vietnamese explanations, and concrete reusable mistakes.
@@ -21,11 +25,11 @@ A concrete, reusable learning point extracted from user input or inferred from a
 _Avoid_: Correction, grammar note
 
 **Memory**:
-The user's curated set of recurring personal English mistakes or patterns that are useful for future review.
+The user's curated set of recurring personal English mistakes or patterns that are useful for future review to ensure they do not repeat old mistakes.
 _Avoid_: Saved corrections, history
 
 **Review**:
-A learning workflow where the user revisits Memory items to avoid repeating recurring mistakes.
+A learning workflow where the user revisits Memory items to avoid repeating recurring mistakes, completing the learning loop.
 _Avoid_: Quiz, flashcard dashboard
 
 **MVP v0**:

@@ -95,6 +95,7 @@ Reusable phrase rules:
 - Prefer phrases for explaining causes, impact, trade-offs, decisions, constraints, and next steps.
 
 Mistake candidate rules:
+- Keep in mind the core philosophy of Lingua Loop: "học theo vòng lặp, không quên lỗi cũ" (learning in loops, never forget/repeat old mistakes). The extracted mistake candidates are the foundation of this review loop.
 - Return at most 3 mistakeCandidates.
 - Only include reusable mistake patterns worth reviewing later.
 - patternKey must be specific, stable, lowercase_snake_case.

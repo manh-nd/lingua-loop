@@ -555,7 +555,7 @@ export default function MessagePage() {
                   {result.mistakeCandidates &&
                     result.mistakeCandidates.length > 0 && (
                       <CollapsibleSection
-                        title={`Từ vựng & Cấu trúc khuyên học (${result.mistakeCandidates.length})`}
+                        title={`Đề xuất học theo vòng lặp (Không quên lỗi cũ) (${result.mistakeCandidates.length})`}
                       >
                         <MistakeCandidateList
                           candidates={result.mistakeCandidates}

@@ -43,7 +43,7 @@ export function MistakeCandidateList({
             {mistake.shouldSave && (
               <span className="text-[9px] uppercase px-1.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-bold flex items-center gap-1 dark:bg-amber-500/20 dark:text-amber-400 h-5 inline-flex items-center justify-center">
                 <BookOpen className="size-2.5" />
-                Khuyên học
+                Không quên lỗi cũ
               </span>
             )}
           </div>

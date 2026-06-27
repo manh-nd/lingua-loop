@@ -693,7 +693,7 @@ export default function ExplanationPage() {
                   {result.mistakeCandidates &&
                     result.mistakeCandidates.length > 0 && (
                       <CollapsibleSection
-                        title={`Đề xuất lưu học tập (${result.mistakeCandidates.length})`}
+                        title={`Đề xuất học theo vòng lặp (Không quên lỗi cũ) (${result.mistakeCandidates.length})`}
                       >
                         <MistakeCandidateList
                           candidates={result.mistakeCandidates}

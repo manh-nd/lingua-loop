@@ -2,11 +2,11 @@
 
 ## Problem
 
-I use AI to write and understand English, but I forget the corrections afterward.
+Tôi dùng AI để viết và hiểu tiếng Anh công sở, nhưng sau đó lại nhanh chóng quên đi các góp ý và tiếp tục lặp lại các lỗi cũ (forgetting corrections and repeating mistakes).
 
 ## Core promise
 
-Help me write better English messages, understand English in context, and remember my recurring mistakes.
+Học tiếng Anh công sở theo vòng lặp hiệu quả (học theo vòng lặp, không quên lỗi cũ): Giúp tôi viết tốt hơn, hiểu sâu ngữ cảnh và đảm bảo không bao giờ quên hay lặp lại các lỗi sai cũ nhờ cơ chế phát hiện & ôn tập vòng lặp.
 
 ## Staged Scope
 

@@ -193,9 +193,8 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed text-pretty">
-            Biến nháp tiếng Anh công sở thô hoặc ý định tiếng Việt thành các
-            thông điệp chuẩn xác, tự nhiên. Ghi nhớ các lỗi diễn đạt để không
-            lặp lại.
+            Học tiếng Anh công sở theo vòng lặp: Biến nháp thô thành thông điệp
+            tự nhiên, ghi nhớ lỗi diễn đạt để không bao giờ lặp lại lỗi cũ.
           </p>
         </section>
 
@@ -378,8 +377,8 @@ export default function Home() {
               Learning Loop Roadmap
             </h2>
             <p className="text-xs text-muted-foreground text-pretty">
-              Các tính năng đang phát triển để tối ưu hóa lộ trình ghi nhớ tiếng
-              Anh lâu dài.
+              Các tính năng đang phát triển để hoàn thiện vòng lặp học tập, giúp
+              bạn lưu trữ và không bao giờ lặp lại các lỗi cũ.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -426,8 +425,9 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground flex-1">
-                Nhắc nhở ôn tập thông minh dựa trên chính các lỗi sai cá nhân đã
-                phạm trong quá trình làm việc hàng ngày.
+                Nhắc nhở ôn tập thông minh dựa trên vòng lặp Spaced Repetition
+                từ chính các lỗi sai bạn đã phạm phải trong công việc hàng ngày,
+                đảm bảo không quên lỗi cũ.
               </p>
               <span className="text-[9px] uppercase tracking-wider text-pink-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-pink-500/10 w-fit border border-pink-500/20">
                 LATER

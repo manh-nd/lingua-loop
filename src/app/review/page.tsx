@@ -122,7 +122,8 @@ function ReviewContent() {
   const updateSRS = (
     item: LocalMemoryItem,
     score: number,
-    isCorrect: boolean
+    isCorrect: boolean,
+    nextChallengePrompt?: string
   ) => {
     let grade = 0;
     if (isCorrect) {
@@ -163,14 +164,19 @@ function ReviewContent() {
     const nextReviewAt = new Date();
     nextReviewAt.setDate(nextReviewAt.getDate() + intervalDays);
 
+    const newReviewCount = (item.reviewCount ?? 0) + 1;
+    const isMastered = correctStreak >= 5 && intervalDays >= 30;
+
     updateLocalMemoryItem(item.id, {
-      reviewCount: (item.reviewCount ?? 0) + 1,
+      reviewCount: newReviewCount,
       correctStreak,
       wrongStreak: grade < 3 ? (item.wrongStreak ?? 0) + 1 : 0,
       intervalDays,
       easeFactor: parseFloat(newEaseFactor.toFixed(2)),
       nextReviewAt: nextReviewAt.toISOString(),
       lastReviewedAt: new Date().toISOString(),
+      status: isMastered ? 'mastered' : 'active',
+      reviewPromptText: nextChallengePrompt || item.reviewPromptText,
     });
   };
 
@@ -200,7 +206,12 @@ function ReviewContent() {
           next.add(itemId);
           return next;
         });
-        updateSRS(currentItem, result.score, result.isCorrect);
+        updateSRS(
+          currentItem,
+          result.score,
+          result.isCorrect,
+          result.nextChallengePrompt
+        );
       }
     } catch (err) {
       console.error(err);
@@ -214,15 +225,57 @@ function ReviewContent() {
     }
   };
 
+  const handleOverride = () => {
+    const currentItem = items[currentIndex];
+    const newCorrect = !isCorrect;
+    setIsCorrect(newCorrect);
+
+    // 1. Update Spaced Spacing (SRS) in localStorage with new overridden correctness
+    updateSRS(
+      currentItem,
+      newCorrect ? 100 : 0,
+      newCorrect,
+      gradeResult?.nextChallengePrompt
+    );
+
+    // 2. Update results state to reflect the override
+    setResults((prev) => {
+      const index = prev.map((r) => r.id).lastIndexOf(currentItem.id);
+      if (index !== -1) {
+        const nextResults = [...prev];
+        nextResults[index] = { id: currentItem.id, correct: newCorrect };
+        return nextResults;
+      }
+      return prev;
+    });
+
+    // 3. Dynamically update the upcoming review queue
+    if (newCorrect) {
+      // If changed to Correct, remove the re-queued duplicate from the upcoming queue
+      setItems((prev) => {
+        const upcomingIndex = prev.indexOf(currentItem, currentIndex + 1);
+        if (upcomingIndex !== -1) {
+          const nextItems = [...prev];
+          nextItems.splice(upcomingIndex, 1);
+          return nextItems;
+        }
+        return prev;
+      });
+    } else {
+      // If changed to Wrong, append the card to the end of the queue for re-queuing
+      setItems((prev) => [...prev, currentItem]);
+    }
+  };
+
   const handleContinue = () => {
     const currentItem = items[currentIndex];
 
+    const nextItems = !isCorrect ? [...items, currentItem] : items;
     if (!isCorrect) {
-      // Re-queue the failed card by appending it to the end of the queue
-      setItems((prev) => [...prev, currentItem]);
+      setItems(nextItems);
     }
 
-    if (currentIndex + 1 < items.length) {
+    if (currentIndex + 1 < nextItems.length) {
       setCurrentIndex((prev) => prev + 1);
       setUserAnswer('');
       setIsSubmitted(false);
@@ -528,10 +581,13 @@ function ReviewContent() {
                       <div className="p-3.5 bg-rose-500/[0.03] rounded-xl border border-rose-500/10 flex flex-col gap-1 text-[11px] font-mono">
                         <span className="text-[9px] text-red-700 dark:text-red-400 uppercase font-bold flex items-center gap-1 select-none">
                           <XCircle className="size-3 shrink-0" />
-                          Câu diễn đạt sai/chưa tốt:
+                          {currentItem.reviewPromptText
+                            ? 'Biến thể ôn tập (New Variation):'
+                            : 'Câu diễn đạt sai/chưa tốt:'}
                         </span>
                         <span className="text-red-600 dark:text-red-400 select-all leading-relaxed break-words font-medium text-xs">
-                          {currentItem.wrongText}
+                          {currentItem.reviewPromptText ||
+                            currentItem.wrongText}
                         </span>
                       </div>
                       <p className="text-[11.5px] text-muted-foreground leading-relaxed mt-0.5 flex items-start gap-1.5">
@@ -552,10 +608,13 @@ function ReviewContent() {
                       <div className="p-3.5 bg-emerald-500/[0.02] rounded-xl border border-emerald-500/10 flex flex-col gap-1">
                         <span className="text-[9px] text-emerald-700 dark:text-emerald-400 uppercase font-bold flex items-center gap-1 select-none">
                           <FileText className="size-3.5 shrink-0" />
-                          Tình huống giao tiếp cần diễn đạt:
+                          {currentItem.reviewPromptText
+                            ? 'Tình huống ôn tập mới (New Situation):'
+                            : 'Tình huống giao tiếp cần diễn đạt:'}
                         </span>
                         <span className="text-emerald-800 dark:text-emerald-400 leading-relaxed font-semibold text-xs pt-1 select-text">
-                          {currentItem.situationVi}
+                          {currentItem.reviewPromptText ||
+                            currentItem.situationVi}
                         </span>
                       </div>
                       <p className="text-[11.5px] text-muted-foreground leading-relaxed mt-0.5 flex items-start gap-1.5">
@@ -576,10 +635,12 @@ function ReviewContent() {
                       <div className="p-3.5 bg-amber-500/[0.03] rounded-xl border border-amber-500/10 flex flex-col gap-1 font-mono">
                         <span className="text-[9px] text-amber-700 dark:text-amber-400 uppercase font-bold flex items-center gap-1 select-none">
                           <AlertTriangle className="size-3.5 shrink-0" />
-                          Cụm từ tiếng Anh dễ dịch sai:
+                          {currentItem.reviewPromptText
+                            ? 'Ví dụ bẫy đọc hiểu mới (New Context):'
+                            : 'Cụm từ tiếng Anh dễ dịch sai:'}
                         </span>
                         <span className="text-amber-800 dark:text-amber-400 leading-relaxed font-bold text-sm pt-1 select-all">
-                          {currentItem.trapText}
+                          {currentItem.reviewPromptText || currentItem.trapText}
                         </span>
                       </div>
                       <p className="text-[11.5px] text-muted-foreground leading-relaxed mt-0.5 flex items-start gap-1.5">
@@ -701,16 +762,27 @@ function ReviewContent() {
                             </>
                           )}
                         </span>
-                        <span
-                          className={cn(
-                            'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full select-none border',
-                            isCorrect
-                              ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                              : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                          )}
-                        >
-                          Điểm: {gradeResult.score}/100
-                        </span>
+                        <div className="flex items-center gap-2 select-none">
+                          <span
+                            className={cn(
+                              'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border',
+                              isCorrect
+                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                            )}
+                          >
+                            Điểm: {gradeResult.score}/100
+                          </span>
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={handleOverride}
+                            className="text-[9.5px] h-6 px-2 hover:bg-muted text-muted-foreground hover:text-foreground font-bold tracking-normal rounded cursor-pointer"
+                          >
+                            {isCorrect ? 'Tự chấm là Sai' : 'Tự chấm là Đúng'}
+                          </Button>
+                        </div>
                       </div>
 
                       {/* Feedback Text */}

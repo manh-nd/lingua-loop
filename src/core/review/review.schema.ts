@@ -38,6 +38,14 @@ export const ReviewGradeResultSchema = z.object({
     .describe(
       'Giải thích thêm về ngữ cảnh văn hóa, sắc thái hoặc phong cách giao tiếp doanh nghiệp (Đông-Tây) liên quan để người dùng nâng cao tư duy.'
     ),
+
+  nextChallengePrompt: z
+    .string()
+    .trim()
+    .optional()
+    .describe(
+      'Một câu tiếng Anh mới hoặc tình huống mới tương tự câu cũ để thử thách người dùng trong lần ôn tập tiếp theo (giúp tránh việc học vẹt). Ví dụ nếu câu cũ là "Please check my PR", câu mới có thể là "Please review my report". Bắt buộc đối với writing_mistake và reusable_phrase.'
+    ),
 });
 
 export type ReviewGradeResult = z.infer<typeof ReviewGradeResultSchema>;

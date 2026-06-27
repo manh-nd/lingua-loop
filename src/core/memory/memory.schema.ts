@@ -50,6 +50,7 @@ export const LocalMemoryItemSchema = z.object({
   trapText: z.string().trim().optional(),
   wrongInterpretationVi: z.string().trim().optional(),
   correctInterpretationVi: z.string().trim().optional(),
+  reviewPromptText: z.string().trim().optional(),
 
   // Candidate metadata (optional on memory items)
   confidence: z.number().min(0).max(1).optional(),

@@ -57,6 +57,7 @@ export function addLocalMemoryItem(
         | 'trapText'
         | 'wrongInterpretationVi'
         | 'correctInterpretationVi'
+        | 'reviewPromptText'
       >
     >
 ): LocalMemoryItem {

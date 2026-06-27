@@ -60,5 +60,11 @@ Grading Guidelines:
 
 4. Explain Cultural/Business Nuances (culturalContextVi) in Vietnamese:
    - Elaborate on business context, tone, or differences in directness between East Asian and Western workplaces (e.g. indirect rejection vs. direct statement, hierarchy, politeness).
+
+5. Generate a new challenge (nextChallengePrompt):
+   - Provide a fresh challenge for their next review session. This helps prevent rote memorization of exact answers.
+   - For 'writing_mistake': Create a new, slightly different English sentence containing a similar mistake of the same category and tone pattern (e.g. if the original mistake was "Please check my PR.", the new challenge prompt could be "Please check my report." or "Check my code now.").
+   - For 'reusable_phrase': Create a slightly different Vietnamese situation prompt that calls for using the same target English phrase or a close variant (e.g., if original situation was "Nhờ sếp check PR", the new situation could be "Hỏi đồng nghiệp xem hộ tài liệu thiết kế").
+   - For 'reading_trap': Create a new English example sentence containing the trap word/phrase, asking them to translate or explain what the trap word means *in this specific sentence* (e.g. if trap was "challenging", prompt could be "We received feedback that our implementation plan is challenging.").
 `;
 }

@@ -24,6 +24,8 @@ import {
   RotateCcw,
   Play,
   Globe,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { CoachShell } from '@/components/coach/CoachShell';
 import {
@@ -193,6 +195,76 @@ export default function MemoryPage() {
 
   const refreshItems = () => {
     setItems(getLocalMemoryItems());
+  };
+
+  const handleExportJSON = () => {
+    const allItems = getLocalMemoryItems();
+    const dataStr =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify(allItems, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute(
+      'download',
+      `lingua-loop-memory-${new Date().toISOString().split('T')[0]}.json`
+    );
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const imported = JSON.parse(text);
+
+        if (!Array.isArray(imported)) {
+          alert(
+            'Định dạng file không hợp lệ (Phải là một mảng JSON các thẻ lỗi).'
+          );
+          return;
+        }
+
+        // Validate each item has at least an id and memoryType
+        const isValid = imported.every(
+          (item) =>
+            item && typeof item === 'object' && item.id && item.memoryType
+        );
+        if (!isValid) {
+          alert('Dữ liệu lỗi sai không hợp lệ.');
+          return;
+        }
+
+        if (
+          confirm(
+            `Bạn có chắc chắn muốn nhập ${imported.length} thẻ lỗi sai này? Các thẻ trùng ID sẽ bị ghi đè.`
+          )
+        ) {
+          const current = getLocalMemoryItems();
+          const mergedMap = new Map();
+          current.forEach((item) => mergedMap.set(item.id, item));
+          imported.forEach((item) => mergedMap.set(item.id, item));
+
+          const mergedList = Array.from(mergedMap.values());
+          localStorage.setItem(
+            'lingua-loop-memory',
+            JSON.stringify(mergedList)
+          );
+          refreshItems();
+          alert('Nhập dữ liệu thành công!');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Có lỗi xảy ra khi đọc file JSON.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleEditStart = (item: LocalMemoryItem) => {
@@ -481,6 +553,39 @@ export default function MemoryPage() {
                 </div>
               )}
             </Card>
+
+            {/* Export / Import Data */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleExportJSON}
+                className="flex-1 text-[10px] font-bold h-8.5 rounded-lg border-border hover:bg-muted text-muted-foreground flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Download className="size-3.5" />
+                Xuất JSON
+              </Button>
+              <div className="flex-1 relative">
+                <input
+                  type="file"
+                  id="import-json-file"
+                  accept=".json"
+                  onChange={handleImportJSON}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    document.getElementById('import-json-file')?.click()
+                  }
+                  className="w-full text-[10px] font-bold h-8.5 rounded-lg border-border hover:bg-muted text-muted-foreground flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Upload className="size-3.5" />
+                  Nhập JSON
+                </Button>
+              </div>
+            </div>
 
             {activeCount > 0 && (
               <Link href="/review" className="w-full">

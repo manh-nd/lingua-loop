@@ -65,8 +65,16 @@ export function StarterScreen({
           {samples.map((sample) => (
             <Card
               key={sample.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelectSample(sample)}
-              className="group border border-border/80 hover:border-primary/40 hover:bg-primary/[0.01] hover:shadow-xs active:scale-98 cursor-pointer transition-all duration-200"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectSample(sample);
+                }
+              }}
+              className="group border border-border/80 hover:border-primary/40 hover:bg-primary/[0.01] hover:shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none active:scale-98 cursor-pointer transition-all duration-200"
             >
               <CardContent className="p-4 flex flex-col h-full justify-between gap-3 select-none">
                 <div className="flex flex-col gap-1.5">

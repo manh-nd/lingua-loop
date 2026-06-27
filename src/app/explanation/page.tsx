@@ -237,6 +237,14 @@ export default function ExplanationPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
+      {/* Skip to main content link for keyboard accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        Skip to content
+      </a>
+
       {/* Background glow effects */}
       <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse duration-[8000ms]" />
       <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse duration-[8000ms]" />
@@ -267,12 +275,15 @@ export default function ExplanationPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-8 flex flex-col md:grid md:grid-cols-12 gap-8">
+      <main
+        id="main-content"
+        className="flex-1 w-full max-w-6xl mx-auto px-6 py-8 flex flex-col md:grid md:grid-cols-12 gap-8"
+      >
         {/* Left Column: Form Controls */}
         <section className="md:col-span-5 flex flex-col gap-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
-              <h1 className="text-xl font-bold tracking-tight">
+              <h1 className="text-xl font-bold tracking-tight text-balance">
                 Tinh chỉnh tài liệu & Giải thích
               </h1>
               <p className="text-xs text-muted-foreground">
@@ -435,7 +446,9 @@ export default function ExplanationPage() {
                 </FieldLabel>
                 <Input
                   id="context-input"
-                  placeholder="Ví dụ: mô tả lỗi hệ thống thanh toán cho các bên thứ ba..."
+                  name="context"
+                  autoComplete="off"
+                  placeholder="Ví dụ: mô tả lỗi hệ thống thanh toán cho các bên thứ ba…"
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
                   disabled={isPending}
@@ -453,12 +466,14 @@ export default function ExplanationPage() {
                 </FieldLabel>
                 <Textarea
                   id="text-input"
+                  name="text"
+                  autoComplete="off"
                   ref={textareaRef}
                   rows={8}
                   placeholder={
                     mode === 'write_from_vietnamese'
-                      ? 'Mô tả lỗi: Khi user click nút checkout thì loading vô tận. Nguyên nhân do API /checkout phản hồi chậm hơn 10s dẫn đến timeout...'
-                      : 'Bug: when checkout click, infinite loading. API /checkout slow response >10s and timeout...'
+                      ? 'Mô tả lỗi: Khi user click nút checkout thì loading vô tận. Nguyên nhân do API /checkout phản hồi chậm hơn 10s dẫn đến timeout…'
+                      : 'Bug: when checkout click, infinite loading. API /checkout slow response >10s and timeout…'
                   }
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -498,7 +513,7 @@ export default function ExplanationPage() {
               {isPending ? (
                 <>
                   <span className="animate-spin mr-2 size-3.5 border-2 border-current border-t-transparent rounded-full" />
-                  Coach đang phân tích...
+                  Coach đang phân tích…
                 </>
               ) : (
                 <span className="flex items-center gap-1.5 justify-center">

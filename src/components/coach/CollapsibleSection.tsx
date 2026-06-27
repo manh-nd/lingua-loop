@@ -23,6 +23,7 @@ export function CollapsibleSection({
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const contentId = useId();
+  const buttonId = useId();
 
   return (
     <div
@@ -33,6 +34,7 @@ export function CollapsibleSection({
     >
       <h3>
         <button
+          id={buttonId}
           type="button"
           aria-expanded={isOpen}
           aria-controls={contentId}
@@ -57,6 +59,7 @@ export function CollapsibleSection({
       <div
         id={contentId}
         role="region"
+        aria-labelledby={buttonId}
         className={cn(
           'transition-all duration-300 ease-in-out',
           isOpen

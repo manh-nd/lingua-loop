@@ -21,9 +21,17 @@ import {
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
+      {/* Skip to main content link for keyboard accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        Skip to content
+      </a>
+
       {/* Ambient background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] size-125 bg-primary/5 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] size-125 bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
 
       {/* Header */}
       <header className="w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-between border-b border-border/40">
@@ -44,15 +52,18 @@ export default function Home() {
       </header>
 
       {/* Hero Content */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-12 justify-center">
+      <main
+        id="main-content"
+        className="flex-1 w-full max-w-5xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-12 justify-center"
+      >
         <section className="max-w-2xl flex flex-col gap-4">
           <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
             Vietnamese Professional Coach
           </span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-linear-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight bg-linear-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent text-balance">
             Workplace English, refined.
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed text-pretty">
             Biến nháp tiếng Anh công sở thô hoặc ý định tiếng Việt thành các
             thông điệp chuẩn xác, tự nhiên. Ghi nhớ các lỗi diễn đạt để không
             lặp lại.

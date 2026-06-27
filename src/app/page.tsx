@@ -120,14 +120,14 @@ export default function Home() {
     const rawText = demoTabsData[activeTab].vietnamese;
     let index = 0;
 
-    const timer = setTimeout(() => {
-      setStreamedInput('');
-      setIsStreaming(true);
-    }, 0);
-
     const interval = setInterval(() => {
       if (index < rawText.length) {
-        setStreamedInput((prev) => prev + rawText[index]);
+        if (index === 0) {
+          setStreamedInput(rawText[0]);
+          setIsStreaming(true);
+        } else {
+          setStreamedInput((prev) => prev + rawText[index]);
+        }
         index++;
       } else {
         clearInterval(interval);
@@ -136,7 +136,6 @@ export default function Home() {
     }, 15);
 
     return () => {
-      clearTimeout(timer);
       clearInterval(interval);
     };
   }, [activeTab]);

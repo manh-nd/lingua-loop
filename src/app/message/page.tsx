@@ -462,35 +462,32 @@ export default function MessagePage() {
               </div>
 
               {/* 1. Recommended Message */}
-              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl py-0">
+              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl p-5 flex flex-col gap-4">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary to-indigo-500" />
-                <CardHeader className="pb-3 pt-3.5 px-4.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary flex items-center gap-1">
-                      <FileCheck className="size-3.5" />
-                      Tin nhắn khuyên dùng (Recommended)
-                    </span>
-                    <CopyButton
-                      text={result.recommendedMessage}
-                      size="icon-sm"
-                      className="bg-background dark:bg-black/40 border border-border shadow-2xs hover:bg-muted"
-                    />
-                  </div>
-                  <div className="text-sm font-semibold leading-relaxed mt-2.5 text-foreground p-4 bg-white/70 dark:bg-black/50 border border-border rounded-lg shadow-inner">
-                    <HighlightedText
-                      text={result.recommendedMessage}
-                      corrections={result.corrections}
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent className="pb-3.5 pt-0 px-4.5 border-t border-border/80 bg-muted/5">
-                  <div className="flex gap-2 items-start mt-2">
-                    <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-[11px] leading-relaxed text-muted-foreground italic">
-                      {result.explanationVi}
-                    </p>
-                  </div>
-                </CardContent>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary flex items-center gap-1.5 h-5 inline-flex items-center justify-center">
+                    <FileCheck className="size-3.5" />
+                    Tin nhắn khuyên dùng (Recommended)
+                  </span>
+                  <CopyButton
+                    text={result.recommendedMessage}
+                    size="icon-sm"
+                    className="bg-background dark:bg-black/40 border border-border shadow-2xs hover:bg-muted"
+                  />
+                </div>
+                <div className="text-sm font-semibold leading-relaxed text-foreground select-all">
+                  <HighlightedText
+                    text={result.recommendedMessage}
+                    corrections={result.corrections}
+                  />
+                </div>
+                <div className="h-px bg-border/80 w-full" />
+                <div className="flex gap-2 items-start text-xs text-muted-foreground">
+                  <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="leading-relaxed italic">
+                    {result.explanationVi}
+                  </p>
+                </div>
               </Card>
 
               {/* 2. Alternatives */}
@@ -504,23 +501,21 @@ export default function MessagePage() {
                     {result.alternatives.map((alt, index) => (
                       <Card
                         key={index}
-                        className="border border-border bg-white/30 dark:bg-black/10 hover:border-primary/35 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden py-0"
+                        className="border border-border bg-white/20 dark:bg-black/10 hover:border-primary/35 hover:bg-white/40 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3"
                       >
-                        <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 bg-muted/10 border-b border-border">
-                          <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[9px] uppercase tracking-wider px-2 rounded-full font-bold bg-primary/10 text-primary border border-primary/20 h-5 inline-flex items-center justify-center">
                             {alt.label.replace('more_', 'Tông giọng ')}
                           </span>
                           <CopyButton text={alt.text} size="icon-xs" />
-                        </CardHeader>
-                        <CardContent className="py-3 px-3.5 flex flex-col gap-2">
-                          <div className="text-xs font-mono font-medium p-3 bg-white/50 dark:bg-black/30 border border-border select-all rounded-lg shadow-xs">
-                            {alt.text}
-                          </div>
-                          <p className="text-[10px] text-muted-foreground flex items-start gap-1">
-                            <span>💡</span>
-                            <span>{alt.whenToUseVi}</span>
-                          </p>
-                        </CardContent>
+                        </div>
+                        <div className="text-xs font-mono font-medium p-3 bg-muted/40 dark:bg-black/30 border border-border/80 select-all rounded-lg shadow-xs leading-relaxed">
+                          {alt.text}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground flex items-start gap-1">
+                          <span>💡</span>
+                          <span>{alt.whenToUseVi}</span>
+                        </p>
                       </Card>
                     ))}
                   </div>

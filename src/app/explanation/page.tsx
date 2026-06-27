@@ -570,63 +570,57 @@ export default function ExplanationPage() {
               </div>
 
               {/* 1. Recommended Message */}
-              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl py-0">
+              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl p-5 flex flex-col gap-4">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary to-indigo-500" />
-                <CardHeader className="pb-3 pt-3.5 px-4.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary flex items-center gap-1">
-                      <FileCheck className="size-3.5" />
-                      Văn bản khuyên dùng (Recommended)
-                    </span>
-                    <CopyButton
-                      text={result.improvedText}
-                      size="icon-sm"
-                      className="bg-background dark:bg-black/40 border border-border shadow-2xs hover:bg-muted"
-                    />
-                  </div>
-                  <div className="text-xs whitespace-pre-wrap leading-relaxed mt-2.5 text-foreground p-4 bg-white/70 dark:bg-black/50 border border-border rounded-lg shadow-inner max-h-96 overflow-y-auto">
-                    <HighlightedText
-                      text={result.improvedText}
-                      corrections={result.corrections}
-                    />
-                  </div>
-                </CardHeader>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary flex items-center gap-1.5 h-5 inline-flex items-center justify-center">
+                    <FileCheck className="size-3.5" />
+                    Văn bản khuyên dùng (Recommended)
+                  </span>
+                  <CopyButton
+                    text={result.improvedText}
+                    size="icon-sm"
+                    className="bg-background dark:bg-black/40 border border-border shadow-2xs hover:bg-muted"
+                  />
+                </div>
+                <div className="text-xs whitespace-pre-wrap leading-relaxed text-foreground select-all max-h-96 overflow-y-auto">
+                  <HighlightedText
+                    text={result.improvedText}
+                    corrections={result.corrections}
+                  />
+                </div>
               </Card>
 
               {/* 2. Alternative Versions (Short / Detailed) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Short Version */}
-                <Card className="border border-border bg-white/30 dark:bg-black/10 hover:border-primary/35 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden py-0">
-                  <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 border-b border-border bg-muted/10">
-                    <span className="text-[9px] uppercase font-bold tracking-wider text-primary">
+                <Card className="border border-border bg-white/20 dark:bg-black/10 hover:border-primary/35 hover:bg-white/40 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[9px] uppercase tracking-wider px-2 rounded-full font-bold bg-primary/10 text-primary border border-primary/20 h-5 inline-flex items-center justify-center">
                       Bản rút gọn (Short version)
                     </span>
                     <CopyButton text={result.shortVersion} size="icon-xs" />
-                  </CardHeader>
-                  <CardContent className="py-3 px-3.5 flex flex-col gap-2">
-                    <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-white/50 dark:bg-black/30 border border-border select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
-                      {result.shortVersion}
-                    </div>
-                  </CardContent>
+                  </div>
+                  <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-muted/40 dark:bg-black/30 border border-border/80 select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
+                    {result.shortVersion}
+                  </div>
                 </Card>
 
                 {/* Detailed Version */}
                 {result.detailedVersion && (
-                  <Card className="border border-border bg-white/30 dark:bg-black/10 hover:border-primary/35 hover:bg-white/50 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl overflow-hidden py-0">
-                    <CardHeader className="py-2.5 px-3.5 flex flex-row items-center justify-between gap-2 border-b border-border bg-muted/10">
-                      <span className="text-[9px] uppercase font-bold tracking-wider text-primary">
+                  <Card className="border border-border bg-white/20 dark:bg-black/10 hover:border-primary/35 hover:bg-white/40 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[9px] uppercase tracking-wider px-2 rounded-full font-bold bg-primary/10 text-primary border border-primary/20 h-5 inline-flex items-center justify-center">
                         Bản chi tiết (Detailed version)
                       </span>
                       <CopyButton
                         text={result.detailedVersion}
                         size="icon-xs"
                       />
-                    </CardHeader>
-                    <CardContent className="py-3 px-3.5 flex flex-col gap-2">
-                      <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-white/50 dark:bg-black/30 border border-border select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
-                        {result.detailedVersion}
-                      </div>
-                    </CardContent>
+                    </div>
+                    <div className="text-xs font-mono whitespace-pre-wrap p-3 bg-muted/40 dark:bg-black/30 border border-border/80 select-all rounded-lg leading-relaxed max-h-40 overflow-y-auto shadow-xs">
+                      {result.detailedVersion}
+                    </div>
                   </Card>
                 )}
               </div>

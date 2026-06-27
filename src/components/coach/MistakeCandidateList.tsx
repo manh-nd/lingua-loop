@@ -25,31 +25,31 @@ export function MistakeCandidateList({
   if (!candidates || candidates.length === 0) return null;
 
   return (
-    <div className={cn('grid grid-cols-1 gap-3', className)}>
+    <div className={cn('grid grid-cols-1 gap-3.5', className)}>
       {candidates.map((mistake, idx) => (
         <Card
           key={idx}
-          className="border border-border/60 bg-muted/5 shadow-none overflow-hidden animate-in fade-in duration-200"
+          className="border border-border bg-muted/5 shadow-none overflow-hidden animate-in fade-in duration-200 py-0"
         >
-          <div className="py-2.5 px-3.5 bg-muted/20 border-b border-border/40 flex flex-row items-center justify-between gap-3 text-xs">
+          <div className="py-2.5 px-4 bg-muted/20 border-b border-border flex flex-row items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <code className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded border border-border text-foreground font-bold">
                 {mistake.patternKey}
               </code>
-              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-muted/80 text-muted-foreground border border-border font-medium">
+              <span className="text-[9px] uppercase px-1.5 rounded bg-muted/80 text-muted-foreground border border-border font-medium h-5 inline-flex items-center justify-center">
                 Khung: {mistake.category}
               </span>
             </div>
             {mistake.shouldSave && (
-              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-bold flex items-center gap-1 dark:bg-amber-500/20 dark:text-amber-400">
+              <span className="text-[9px] uppercase px-1.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-bold flex items-center gap-1 dark:bg-amber-500/20 dark:text-amber-400 h-5 inline-flex items-center justify-center">
                 <BookOpen className="size-2.5" />
                 Khuyên học
               </span>
             )}
           </div>
-          <CardContent className="py-3 px-3.5 flex flex-col gap-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono">
-              <div className="p-2 bg-red-500/5 rounded-sm border border-red-500/10">
+          <CardContent className="p-4 flex flex-col gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
+              <div className="p-2.5 bg-red-500/5 rounded-lg border border-red-500/10">
                 <span className="text-[9px] text-red-600/70 block uppercase font-bold mb-0.5">
                   Lỗi sai (Incorrect):
                 </span>
@@ -57,7 +57,7 @@ export function MistakeCandidateList({
                   {mistake.wrongText}
                 </span>
               </div>
-              <div className="p-2 bg-emerald-500/5 rounded-sm border border-emerald-500/10">
+              <div className="p-2.5 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
                 <span className="text-[9px] text-emerald-600/70 block uppercase font-bold mb-0.5">
                   Đúng (Correct):
                 </span>
@@ -66,7 +66,7 @@ export function MistakeCandidateList({
                 </span>
               </div>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-normal mt-1 border-t border-border/30 pt-2 flex items-start gap-1">
+            <p className="text-[11px] text-muted-foreground leading-normal mt-1 border-t border-border pt-3 flex items-start gap-1">
               <span className="text-primary mt-0.5">💡</span>
               <span>{mistake.explanationVi}</span>
             </p>

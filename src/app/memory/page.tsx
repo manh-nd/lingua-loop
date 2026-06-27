@@ -10,7 +10,6 @@ import {
   Trash2,
   Edit2,
   X,
-  Archive,
   Save,
   BookOpen,
   MessageSquare,
@@ -21,6 +20,8 @@ import {
   Sparkles,
   CheckCircle2,
   XCircle,
+  EyeOff,
+  RotateCcw,
 } from 'lucide-react';
 import { CoachShell } from '@/components/coach/CoachShell';
 import {
@@ -111,6 +112,7 @@ const MOCK_ITEMS: Omit<LocalMemoryItem, 'id' | 'createdAt' | 'updatedAt'>[] = [
 ];
 
 export default function MemoryPage() {
+  const showMockMemoryData = process.env.NODE_ENV !== 'production';
   const [items, setItems] = useState<LocalMemoryItem[]>([]);
   const [activeTab, setActiveTab] = useState<'active' | 'ignored'>('active');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -225,9 +227,7 @@ export default function MemoryPage() {
 
   // Calculate statistics for sidebar
   const activeCount = items.filter((item) => item.status === 'active').length;
-  const archivedCount = items.filter(
-    (item) => item.status === 'ignored'
-  ).length;
+  const ignoredCount = items.filter((item) => item.status === 'ignored').length;
 
   const categoryStats = categories.reduce<Record<string, number>>(
     (acc, cat) => {
@@ -271,14 +271,14 @@ export default function MemoryPage() {
         sidebarContent={
           <div className="flex flex-col gap-6">
             {/* Mock data creation button for testing */}
-            {items.length === 0 && (
+            {showMockMemoryData && items.length === 0 && (
               <Button
                 type="button"
                 onClick={handleGenerateMockData}
                 className="w-full text-xs font-bold py-4 bg-indigo-600 hover:bg-indigo-600/90 text-white shadow-md cursor-pointer rounded-lg border-none"
               >
                 <Sparkles className="size-3.5 mr-2 animate-pulse" />
-                Tạo dữ liệu mẫu để thử nghiệm
+                Dev: Tạo dữ liệu mẫu
               </Button>
             )}
 
@@ -298,10 +298,10 @@ export default function MemoryPage() {
                 </div>
                 <div className="p-3.5 rounded-lg bg-background/50 border border-border/40">
                   <span className="text-2xl font-bold text-muted-foreground block leading-none mb-1">
-                    {archivedCount}
+                    {ignoredCount}
                   </span>
                   <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                    Đã lưu trữ
+                    Đã bỏ qua
                   </span>
                 </div>
               </div>
@@ -409,7 +409,7 @@ export default function MemoryPage() {
                         : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    Đã lưu trữ ({archivedCount})
+                    Đã bỏ qua ({ignoredCount})
                   </button>
                 </div>
 
@@ -669,10 +669,17 @@ export default function MemoryPage() {
                                 onClick={() => handleToggleArchive(item)}
                                 className="text-[10px] h-7.5 px-2.5 font-bold border-border text-muted-foreground hover:bg-muted cursor-pointer"
                               >
-                                <Archive className="size-3 mr-1" />
-                                {item.status === 'active'
-                                  ? 'Lưu trữ'
-                                  : 'Kích hoạt'}
+                                {item.status === 'active' ? (
+                                  <>
+                                    <EyeOff className="size-3 mr-1" />
+                                    Bỏ qua
+                                  </>
+                                ) : (
+                                  <>
+                                    <RotateCcw className="size-3 mr-1" />
+                                    Khôi phục
+                                  </>
+                                )}
                               </Button>
                               <Button
                                 type="button"
@@ -700,33 +707,41 @@ export default function MemoryPage() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <h3 className="text-sm font-bold text-foreground">
-                    Sổ tay trống
+                    {activeTab === 'ignored'
+                      ? 'Không có lỗi bỏ qua'
+                      : 'Sổ tay trống'}
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {searchQuery.trim()
                       ? 'Không tìm thấy lỗi sai nào khớp với từ khóa tìm kiếm của bạn.'
-                      : selectedCategory === 'all'
-                        ? 'Bạn chưa lưu lỗi sai nào vào Sổ tay. Các lỗi sai đề xuất sẽ xuất hiện sau khi bạn dùng Message Coach hoặc Explanation Coach.'
-                        : `Không tìm thấy lỗi sai nào thuộc mục "${
-                            categories.find((c) => c.value === selectedCategory)
-                              ?.label
-                          }" đang hiển thị.`}
+                      : activeTab === 'ignored'
+                        ? 'Bạn chưa bỏ qua lỗi sai nào.'
+                        : selectedCategory === 'all'
+                          ? 'Bạn chưa lưu lỗi sai nào vào Sổ tay. Các lỗi sai đề xuất sẽ xuất hiện sau khi bạn dùng Message Coach hoặc Explanation Coach.'
+                          : `Không tìm thấy lỗi sai nào thuộc mục "${
+                              categories.find(
+                                (c) => c.value === selectedCategory
+                              )?.label
+                            }" đang hiển thị.`}
                   </p>
                 </div>
 
                 {/* Prepopulate Mock Data or Navigate buttons */}
                 {selectedCategory === 'all' && !searchQuery.trim() ? (
                   <div className="flex flex-col gap-3.5 w-full mt-2">
-                    <Button
-                      type="button"
-                      onClick={handleGenerateMockData}
-                      className="w-full text-xs font-bold py-4 bg-indigo-600 hover:bg-indigo-600/90 text-white shadow-md cursor-pointer rounded-lg border-none"
-                    >
-                      <Sparkles className="size-3.5 mr-2 animate-pulse" />
-                      Tạo dữ liệu mẫu để thử nghiệm
-                    </Button>
-
-                    <div className="h-px bg-border/40 my-1 w-full" />
+                    {showMockMemoryData && (
+                      <>
+                        <Button
+                          type="button"
+                          onClick={handleGenerateMockData}
+                          className="w-full text-xs font-bold py-4 bg-indigo-600 hover:bg-indigo-600/90 text-white shadow-md cursor-pointer rounded-lg border-none"
+                        >
+                          <Sparkles className="size-3.5 mr-2 animate-pulse" />
+                          Dev: Tạo dữ liệu mẫu
+                        </Button>
+                        <div className="h-px bg-border/40 my-1 w-full" />
+                      </>
+                    )}
 
                     <Link href="/message" className="w-full">
                       <Button className="w-full text-xs font-semibold cursor-pointer py-4 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground shadow-xs">

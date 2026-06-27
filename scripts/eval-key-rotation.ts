@@ -4,7 +4,11 @@ import { runMessageCoach } from '@/core/message/message.workflow';
 
 dotenv.config();
 
-const aiClient = createGeminiAiClient();
+const aiClient = createGeminiAiClient({
+  onKeyUsed: ({ keyId, attempt }) => {
+    console.log(`[Gemini] using ${keyId}, attempt=${attempt}`);
+  },
+});
 
 async function main() {
   const cases = Array.from({ length: 10 }, (_, index) => ({

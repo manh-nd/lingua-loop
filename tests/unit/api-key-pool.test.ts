@@ -121,4 +121,46 @@ describe('InMemoryRoundRobinApiKeyPool', () => {
     const next2 = await pool.getNextKey();
     expect(next2.keyId).toBe('gemini-key-1');
   });
+
+  it('throws an error if wait duration exceeds maxWaitMs', async () => {
+    const pool = new InMemoryRoundRobinApiKeyPool(['key1']);
+
+    const first = await pool.getNextKey();
+    pool.reportFailure(first.keyId, new Error('rate limited'), {
+      cooldownMs: 10_000,
+    });
+
+    // Requesting next key with maxWaitMs < 10s should throw
+    await expect(pool.getNextKey({ maxWaitMs: 5_000 })).rejects.toThrow(
+      'All Gemini API keys are currently rate limited'
+    );
+  });
+
+  it('resolves/waits if wait duration is less than or equal to maxWaitMs', async () => {
+    const pool = new InMemoryRoundRobinApiKeyPool(['key1']);
+
+    const first = await pool.getNextKey();
+    pool.reportFailure(first.keyId, new Error('rate limited'), {
+      cooldownMs: 10_000,
+    });
+
+    const promise = pool.getNextKey({ maxWaitMs: 15_000 });
+
+    // Advance timers by 9.9s -> k1 is still in cooldown
+    await vi.advanceTimersByTimeAsync(9_900);
+    let resolved = false;
+    promise.then(() => {
+      resolved = true;
+    });
+    await Promise.resolve();
+    expect(resolved).toBe(false);
+
+    // Advance timers by 200ms -> k1 recovers
+    await vi.advanceTimersByTimeAsync(200);
+    await Promise.resolve();
+    expect(resolved).toBe(true);
+
+    const recovered = await promise;
+    expect(recovered.keyId).toBe('gemini-key-1');
+  });
 });

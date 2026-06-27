@@ -3,15 +3,21 @@ export type ApiKeyLease = {
   apiKey: string;
 };
 
+export type GetNextKeyOptions = {
+  maxWaitMs?: number;
+};
+
+export type ReportFailureOptions = {
+  cooldownMs?: number;
+};
+
 export type ApiKeyPool = {
-  getNextKey(): Promise<ApiKeyLease>;
+  getNextKey(options?: GetNextKeyOptions): Promise<ApiKeyLease>;
   reportSuccess(keyId: string): void;
   reportFailure(
     keyId: string,
     error: unknown,
-    options?: {
-      cooldownMs?: number;
-    }
+    options?: ReportFailureOptions
   ): void;
 };
 
@@ -22,6 +28,10 @@ type ApiKeyState = {
   consecutiveFailures: number;
 };
 
+/**
+ * This in-memory pool is best-effort and process-local.
+ * It is enough for local MVP usage, but not a distributed quota manager.
+ */
 export class InMemoryRoundRobinApiKeyPool implements ApiKeyPool {
   private keys: ApiKeyState[];
   private cursor = 0;
@@ -41,7 +51,7 @@ export class InMemoryRoundRobinApiKeyPool implements ApiKeyPool {
     }));
   }
 
-  async getNextKey(): Promise<ApiKeyLease> {
+  async getNextKey(options?: GetNextKeyOptions): Promise<ApiKeyLease> {
     const now = Date.now();
 
     for (let i = 0; i < this.keys.length; i++) {
@@ -63,6 +73,10 @@ export class InMemoryRoundRobinApiKeyPool implements ApiKeyPool {
     );
 
     const waitMs = Math.max(earliest.cooldownUntil - now, 0);
+
+    if (options?.maxWaitMs !== undefined && waitMs > options.maxWaitMs) {
+      throw new Error('All Gemini API keys are currently rate limited');
+    }
 
     if (waitMs > 0) {
       await sleep(waitMs);
@@ -92,9 +106,7 @@ export class InMemoryRoundRobinApiKeyPool implements ApiKeyPool {
   reportFailure(
     keyId: string,
     _error: unknown,
-    options?: {
-      cooldownMs?: number;
-    }
+    options?: ReportFailureOptions
   ): void {
     const key = this.keys.find((item) => item.keyId === keyId);
 

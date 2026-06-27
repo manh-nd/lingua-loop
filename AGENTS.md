@@ -14,6 +14,7 @@ Lingua Loop is an English learning and writing assistant for Vietnamese professi
 
 - **Package Manager**: `pnpm`
 - **Next.js & React versions**: Next.js 16 and React 19.
+- **Default AI Model**: `gemini-3.1-flash-lite` (Free tier limits: 15 RPM, 250K TPM 500 RPD)
 
 ## Framework Constraints
 

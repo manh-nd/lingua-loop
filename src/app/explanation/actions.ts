@@ -10,6 +10,6 @@ import {
 export async function submitExplanationCoach(
   input: ExplanationCoachInput
 ): Promise<ExplanationCoachResult> {
-  const aiClient = createGeminiAiClient();
+  const aiClient = createGeminiAiClient({ maxWaitMs: 5000 });
   return await runExplanationCoach(input, { aiClient });
 }

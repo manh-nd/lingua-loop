@@ -177,4 +177,50 @@ describe('createGeminiAiClient', () => {
       expect(errorObj.stack).not.toContain('key-abc-123');
     }
   });
+
+  it('calls onKeyUsed callback on each lease/attempt', async () => {
+    // Return key1 first, then key2
+    vi.mocked(mockKeyPool.getNextKey)
+      .mockResolvedValueOnce({
+        keyId: 'gemini-key-1',
+        apiKey: 'key-abc-123',
+      })
+      .mockResolvedValueOnce({
+        keyId: 'gemini-key-2',
+        apiKey: 'key-def-456',
+      });
+
+    // First attempt fails with 429, second succeeds
+    const error429 = Object.assign(new Error('Rate limit exceeded'), {
+      status: 429,
+    });
+    mockGenerateContent
+      .mockRejectedValueOnce(error429)
+      .mockResolvedValueOnce({ text: '{"ok": true}' });
+
+    const onKeyUsedMock = vi.fn();
+
+    const client = createGeminiAiClient({
+      keyPool: mockKeyPool,
+      maxAttempts: 3,
+      onKeyUsed: onKeyUsedMock,
+    });
+
+    const response = await client.generateJson({
+      system: 'sys',
+      user: 'user',
+      schema: {},
+    });
+
+    expect(response).toEqual({ ok: true });
+    expect(onKeyUsedMock).toHaveBeenCalledTimes(2);
+    expect(onKeyUsedMock).toHaveBeenNthCalledWith(1, {
+      keyId: 'gemini-key-1',
+      attempt: 1,
+    });
+    expect(onKeyUsedMock).toHaveBeenNthCalledWith(2, {
+      keyId: 'gemini-key-2',
+      attempt: 2,
+    });
+  });
 });

@@ -155,15 +155,26 @@ class StructuredPromptBuilder {
   }
 }
 
+export type KeyUsedEvent = {
+  keyId: string;
+  attempt: number;
+};
+
+export type GeminiAiClientOptions = {
+  keyPool?: ApiKeyPool;
+  maxAttempts?: number;
+  maxWaitMs?: number;
+  onKeyUsed?: (event: KeyUsedEvent) => void;
+};
+
 /**
  * Creates the Gemini AI Client implementing the generic AiClient interface.
  * Coordinates with the ApiKeyPool to lease keys, execute content generation,
  * handle retryable failures, and redact API keys in logs/errors.
  */
-export function createGeminiAiClient(options?: {
-  keyPool?: ApiKeyPool;
-  maxAttempts?: number;
-}): AiClient {
+export function createGeminiAiClient(
+  options?: GeminiAiClientOptions
+): AiClient {
   const model = getModel();
   const keyPool = options?.keyPool ?? getGeminiApiKeyPool();
   const maxAttempts = options?.maxAttempts ?? 6;
@@ -174,7 +185,14 @@ export function createGeminiAiClient(options?: {
       let lastError: unknown;
 
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        const lease = await keyPool.getNextKey();
+        const lease = await keyPool.getNextKey({
+          maxWaitMs: options?.maxWaitMs,
+        });
+
+        options?.onKeyUsed?.({
+          keyId: lease.keyId,
+          attempt,
+        });
 
         try {
           const ai = clientCache.get(lease.apiKey);

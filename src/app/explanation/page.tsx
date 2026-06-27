@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -29,11 +29,22 @@ import {
   ArrowLeft,
   Sparkle,
   FileText,
-  Copy,
-  Check,
-  TriangleAlert,
   ArrowRight,
+  RotateCcw,
+  BookOpen,
+  FileCheck,
+  LayoutGrid,
 } from 'lucide-react';
+import { CopyButton } from '@/components/coach/CopyButton';
+import { ErrorPanel } from '@/components/coach/ErrorPanel';
+import { StarterScreen } from '@/components/coach/StarterScreen';
+import { SampleChips } from '@/components/coach/SampleChips';
+import { CollapsibleSection } from '@/components/coach/CollapsibleSection';
+import { CorrectionList } from '@/components/coach/CorrectionList';
+import { MistakeCandidateList } from '@/components/coach/MistakeCandidateList';
+import { ReusablePhraseList } from '@/components/coach/ReusablePhraseList';
+import { MessageSample, ExplanationSample } from '@/lib/samples';
+import { cn } from '@/lib/utils';
 
 type ExplanationMode = 'write_from_vietnamese' | 'improve_english_draft';
 type ExplanationTone =
@@ -73,16 +84,52 @@ export default function ExplanationPage() {
   const [context, setContext] = useState('');
   const [result, setResult] = useState<ExplanationCoachResult | null>(null);
 
-  const [copiedMain, setCopiedMain] = useState(false);
-  const [copiedShort, setCopiedShort] = useState(false);
-  const [copiedDetailed, setCopiedDetailed] = useState(false);
-
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // UX Polish additions
+  const [pulseSubmit, setPulseSubmit] = useState(false);
+  const [osBadge, setOsBadge] = useState('⌘↵');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Detect OS for keyboard shortcuts badge
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const detectOs = () => {
+        const userAgent = navigator.userAgent.toUpperCase();
+        const platform = navigator.platform.toUpperCase();
+        const isMac =
+          platform.indexOf('MAC') >= 0 || userAgent.indexOf('MAC') >= 0;
+        setOsBadge(isMac ? '⌘↵' : 'Ctrl+Enter');
+      };
+      const id = setTimeout(detectOs, 0);
+      return () => clearTimeout(id);
+    }
+  }, []);
+
+  // Keyboard shortcut (Cmd/Ctrl + Enter) inside textarea
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      if (text.trim() && !isPending) {
+        e.preventDefault();
+        triggerSubmit();
+      }
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    triggerSubmit();
+  };
+
+  const triggerSubmit = () => {
     if (!text.trim()) return;
+
+    // Clear typing animation if active
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
 
     setError(null);
     startTransition(async () => {
@@ -105,26 +152,70 @@ export default function ExplanationPage() {
     });
   };
 
-  const copyToClipboard = async (
-    content: string,
-    type: 'main' | 'short' | 'detailed'
-  ) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      if (type === 'main') {
-        setCopiedMain(true);
-        setTimeout(() => setCopiedMain(false), 2000);
-      } else if (type === 'short') {
-        setCopiedShort(true);
-        setTimeout(() => setCopiedShort(false), 2000);
-      } else if (type === 'detailed') {
-        setCopiedDetailed(true);
-        setTimeout(() => setCopiedDetailed(false), 2000);
+  // Sample prompt selection
+  const handleSelectSample = (sample: MessageSample | ExplanationSample) => {
+    const expSample = sample as ExplanationSample;
+    setMode(expSample.mode);
+    setTone(expSample.tone);
+    setPurpose(expSample.purpose);
+    if (expSample.length) {
+      setLength(expSample.length);
+    }
+
+    // Clear existing typing animation
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+
+    // Typing effect
+    let currentText = '';
+    let index = 0;
+    setText('');
+
+    typingIntervalRef.current = setInterval(() => {
+      if (index < expSample.text.length) {
+        currentText += expSample.text[index];
+        setText(currentText);
+        index++;
+      } else {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+        }
       }
-    } catch (err) {
-      console.error('Failed to copy text', err);
+    }, 10);
+
+    // Pulse submit button
+    setPulseSubmit(true);
+    setTimeout(() => setPulseSubmit(false), 2000);
+
+    // Focus input
+    if (textareaRef.current) {
+      textareaRef.current.focus();
     }
   };
+
+  // Reset form (New Draft)
+  const handleReset = () => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+    setText('');
+    setContext('');
+    setResult(null);
+    setError(null);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleModeChange = (val: string[]) => {
     if (val && val[0]) {
@@ -147,8 +238,8 @@ export default function ExplanationPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
       {/* Background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse duration-[8000ms]" />
+      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse duration-[8000ms]" />
 
       {/* Header */}
       <header className="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-border/40">
@@ -179,15 +270,30 @@ export default function ExplanationPage() {
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-8 flex flex-col md:grid md:grid-cols-12 gap-8">
         {/* Left Column: Form Controls */}
         <section className="md:col-span-5 flex flex-col gap-6">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold tracking-tight">
-              Tinh chỉnh tài liệu & Giải thích
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Tối ưu hóa các văn bản dài (PR descriptions, technical
-              specifications, Jira issues) để đạt tính rõ ràng và chuyên nghiệp
-              tối đa.
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-xl font-bold tracking-tight">
+                Tinh chỉnh tài liệu & Giải thích
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Tối ưu hóa các văn bản dài (PR descriptions, technical
+                specifications, Jira issues) để đạt tính rõ ràng và chuyên
+                nghiệp tối đa.
+              </p>
+            </div>
+            {/* New Draft / Clear button */}
+            {(text || context || result) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={handleReset}
+                className="text-[10px] shrink-0 font-bold border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                <RotateCcw className="size-3 mr-1" />
+                Làm mới
+              </Button>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -207,10 +313,16 @@ export default function ExplanationPage() {
                   variant="outline"
                   className="w-full justify-start *:flex-1"
                 >
-                  <ToggleGroupItem value="write_from_vietnamese">
+                  <ToggleGroupItem
+                    value="write_from_vietnamese"
+                    className="text-xs"
+                  >
                     Dịch từ tiếng Việt
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="improve_english_draft">
+                  <ToggleGroupItem
+                    value="improve_english_draft"
+                    className="text-xs"
+                  >
                     Sửa nháp tiếng Anh
                   </ToggleGroupItem>
                 </ToggleGroup>
@@ -230,7 +342,7 @@ export default function ExplanationPage() {
                   items={purposeItems}
                 >
                   <SelectTrigger
-                    className="w-full h-8"
+                    className="w-full h-8 text-xs bg-background dark:bg-input/30 focus-visible:ring-primary/45"
                     aria-labelledby="purpose-label"
                   >
                     <SelectValue />
@@ -262,19 +374,25 @@ export default function ExplanationPage() {
                   variant="outline"
                   className="w-full justify-start grid grid-cols-5 gap-1"
                 >
-                  <ToggleGroupItem value="friendly" className="text-[10px]">
+                  <ToggleGroupItem
+                    value="friendly"
+                    className="text-[10px] px-1"
+                  >
                     Thân thiện
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="polite" className="text-[10px]">
+                  <ToggleGroupItem value="polite" className="text-[10px] px-1">
                     Lịch sự
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="direct" className="text-[10px]">
+                  <ToggleGroupItem value="direct" className="text-[10px] px-1">
                     Trực tiếp
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="professional" className="text-[10px]">
+                  <ToggleGroupItem
+                    value="professional"
+                    className="text-[10px] px-1"
+                  >
                     Trang trọng
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="casual" className="text-[10px]">
+                  <ToggleGroupItem value="casual" className="text-[10px] px-1">
                     Thường ngày
                   </ToggleGroupItem>
                 </ToggleGroup>
@@ -295,9 +413,15 @@ export default function ExplanationPage() {
                   variant="outline"
                   className="w-full justify-start *:flex-1"
                 >
-                  <ToggleGroupItem value="short">Ngắn</ToggleGroupItem>
-                  <ToggleGroupItem value="medium">Vừa</ToggleGroupItem>
-                  <ToggleGroupItem value="detailed">Chi tiết</ToggleGroupItem>
+                  <ToggleGroupItem value="short" className="text-xs">
+                    Ngắn
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="medium" className="text-xs">
+                    Vừa
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="detailed" className="text-xs">
+                    Chi tiết
+                  </ToggleGroupItem>
                 </ToggleGroup>
               </Field>
 
@@ -315,6 +439,7 @@ export default function ExplanationPage() {
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
                   disabled={isPending}
+                  className="h-8.5 text-xs placeholder:text-muted-foreground/60"
                 />
               </Field>
 
@@ -328,6 +453,7 @@ export default function ExplanationPage() {
                 </FieldLabel>
                 <Textarea
                   id="text-input"
+                  ref={textareaRef}
                   rows={8}
                   placeholder={
                     mode === 'write_from_vietnamese'
@@ -336,20 +462,38 @@ export default function ExplanationPage() {
                   }
                   value={text}
                   onChange={(e) => setText(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   disabled={isPending}
                   required
+                  autoFocus
+                  className="text-xs p-3 focus-visible:ring-primary/40 resize-y min-h-28"
                 />
-                <FieldDescription>
-                  Viết nháp tự do lập luận của bạn để AI giúp sắp xếp và chuẩn
-                  hóa lại cấu trúc văn bản.
+                <FieldDescription className="text-[10px]">
+                  Bấm{' '}
+                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono">
+                    {osBadge}
+                  </kbd>{' '}
+                  để gửi nhanh khi đang gõ.
                 </FieldDescription>
               </Field>
             </FieldGroup>
 
+            {/* Quick chips templates */}
+            <SampleChips
+              type="explanation"
+              onSelectSample={handleSelectSample}
+              className="mt-1"
+            />
+
             <Button
               type="submit"
               disabled={isPending || !text.trim()}
-              className="w-full h-10 font-bold uppercase tracking-wider text-xs"
+              className={cn(
+                'w-full h-9 font-bold uppercase tracking-wider text-xs cursor-pointer select-none active:scale-99 transition-all duration-300',
+                pulseSubmit &&
+                  'animate-bounce border-primary shadow-sm bg-primary/95',
+                isPending && 'opacity-80 cursor-wait'
+              )}
             >
               {isPending ? (
                 <>
@@ -357,10 +501,13 @@ export default function ExplanationPage() {
                   Coach đang phân tích...
                 </>
               ) : (
-                <>
+                <span className="flex items-center gap-1.5 justify-center">
                   Gửi Coach
-                  <ArrowRight data-icon="inline-end" />
-                </>
+                  <kbd className="px-1 py-0.5 rounded bg-primary-foreground/15 text-[8.5px] font-mono select-none tracking-normal opacity-85">
+                    {osBadge.replace('↵', 'Enter')}
+                  </kbd>
+                  <ArrowRight className="size-3.5" />
+                </span>
               )}
             </Button>
           </form>
@@ -368,63 +515,56 @@ export default function ExplanationPage() {
 
         {/* Right Column: Coach Response */}
         <section className="md:col-span-7 flex flex-col gap-6">
-          {error && (
-            <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded flex gap-2 items-center">
-              <TriangleAlert className="size-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+          <ErrorPanel error={error} />
 
           {isPending ? (
             /* Loading State */
-            <div className="flex flex-col gap-4 animate-pulse">
-              <div className="h-8 bg-muted/60 rounded w-1/3" />
+            <div className="flex flex-col gap-5 animate-pulse">
+              <div className="flex items-center gap-2">
+                <span className="animate-spin size-4 border-2 border-primary border-t-transparent rounded-full" />
+                <div className="h-4 bg-muted/60 rounded w-1/4" />
+              </div>
               <Card className="border border-border bg-card">
-                <CardHeader>
-                  <div className="h-4 bg-muted/60 rounded w-1/4 mb-2" />
-                  <div className="h-20 bg-muted/40 rounded w-full" />
+                <CardHeader className="pb-3 border-b border-border/20">
+                  <div className="h-4 bg-muted/60 rounded w-1/3 mb-2" />
+                  <div className="h-20 bg-muted/30 rounded w-full" />
                 </CardHeader>
-                <CardContent className="flex flex-col gap-3">
-                  <div className="h-4 bg-muted/60 rounded w-1/3" />
-                  <div className="h-10 bg-muted/40 rounded w-full" />
-                  <div className="h-4 bg-muted/60 rounded w-1/3" />
-                  <div className="h-14 bg-muted/40 rounded w-full" />
+                <CardContent className="pt-4 flex flex-col gap-4">
+                  <div className="h-3 bg-muted/50 rounded w-1/5" />
+                  <div className="h-10 bg-muted/30 rounded w-full" />
+                  <div className="h-3 bg-muted/50 rounded w-1/4" />
+                  <div className="h-14 bg-muted/30 rounded w-full" />
                 </CardContent>
               </Card>
             </div>
           ) : result ? (
             /* Results Panel */
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-2">
-                <Sparkle className="size-4 text-primary animate-pulse" />
-                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                  Phân tích & Đề xuất cấu trúc
-                </h2>
+            <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkle className="size-4 text-primary animate-pulse" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Phân tích & Đề xuất cấu trúc
+                  </h2>
+                </div>
               </div>
 
               {/* 1. Main Improved Text */}
-              <Card className="border border-primary/20 bg-primary/[0.01]">
-                <CardHeader className="pb-2">
+              <Card className="border border-primary/20 bg-primary/[0.01] shadow-xs relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+                <CardHeader className="pb-3 pt-3.5 px-4.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary flex items-center gap-1">
+                      <FileCheck className="size-3.5" />
                       Văn bản khuyên dùng (Recommended)
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={() =>
-                        copyToClipboard(result.improvedText, 'main')
-                      }
-                      title="Sao chép văn bản"
-                    >
-                      {copiedMain ? (
-                        <Check className="size-3.5 text-emerald-500" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
-                    </Button>
+                    <CopyButton
+                      text={result.improvedText}
+                      size="icon-sm"
+                      className="bg-background border border-border/80 shadow-2xs hover:bg-muted"
+                    />
                   </div>
-                  <div className="text-xs font-mono whitespace-pre-wrap leading-relaxed mt-2 text-foreground p-4 bg-background border border-border/60 rounded-none max-h-96 overflow-y-auto select-all">
+                  <div className="text-xs font-mono whitespace-pre-wrap leading-relaxed mt-2.5 text-foreground p-4 bg-background border border-border/60 rounded-md max-h-96 overflow-y-auto select-all">
                     {result.improvedText}
                   </div>
                 </CardHeader>
@@ -433,27 +573,15 @@ export default function ExplanationPage() {
               {/* 2. Alternative Versions (Short / Detailed) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Short Version */}
-                <Card className="border border-border bg-card">
-                  <CardHeader className="py-2.5 px-3 flex flex-row items-center justify-between gap-2 border-b border-border/40">
+                <Card className="border border-border bg-card shadow-none">
+                  <CardHeader className="py-2.5 px-3 flex flex-row items-center justify-between gap-2 border-b border-border/40 bg-muted/10">
                     <span className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground">
                       Bản rút gọn (Short version)
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={() =>
-                        copyToClipboard(result.shortVersion, 'short')
-                      }
-                    >
-                      {copiedShort ? (
-                        <Check className="size-3 text-emerald-500" />
-                      ) : (
-                        <Copy className="size-3" />
-                      )}
-                    </Button>
+                    <CopyButton text={result.shortVersion} size="icon-xs" />
                   </CardHeader>
                   <CardContent className="py-3 px-3">
-                    <div className="text-xs font-mono whitespace-pre-wrap p-2 bg-muted/20 border border-border/20 max-h-40 overflow-y-auto select-all">
+                    <div className="text-xs font-mono whitespace-pre-wrap p-2.5 bg-muted/30 border border-border/20 max-h-40 overflow-y-auto select-all rounded-sm leading-normal">
                       {result.shortVersion}
                     </div>
                   </CardContent>
@@ -461,27 +589,18 @@ export default function ExplanationPage() {
 
                 {/* Detailed Version */}
                 {result.detailedVersion && (
-                  <Card className="border border-border bg-card">
-                    <CardHeader className="py-2.5 px-3 flex flex-row items-center justify-between gap-2 border-b border-border/40">
+                  <Card className="border border-border bg-card shadow-none">
+                    <CardHeader className="py-2.5 px-3 flex flex-row items-center justify-between gap-2 border-b border-border/40 bg-muted/10">
                       <span className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground">
                         Bản chi tiết (Detailed version)
                       </span>
-                      <Button
-                        variant="ghost"
+                      <CopyButton
+                        text={result.detailedVersion}
                         size="icon-xs"
-                        onClick={() =>
-                          copyToClipboard(result.detailedVersion!, 'detailed')
-                        }
-                      >
-                        {copiedDetailed ? (
-                          <Check className="size-3 text-emerald-500" />
-                        ) : (
-                          <Copy className="size-3" />
-                        )}
-                      </Button>
+                      />
                     </CardHeader>
                     <CardContent className="py-3 px-3">
-                      <div className="text-xs font-mono whitespace-pre-wrap p-2 bg-muted/20 border border-border/20 max-h-40 overflow-y-auto select-all">
+                      <div className="text-xs font-mono whitespace-pre-wrap p-2.5 bg-muted/30 border border-border/20 max-h-40 overflow-y-auto select-all rounded-sm leading-normal">
                         {result.detailedVersion}
                       </div>
                     </CardContent>
@@ -489,176 +608,91 @@ export default function ExplanationPage() {
                 )}
               </div>
 
-              {/* 3. Structure Feedback */}
-              {result.structureFeedback &&
-                result.structureFeedback.length > 0 && (
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Góp ý cấu trúc tài liệu (Structure feedback)
-                    </h3>
-                    <div className="grid grid-cols-1 gap-2.5">
-                      {result.structureFeedback.map((fb, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 bg-muted/30 border border-border/80 rounded flex flex-col gap-1.5 text-xs"
-                        >
-                          <div className="flex gap-1.5 items-start">
-                            <span className="text-red-500 font-bold shrink-0">
-                              ⚠
-                            </span>
-                            <p className="text-foreground/90 font-medium">
-                              {fb.issueVi}
-                            </p>
-                          </div>
-                          <div className="flex gap-1.5 items-start pl-4 border-l border-border">
-                            <span className="text-emerald-500 font-bold shrink-0">
-                              💡
-                            </span>
-                            <p className="text-muted-foreground">
-                              {fb.suggestionVi}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              {/* 4. Corrections */}
-              {result.corrections && result.corrections.length > 0 && (
-                <div className="flex flex-col gap-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Lỗi sai & Cách diễn đạt tốt hơn (Corrections)
+              {/* 3. Learning Notes (Collapsible accordions) */}
+              <div className="flex flex-col gap-3.5 border-t border-border/30 pt-5">
+                <div className="flex items-center gap-1.5">
+                  <BookOpen className="size-4 text-primary" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/80">
+                    Chi tiết học tập (Learning Notes)
                   </h3>
-                  <div className="border border-border/80 rounded bg-card overflow-hidden">
-                    <div className="grid grid-cols-1 divide-y divide-border/60">
-                      {result.corrections.map((corr, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 text-xs flex flex-col gap-2"
-                        >
-                          <div className="flex flex-wrap gap-2 items-center">
-                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">
-                              {corr.category}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-[11px]">
-                            <div className="p-2 bg-red-500/5 border border-red-500/10 rounded text-red-600 line-through">
-                              {corr.original}
-                            </div>
-                            <div className="p-2 bg-emerald-500/5 border border-emerald-500/10 rounded text-emerald-600 font-semibold">
-                              {corr.improved}
-                            </div>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">
-                            👉 {corr.reasonVi}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
-              )}
 
-              {/* 5. Reusable Phrases */}
-              {result.reusablePhrases && result.reusablePhrases.length > 0 && (
-                <div className="flex flex-col gap-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Cấu trúc hữu ích khuyên dùng (Reusable phrases)
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {result.reusablePhrases.map((item, idx) => (
-                      <Card
-                        key={idx}
-                        className="border border-border/80 bg-card"
+                <div className="flex flex-col gap-2.5">
+                  {/* Structure Feedback */}
+                  {result.structureFeedback &&
+                    result.structureFeedback.length > 0 && (
+                      <CollapsibleSection
+                        title={`Góp ý cấu trúc tài liệu (${result.structureFeedback.length})`}
+                        icon={<LayoutGrid className="size-3.5 text-primary" />}
                       >
-                        <CardContent className="p-3 flex flex-col gap-1.5 text-xs">
-                          <span className="font-mono font-bold text-primary select-all">
-                            {item.phrase}
-                          </span>
-                          <span className="text-[10px] text-foreground/80">
-                            🇻🇳 Nghĩa: {item.meaningVi}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground leading-relaxed">
-                            💼 Ngữ cảnh: {item.situationVi}
-                          </span>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
+                        <div className="grid grid-cols-1 gap-3">
+                          {result.structureFeedback.map((fb, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3 bg-muted/30 border border-border/60 rounded-md flex flex-col gap-2 text-xs"
+                            >
+                              <div className="flex gap-2 items-start">
+                                <span className="text-red-500 font-bold shrink-0 mt-0.5">
+                                  ⚠
+                                </span>
+                                <p className="text-foreground/90 font-medium leading-relaxed">
+                                  {fb.issueVi}
+                                </p>
+                              </div>
+                              <div className="flex gap-2 items-start pl-4 border-l-2 border-border/80">
+                                <span className="text-emerald-500 font-bold shrink-0 mt-0.5">
+                                  💡
+                                </span>
+                                <p className="text-muted-foreground leading-relaxed">
+                                  {fb.suggestionVi}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CollapsibleSection>
+                    )}
 
-              {/* 6. Mistake Candidates */}
-              {result.mistakeCandidates &&
-                result.mistakeCandidates.length > 0 && (
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Đề xuất lưu học tập (Mistake Candidates)
-                    </h3>
-                    <div className="grid grid-cols-1 gap-3">
-                      {result.mistakeCandidates.map((mistake, idx) => (
-                        <Card
-                          key={idx}
-                          className="border border-border/60 bg-muted/5"
-                        >
-                          <CardHeader className="py-2.5 px-3 flex flex-row items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <code className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded border border-border">
-                                {mistake.patternKey}
-                              </code>
-                              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-muted/80 text-muted-foreground border border-border font-medium">
-                                {mistake.category}
-                              </span>
-                            </div>
-                            {mistake.shouldSave && (
-                              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-bold">
-                                Khuyên học
-                              </span>
-                            )}
-                          </CardHeader>
-                          <CardContent className="py-2 px-3 flex flex-col gap-1.5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono">
-                              <div>
-                                <span className="text-[9px] text-muted-foreground block uppercase">
-                                  Sai:
-                                </span>
-                                <span className="text-red-500">
-                                  {mistake.wrongText}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-[9px] text-muted-foreground block uppercase">
-                                  Đúng:
-                                </span>
-                                <span className="text-emerald-500 font-semibold">
-                                  {mistake.correctText}
-                                </span>
-                              </div>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground leading-normal mt-1 border-t border-border/30 pt-1.5">
-                              {mistake.explanationVi}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {/* Corrections */}
+                  {result.corrections && result.corrections.length > 0 && (
+                    <CollapsibleSection
+                      title={`Lỗi sai & Cách diễn đạt tốt hơn (${result.corrections.length})`}
+                    >
+                      <CorrectionList corrections={result.corrections} />
+                    </CollapsibleSection>
+                  )}
+
+                  {/* Reusable Phrases */}
+                  {result.reusablePhrases &&
+                    result.reusablePhrases.length > 0 && (
+                      <CollapsibleSection
+                        title={`Cấu trúc hữu ích khuyên dùng (${result.reusablePhrases.length})`}
+                      >
+                        <ReusablePhraseList phrases={result.reusablePhrases} />
+                      </CollapsibleSection>
+                    )}
+
+                  {/* Mistake Candidates */}
+                  {result.mistakeCandidates &&
+                    result.mistakeCandidates.length > 0 && (
+                      <CollapsibleSection
+                        title={`Đề xuất lưu học tập (${result.mistakeCandidates.length})`}
+                      >
+                        <MistakeCandidateList
+                          candidates={result.mistakeCandidates}
+                        />
+                      </CollapsibleSection>
+                    )}
+                </div>
+              </div>
             </div>
           ) : (
-            /* Empty State */
-            <div className="flex flex-col items-center justify-center py-24 border border-dashed border-border/80 rounded bg-muted/5 text-center px-6">
-              <FileText className="size-10 text-muted-foreground/60 mb-3" />
-              <h3 className="text-sm font-bold mb-1">
-                Chưa có nội dung tối ưu
-              </h3>
-              <p className="text-xs text-muted-foreground max-w-sm">
-                Hãy nhập nội dung ý kiến hoặc tài liệu viết thô ở cột bên trái
-                và nhấn nút &quot;Gửi Coach&quot; để bắt đầu nhận phân tích
-                chuyên sâu.
-              </p>
-            </div>
+            /* Empty State / Starter Screen */
+            <StarterScreen
+              type="explanation"
+              onSelectSample={handleSelectSample}
+              className="py-8"
+            />
           )}
         </section>
       </main>

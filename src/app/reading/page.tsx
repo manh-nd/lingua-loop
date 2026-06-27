@@ -17,8 +17,6 @@ import {
   Sparkle,
   BookOpen,
   ArrowRight,
-  CheckCircle,
-  FileCheck,
   Languages,
   BadgeAlert,
   AlertTriangle,
@@ -33,6 +31,7 @@ import { CollapsibleSection } from '@/components/coach/CollapsibleSection';
 import { ReusablePhraseList } from '@/components/coach/ReusablePhraseList';
 import { CoachShell } from '@/components/coach/CoachShell';
 import { LoadingPanel } from '@/components/coach/LoadingPanel';
+import { MessageSample, ExplanationSample, ReadingSample } from '@/lib/samples';
 import { cn } from '@/lib/utils';
 
 export default function ReadingPage() {
@@ -102,12 +101,17 @@ export default function ReadingPage() {
     });
   };
 
-  const handleSelectSample = (sample: any) => {
+  const handleSelectSample = (
+    sample: MessageSample | ExplanationSample | ReadingSample
+  ) => {
     if (typingIntervalRef.current) {
       clearInterval(typingIntervalRef.current);
     }
 
-    setContext(sample.context || '');
+    setResult(null);
+    setError(null);
+    const readingSample = sample as ReadingSample;
+    setContext(readingSample.context || '');
 
     // Typing effect
     let currentText = '';
@@ -163,6 +167,7 @@ export default function ReadingPage() {
       sidebarDescription="Dán tin nhắn Slack/Teams, email, comment PR hoặc Jira để xem giải nghĩa, sắc thái và gợi ý phản hồi tự nhiên."
       showReset={!!(text || context || result)}
       onReset={handleReset}
+      badge="MVP v1"
       sidebarContent={
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <FieldGroup>
@@ -391,7 +396,7 @@ export default function ReadingPage() {
                   {/* Source Issues */}
                   {result.sourceIssues && result.sourceIssues.length > 0 && (
                     <CollapsibleSection
-                      title="Lỗi sai & Điễn đạt của nguồn (Source Issues)"
+                      title="Lỗi sai & Diễn đạt của nguồn (Source Issues)"
                       defaultOpen={true}
                     >
                       <div className="grid grid-cols-1 gap-3">

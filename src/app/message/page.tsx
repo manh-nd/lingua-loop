@@ -34,7 +34,7 @@ import { CorrectionList } from '@/components/coach/CorrectionList';
 import { MistakeCandidateList } from '@/components/coach/MistakeCandidateList';
 import { CoachShell } from '@/components/coach/CoachShell';
 import { LoadingPanel } from '@/components/coach/LoadingPanel';
-import { MessageSample, ExplanationSample } from '@/lib/samples';
+import { MessageSample, ExplanationSample, ReadingSample } from '@/lib/samples';
 import { cn } from '@/lib/utils';
 
 type MessageMode = 'write_from_vietnamese' | 'improve_english_draft';
@@ -114,9 +114,14 @@ export default function MessagePage() {
   };
 
   // Sample prompt selection
-  const handleSelectSample = (sample: any) => {
-    setMode(sample.mode);
-    setTone(sample.tone);
+  const handleSelectSample = (
+    sample: MessageSample | ExplanationSample | ReadingSample
+  ) => {
+    setResult(null);
+    setError(null);
+    const msgSample = sample as MessageSample;
+    setMode(msgSample.mode);
+    setTone(msgSample.tone);
 
     // Clear existing typing animation
     if (typingIntervalRef.current) {

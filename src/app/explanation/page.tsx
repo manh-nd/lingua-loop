@@ -42,7 +42,7 @@ import { MistakeCandidateList } from '@/components/coach/MistakeCandidateList';
 import { ReusablePhraseList } from '@/components/coach/ReusablePhraseList';
 import { CoachShell } from '@/components/coach/CoachShell';
 import { LoadingPanel } from '@/components/coach/LoadingPanel';
-import { MessageSample, ExplanationSample } from '@/lib/samples';
+import { MessageSample, ExplanationSample, ReadingSample } from '@/lib/samples';
 import { cn } from '@/lib/utils';
 
 type ExplanationMode = 'write_from_vietnamese' | 'improve_english_draft';
@@ -152,7 +152,11 @@ export default function ExplanationPage() {
   };
 
   // Sample prompt selection
-  const handleSelectSample = (sample: any) => {
+  const handleSelectSample = (
+    sample: MessageSample | ExplanationSample | ReadingSample
+  ) => {
+    setResult(null);
+    setError(null);
     const expSample = sample as ExplanationSample;
     setMode(expSample.mode);
     setTone(expSample.tone);

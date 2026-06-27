@@ -16,6 +16,7 @@ interface CoachShellProps {
   onReset: () => void;
   sidebarContent: ReactNode;
   mainContent: ReactNode;
+  badge?: string;
 }
 
 export function CoachShell({
@@ -27,6 +28,7 @@ export function CoachShell({
   onReset,
   sidebarContent,
   mainContent,
+  badge = 'MVP v0',
 }: CoachShellProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
@@ -64,7 +66,7 @@ export function CoachShell({
         </div>
         <div className="flex items-center gap-4">
           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold">
-            MVP v0
+            {badge}
           </div>
           <ThemeToggle />
         </div>

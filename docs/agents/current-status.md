@@ -1,4 +1,4 @@
-Current phase: Memory v0 stabilization + Review v0 preparation.
+Current phase: Review v0 stabilization.
 
 Implemented:
 
@@ -15,12 +15,11 @@ Implemented:
 - `/memory` page for personal mistake catalog management
 - Local Memory live search, category filtering, inline editing, and deletion
 - Unit test suite for local memory storage operations
+- Local-only Review v0 page (`/review`) with text normalization and card practice flow
 
 Current focus:
 
-- Stabilize Memory v0 behavior
-- Validate local Memory interactions (ignore, save, restore)
-- Prepare Review v0 flow
+- Validate Review v0 and improve feedback quality.
 
 Non-goals:
 

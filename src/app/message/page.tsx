@@ -32,6 +32,7 @@ import { SampleChips } from '@/components/coach/SampleChips';
 import { CollapsibleSection } from '@/components/coach/CollapsibleSection';
 import { CorrectionList } from '@/components/coach/CorrectionList';
 import { MistakeCandidateList } from '@/components/coach/MistakeCandidateList';
+import { ReusablePhraseList } from '@/components/coach/ReusablePhraseList';
 import { CoachShell } from '@/components/coach/CoachShell';
 import { LoadingPanel } from '@/components/coach/LoadingPanel';
 import { MessageSample, ExplanationSample, ReadingSample } from '@/lib/samples';
@@ -192,7 +193,7 @@ export default function MessagePage() {
 
   return (
     <CoachShell
-      headerTitle="MESSAGE COACH"
+      headerTitle="EMAIL & MESSAGE COACH"
       headerIcon={<MessageSquare className="size-4 text-primary" />}
       sidebarTitle="Viết tin nhắn thông minh"
       sidebarDescription="Nhập ý định tiếng Việt hoặc bản nháp tiếng Anh để nhận đề xuất tự nhiên nhất cho công sở."
@@ -220,13 +221,13 @@ export default function MessagePage() {
                   value="write_from_vietnamese"
                   className="text-xs"
                 >
-                  Dịch từ tiếng Việt
+                  Viết từ ý định
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="improve_english_draft"
                   className="text-xs"
                 >
-                  Sửa nháp tiếng Anh
+                  Sửa bản nháp tiếng Anh
                 </ToggleGroupItem>
               </ToggleGroup>
             </Field>
@@ -293,7 +294,9 @@ export default function MessagePage() {
                 htmlFor="text-input"
                 className="font-bold text-xs uppercase tracking-wider"
               >
-                Nội dung nhập
+                {mode === 'write_from_vietnamese'
+                  ? 'Ý định tiếng Việt'
+                  : 'Bản nháp tiếng Anh'}
               </FieldLabel>
               <Textarea
                 id="text-input"
@@ -348,7 +351,7 @@ export default function MessagePage() {
               </>
             ) : (
               <span className="flex items-center gap-1.5 justify-center">
-                Gửi Coach
+                Viết lại & học từ lỗi
                 <kbd className="px-1 py-0.5 rounded bg-primary-foreground/15 text-[8.5px] font-mono select-none tracking-normal opacity-85">
                   {osBadge.replace('↵', 'Enter')}
                 </kbd>
@@ -466,11 +469,26 @@ export default function MessagePage() {
                     </CollapsibleSection>
                   )}
 
+                  {/* Reusable Phrases */}
+                  {result.reusablePhrases &&
+                    result.reusablePhrases.length > 0 && (
+                      <CollapsibleSection
+                        title={`Mẫu cấu trúc câu khuyên dùng (${result.reusablePhrases.length})`}
+                        defaultOpen={true}
+                      >
+                        <ReusablePhraseList
+                          phrases={result.reusablePhrases}
+                          sourceWorkflow="message"
+                        />
+                      </CollapsibleSection>
+                    )}
+
                   {/* Mistake Candidates */}
                   {result.mistakeCandidates &&
                     result.mistakeCandidates.length > 0 && (
                       <CollapsibleSection
                         title={`Đề xuất học theo vòng lặp (Không quên lỗi cũ) (${result.mistakeCandidates.length})`}
+                        defaultOpen={true}
                       >
                         <MistakeCandidateList
                           candidates={result.mistakeCandidates}

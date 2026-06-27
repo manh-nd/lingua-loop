@@ -70,6 +70,7 @@ function MistakeCandidateCard({
   sourceWorkflow,
 }: MistakeCandidateCardProps) {
   const [isSaved, setIsSaved] = useState(false);
+  const [savedItemId, setSavedItemId] = useState<string | null>(null);
   const [isIgnored, setIsIgnored] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -99,10 +100,11 @@ function MistakeCandidateCard({
 
       if (activeMatch) {
         setIsSaved(true);
+        setSavedItemId(activeMatch.id);
         // update text values to match the saved edited state
-        setWrongText(activeMatch.wrongText);
-        setCorrectText(activeMatch.correctText);
-        setExplanationVi(activeMatch.explanationVi);
+        setWrongText(activeMatch.wrongText || '');
+        setCorrectText(activeMatch.correctText || '');
+        setExplanationVi(activeMatch.explanationVi || '');
       } else if (ignoredMatch) {
         setIsIgnored(true);
       }
@@ -112,7 +114,7 @@ function MistakeCandidateCard({
   }, [candidate]);
 
   const handleSave = () => {
-    addLocalMemoryItem({
+    const saved = addLocalMemoryItem({
       sourceWorkflow,
       patternKey: candidate.patternKey,
       wrongText,
@@ -123,6 +125,7 @@ function MistakeCandidateCard({
       source: candidate.source ?? 'observed',
       status: 'active',
     });
+    setSavedItemId(saved.id);
     setIsSaved(true);
     setIsEditing(false);
   };
@@ -144,7 +147,7 @@ function MistakeCandidateCard({
   };
 
   const handleUndoIgnore = () => {
-    addLocalMemoryItem({
+    const saved = addLocalMemoryItem({
       sourceWorkflow,
       patternKey: candidate.patternKey,
       wrongText,
@@ -155,6 +158,7 @@ function MistakeCandidateCard({
       source: candidate.source ?? 'observed',
       status: 'active',
     });
+    setSavedItemId(saved.id);
     setIsSaved(true);
     setIsIgnored(false);
   };
@@ -344,13 +348,22 @@ function MistakeCandidateCard({
               </span>
 
               {isSaved ? (
-                <Link
-                  href="/memory"
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-600/80 transition-colors py-1 px-2 rounded-md hover:bg-emerald-500/[0.05]"
-                >
-                  Xem trong Sổ tay
-                  <ExternalLink className="size-3" />
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    href="/memory"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-600/80 transition-colors py-1 px-2 rounded-md hover:bg-emerald-500/[0.05]"
+                  >
+                    Xem trong Sổ tay
+                    <ExternalLink className="size-3" />
+                  </Link>
+                  <Link
+                    href={`/review?id=${savedItemId}`}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold bg-primary hover:bg-primary/95 text-primary-foreground py-1 px-2.5 rounded shadow-xs"
+                  >
+                    <Brain className="size-3 mr-0.5" />
+                    Luyện ngay
+                  </Link>
+                </div>
               ) : (
                 <div className="flex gap-2">
                   <Button

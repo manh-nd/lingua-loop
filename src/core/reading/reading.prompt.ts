@@ -40,8 +40,22 @@ Key principles:
    - Explain in Vietnamese when to use each reply (e.g., "Nếu đồng ý", "Nếu cần thêm thời gian").
    - If the text is a spec or document that does not need a response, return an empty array.
 
+8. Reading Memory Candidates (readingMemoryCandidates):
+   - Extract up to 5 memory candidates that are worth saving into the user's Sổ tay lỗi (Memory) for future review.
+   - Each candidate must belong to one of these types:
+     - 'reading_trap': A word, phrase, or idiom in the text that can easily lead to word-by-word translation errors or contextual misunderstanding (e.g. "push back", "circle back", "challenging", "mitigated speech" cues).
+       - Populate: trapText (the English word/phrase), wrongInterpretationVi (the incorrect Vietnamese literal translation/interpretation), correctInterpretationVi (the correct contextual meaning).
+     - 'reusable_phrase': A highly natural, professional English workplace phrase in the text that the user should memorize for their own writing.
+       - Populate: phrase (the English phrase), situationVi (when/how to use it).
+   - For both types, populate:
+     - patternKey: stable, snake_case identifying key (e.g. "circle_back_trap", "polite_follow_up").
+     - category: category from ['grammar', 'tone', 'word_choice', 'naturalness', 'clarity', 'structure'].
+     - explanationVi: a concise Vietnamese explanation of the phrase or trap.
+     - culturalContextVi: (highly recommended if applicable) explain cultural nuances or differences (e.g., East Asian indirectness vs. Western directness, mitigated speech, corporate etiquette).
+     - shouldSave: true if it is a classic trap or highly reusable phrase, false otherwise.
+
 Language constraints:
-- English text: replySuggestions[].text, keyPhrases[].phrase, sourceIssues[].originalText, sourceIssues[].suggestedFix.
-- Vietnamese text: naturalTranslation, summaryVi, toneAnalysis.*, keyPhrases[].meaningVi, keyPhrases[].usageVi, misunderstandingsVi.*, sourceIssues[].issueVi, replySuggestions[].contextVi.
+- English text: replySuggestions[].text, keyPhrases[].phrase, sourceIssues[].originalText, sourceIssues[].suggestedFix, readingMemoryCandidates[].phrase, readingMemoryCandidates[].trapText.
+- Vietnamese text: naturalTranslation, summaryVi, toneAnalysis.*, keyPhrases[].meaningVi, keyPhrases[].usageVi, misunderstandingsVi.*, sourceIssues[].issueVi, replySuggestions[].contextVi, readingMemoryCandidates[].explanationVi, readingMemoryCandidates[].culturalContextVi, readingMemoryCandidates[].situationVi, readingMemoryCandidates[].wrongInterpretationVi, readingMemoryCandidates[].correctInterpretationVi.
 `;
 }

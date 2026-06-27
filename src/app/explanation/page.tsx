@@ -240,7 +240,7 @@ export default function ExplanationPage() {
 
   return (
     <CoachShell
-      headerTitle="EXPLANATION COACH"
+      headerTitle="DOCUMENT COACH"
       headerIcon={<FileText className="size-4 text-primary" />}
       sidebarTitle="Tinh chỉnh tài liệu & Giải thích"
       sidebarDescription="Tối ưu hóa các văn bản dài (PR descriptions, technical specifications, Jira issues) để đạt tính rõ ràng và chuyên nghiệp tối đa."
@@ -268,13 +268,13 @@ export default function ExplanationPage() {
                   value="write_from_vietnamese"
                   className="text-xs"
                 >
-                  Dịch từ tiếng Việt
+                  Viết từ ý định
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="improve_english_draft"
                   className="text-xs"
                 >
-                  Sửa nháp tiếng Anh
+                  Sửa bản nháp tiếng Anh
                 </ToggleGroupItem>
               </ToggleGroup>
             </Field>
@@ -399,7 +399,9 @@ export default function ExplanationPage() {
                 htmlFor="text-input"
                 className="font-bold text-xs uppercase tracking-wider"
               >
-                Nội dung chi tiết
+                {mode === 'write_from_vietnamese'
+                  ? 'Ý định tiếng Việt'
+                  : 'Bản nháp tiếng Anh'}
               </FieldLabel>
               <Textarea
                 id="text-input"
@@ -454,7 +456,7 @@ export default function ExplanationPage() {
               </>
             ) : (
               <span className="flex items-center gap-1.5 justify-center">
-                Gửi Coach
+                Viết lại & học từ lỗi
                 <kbd className="px-1 py-0.5 rounded bg-primary-foreground/15 text-[8.5px] font-mono select-none tracking-normal opacity-85">
                   {osBadge.replace('↵', 'Enter')}
                 </kbd>
@@ -597,8 +599,12 @@ export default function ExplanationPage() {
                     result.reusablePhrases.length > 0 && (
                       <CollapsibleSection
                         title={`Cấu trúc hữu ích khuyên dùng (${result.reusablePhrases.length})`}
+                        defaultOpen={true}
                       >
-                        <ReusablePhraseList phrases={result.reusablePhrases} />
+                        <ReusablePhraseList
+                          phrases={result.reusablePhrases}
+                          sourceWorkflow="explanation"
+                        />
                       </CollapsibleSection>
                     )}
 
@@ -607,6 +613,7 @@ export default function ExplanationPage() {
                     result.mistakeCandidates.length > 0 && (
                       <CollapsibleSection
                         title={`Đề xuất học theo vòng lặp (Không quên lỗi cũ) (${result.mistakeCandidates.length})`}
+                        defaultOpen={true}
                       >
                         <MistakeCandidateList
                           candidates={result.mistakeCandidates}

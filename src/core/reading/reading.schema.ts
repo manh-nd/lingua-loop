@@ -110,6 +110,38 @@ export const ReadingCoachResultSchema = z.object({
     .max(3)
     .optional()
     .describe('Gợi ý phản hồi bằng tiếng Anh (nếu cần thiết).'),
+
+  readingMemoryCandidates: z
+    .array(
+      z.object({
+        patternKey: z
+          .string()
+          .trim()
+          .regex(
+            /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
+            'patternKey must be lowercase_snake_case'
+          ),
+        memoryType: z.enum(['reading_trap', 'reusable_phrase']),
+        category: z.string().trim().default('naturalness'),
+        explanationVi: z.string().trim().min(1),
+        culturalContextVi: z.string().trim().optional(),
+        shouldSave: z.boolean().default(false),
+
+        // For reusable_phrase
+        phrase: z.string().trim().optional(),
+        situationVi: z.string().trim().optional(),
+
+        // For reading_trap
+        trapText: z.string().trim().optional(),
+        wrongInterpretationVi: z.string().trim().optional(),
+        correctInterpretationVi: z.string().trim().optional(),
+      })
+    )
+    .max(5)
+    .default([])
+    .describe(
+      'Các đề xuất lưu bẫy đọc hiểu hoặc cụm từ hay từ bài đọc vào Sổ tay.'
+    ),
 });
 
 export type ReadingCoachResult = z.infer<typeof ReadingCoachResultSchema>;

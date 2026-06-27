@@ -1,17 +1,4 @@
-export type LocalMemoryItem = {
-  id: string;
-  sourceWorkflow: 'message' | 'explanation';
-  patternKey: string;
-  wrongText: string;
-  correctText: string;
-  explanationVi: string;
-  category: string;
-  confidence: number;
-  source: 'observed' | 'inferred';
-  status: 'active' | 'ignored';
-  createdAt: string;
-  updatedAt: string;
-};
+import { LocalMemoryItem, MemoryType } from '@/core/memory/memory.schema';
 
 const STORAGE_KEY = 'lingua-loop-memory';
 
@@ -36,17 +23,65 @@ export function saveLocalMemoryItems(items: LocalMemoryItem[]): void {
 }
 
 export function addLocalMemoryItem(
-  item: Omit<LocalMemoryItem, 'id' | 'createdAt' | 'updatedAt'>
+  item: Omit<
+    LocalMemoryItem,
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'memoryType'
+    | 'reviewCount'
+    | 'correctStreak'
+    | 'wrongStreak'
+    | 'lastReviewedAt'
+    | 'nextReviewAt'
+    | 'intervalDays'
+    | 'easeFactor'
+  > &
+    Partial<
+      Pick<
+        LocalMemoryItem,
+        | 'memoryType'
+        | 'reviewCount'
+        | 'correctStreak'
+        | 'wrongStreak'
+        | 'lastReviewedAt'
+        | 'nextReviewAt'
+        | 'intervalDays'
+        | 'easeFactor'
+        | 'status'
+        | 'culturalContextVi'
+        | 'wrongText'
+        | 'correctText'
+        | 'phrase'
+        | 'situationVi'
+        | 'trapText'
+        | 'wrongInterpretationVi'
+        | 'correctInterpretationVi'
+      >
+    >
 ): LocalMemoryItem {
   const items = getLocalMemoryItems();
 
-  // Avoid saving duplicate patternKey + wrongText + correctText items
-  const existingIndex = items.findIndex(
-    (i) =>
-      i.patternKey === item.patternKey &&
-      i.wrongText === item.wrongText &&
-      i.correctText === item.correctText
-  );
+  const memoryType = item.memoryType ?? 'writing_mistake';
+
+  // Avoid saving duplicate items depending on the memoryType
+  const existingIndex = items.findIndex((i) => {
+    if (i.patternKey !== item.patternKey || i.memoryType !== memoryType) {
+      return false;
+    }
+    if (memoryType === 'writing_mistake') {
+      return (
+        i.wrongText === item.wrongText && i.correctText === item.correctText
+      );
+    }
+    if (memoryType === 'reusable_phrase') {
+      return i.phrase === item.phrase;
+    }
+    if (memoryType === 'reading_trap') {
+      return i.trapText === item.trapText;
+    }
+    return false;
+  });
 
   const now = new Date().toISOString();
 
@@ -55,7 +90,8 @@ export function addLocalMemoryItem(
     const updated: LocalMemoryItem = {
       ...existing,
       ...item,
-      status: item.status,
+      memoryType,
+      status: item.status ?? existing.status ?? 'active',
       updatedAt: now,
     };
     items[existingIndex] = updated;
@@ -64,10 +100,21 @@ export function addLocalMemoryItem(
   } else {
     const newItem: LocalMemoryItem = {
       ...item,
+      memoryType,
       id: Math.random().toString(36).substring(2, 11),
+      status: item.status ?? 'active',
       createdAt: now,
       updatedAt: now,
-    };
+      // SRS Defaults
+      reviewCount: item.reviewCount ?? 0,
+      correctStreak: item.correctStreak ?? 0,
+      wrongStreak: item.wrongStreak ?? 0,
+      lastReviewedAt: item.lastReviewedAt,
+      nextReviewAt: item.nextReviewAt ?? now,
+      intervalDays: item.intervalDays ?? 0,
+      easeFactor: item.easeFactor ?? 2.5,
+    } as LocalMemoryItem;
+
     items.push(newItem);
     saveLocalMemoryItems(items);
     return newItem;
@@ -97,3 +144,4 @@ export function deleteLocalMemoryItem(id: string): void {
   const filtered = items.filter((i) => i.id !== id);
   saveLocalMemoryItems(filtered);
 }
+export type { LocalMemoryItem };

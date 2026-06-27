@@ -22,6 +22,8 @@ import {
   XCircle,
   EyeOff,
   RotateCcw,
+  Play,
+  Globe,
 } from 'lucide-react';
 import { CoachShell } from '@/components/coach/CoachShell';
 import {
@@ -58,6 +60,7 @@ const categories = [
 
 const MOCK_ITEMS: Omit<LocalMemoryItem, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {
+    memoryType: 'writing_mistake',
     sourceWorkflow: 'message',
     patternKey: 'checked_my_pr',
     wrongText: 'Please check my PR.',
@@ -65,12 +68,21 @@ const MOCK_ITEMS: Omit<LocalMemoryItem, 'id' | 'createdAt' | 'updatedAt'>[] = [
       'Could you please take a look at this PR when you have a moment?',
     explanationVi:
       'Thay vì dùng từ quá bình dân như "check my PR", sử dụng "take a look at this PR" giúp lời nói tự nhiên và lịch sự hơn trong môi trường công sở.',
+    culturalContextVi:
+      'Trong văn hóa làm việc phương Tây, việc ra lệnh trực tiếp bằng "Please + verb" đôi khi nghe giống như mệnh lệnh của cấp trên. Dùng câu hỏi "Could you..." tạo sắc thái thảo luận bình đẳng và tôn trọng thời gian của đồng nghiệp.',
     category: 'tone',
     confidence: 0.95,
     source: 'observed',
     status: 'active',
+    reviewCount: 2,
+    correctStreak: 2,
+    wrongStreak: 0,
+    intervalDays: 4,
+    easeFactor: 2.6,
+    nextReviewAt: '2026-06-27T12:00:00.000Z',
   },
   {
+    memoryType: 'writing_mistake',
     sourceWorkflow: 'message',
     patternKey: 'late_report',
     wrongText: 'I send report late because of bugs.',
@@ -82,32 +94,56 @@ const MOCK_ITEMS: Omit<LocalMemoryItem, 'id' | 'createdAt' | 'updatedAt'>[] = [
     confidence: 0.9,
     source: 'observed',
     status: 'active',
+    reviewCount: 0,
+    correctStreak: 0,
+    wrongStreak: 0,
+    intervalDays: 0,
+    easeFactor: 2.5,
+    nextReviewAt: '2026-06-27T12:00:00.000Z',
   },
   {
+    memoryType: 'reusable_phrase',
     sourceWorkflow: 'explanation',
     patternKey: 'checkout_timeout',
-    wrongText: 'When checkout click, loading endless. API slow and timeout.',
-    correctText:
+    phrase:
       'When the user clicks the checkout button, the page shows an infinite loading state. This is caused by the /checkout API responding slowly (>10s), which triggers a gateway timeout.',
+    situationVi: 'Mô tả chi tiết lỗi thanh toán bị chậm trên Jira ticket.',
     explanationVi:
-      'Sử dụng cấu trúc câu chuẩn xác hơn, chỉ ra rõ hành động của người dùng ("When the user clicks...") và nguyên nhân kỹ thuật cụ thể ("caused by the /checkout API responding slowly...").',
+      'Mẫu cấu trúc câu mô tả lỗi kỹ thuật chuẩn xác: Hành động của người dùng ("When the user clicks...") -> Hậu quả giao diện ("the page shows...") -> Nguyên nhân kỹ thuật cụ thể ("This is caused by...").',
     category: 'structure',
     confidence: 0.88,
     source: 'inferred',
     status: 'active',
+    reviewCount: 1,
+    correctStreak: 1,
+    wrongStreak: 0,
+    intervalDays: 1,
+    easeFactor: 2.5,
+    nextReviewAt: '2026-06-27T12:00:00.000Z',
   },
   {
-    sourceWorkflow: 'message',
+    memoryType: 'reading_trap',
+    sourceWorkflow: 'reading',
     patternKey: 'ask_api_doc',
-    wrongText: 'Give me API doc you promised.',
-    correctText:
-      'Just following up on the API documentation you mentioned earlier this week. Could you please send it over when you have a moment?',
+    trapText: 'That might be challenging.',
+    wrongInterpretationVi:
+      'Việc này có vẻ thú vị và mang tính thử thách, hãy làm đi.',
+    correctInterpretationVi:
+      'Có thể họ đang nói việc này khó, không khả thi, hoặc họ đang từ chối khéo.',
     explanationVi:
-      'Sử dụng cấu trúc giảm nhẹ "Just following up on..." giúp lời nhắc nhở đối tác nhẹ nhàng, không mang tính hối thúc nặng nề nhưng vẫn rõ ràng.',
+      'Người bản xứ thường dùng cách nói giảm nói tránh để biểu đạt sự từ chối hoặc khó khăn mà không gây mất lòng đối phương.',
+    culturalContextVi:
+      'Giao tiếp Á Đông thường gián tiếp để giữ thể diện, nhưng văn hóa doanh nghiệp phương Tây dù trực diện cũng rất ưa chuộng các từ giảm nhẹ (mitigated speech) khi đưa ra phản hồi tiêu cực. "Challenging" thường có nghĩa là "No, we cannot do this easily".',
     category: 'naturalness',
     confidence: 0.92,
     source: 'observed',
     status: 'active',
+    reviewCount: 0,
+    correctStreak: 0,
+    wrongStreak: 0,
+    intervalDays: 0,
+    easeFactor: 2.5,
+    nextReviewAt: '2026-06-27T12:00:00.000Z',
   },
 ];
 
@@ -116,6 +152,7 @@ export default function MemoryPage() {
   const [items, setItems] = useState<LocalMemoryItem[]>([]);
   const [activeTab, setActiveTab] = useState<'active' | 'ignored'>('active');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -136,6 +173,12 @@ export default function MemoryPage() {
   const [wrongText, setWrongText] = useState('');
   const [correctText, setCorrectText] = useState('');
   const [explanationVi, setExplanationVi] = useState('');
+  const [phrase, setPhrase] = useState('');
+  const [situationVi, setSituationVi] = useState('');
+  const [trapText, setTrapText] = useState('');
+  const [wrongInterpretationVi, setWrongInterpretationVi] = useState('');
+  const [correctInterpretationVi, setCorrectInterpretationVi] = useState('');
+  const [culturalContextVi, setCulturalContextVi] = useState('');
 
   // Hydration safety
   const [isMounted, setIsMounted] = useState(false);
@@ -154,23 +197,57 @@ export default function MemoryPage() {
 
   const handleEditStart = (item: LocalMemoryItem) => {
     setEditingId(item.id);
-    setWrongText(item.wrongText);
-    setCorrectText(item.correctText);
-    setExplanationVi(item.explanationVi);
+    setWrongText(item.wrongText || '');
+    setCorrectText(item.correctText || '');
+    setExplanationVi(item.explanationVi || '');
+    setPhrase(item.phrase || '');
+    setSituationVi(item.situationVi || '');
+    setTrapText(item.trapText || '');
+    setWrongInterpretationVi(item.wrongInterpretationVi || '');
+    setCorrectInterpretationVi(item.correctInterpretationVi || '');
+    setCulturalContextVi(item.culturalContextVi || '');
   };
 
   const handleEditCancel = () => {
     setEditingId(null);
   };
 
-  const handleEditSave = (id: string) => {
-    if (!wrongText.trim() || !correctText.trim() || !explanationVi.trim())
-      return;
-    updateLocalMemoryItem(id, {
-      wrongText: wrongText.trim(),
-      correctText: correctText.trim(),
-      explanationVi: explanationVi.trim(),
-    });
+  const handleEditSave = (item: LocalMemoryItem) => {
+    const id = item.id;
+    if (item.memoryType === 'writing_mistake') {
+      if (!wrongText.trim() || !correctText.trim() || !explanationVi.trim())
+        return;
+      updateLocalMemoryItem(id, {
+        wrongText: wrongText.trim(),
+        correctText: correctText.trim(),
+        explanationVi: explanationVi.trim(),
+        culturalContextVi: culturalContextVi.trim() || undefined,
+      });
+    } else if (item.memoryType === 'reusable_phrase') {
+      if (!phrase.trim() || !situationVi.trim() || !explanationVi.trim())
+        return;
+      updateLocalMemoryItem(id, {
+        phrase: phrase.trim(),
+        situationVi: situationVi.trim(),
+        explanationVi: explanationVi.trim(),
+        culturalContextVi: culturalContextVi.trim() || undefined,
+      });
+    } else if (item.memoryType === 'reading_trap') {
+      if (
+        !trapText.trim() ||
+        !wrongInterpretationVi.trim() ||
+        !correctInterpretationVi.trim() ||
+        !explanationVi.trim()
+      )
+        return;
+      updateLocalMemoryItem(id, {
+        trapText: trapText.trim(),
+        wrongInterpretationVi: wrongInterpretationVi.trim(),
+        correctInterpretationVi: correctInterpretationVi.trim(),
+        explanationVi: explanationVi.trim(),
+        culturalContextVi: culturalContextVi.trim() || undefined,
+      });
+    }
     setEditingId(null);
     refreshItems();
   };
@@ -204,7 +281,6 @@ export default function MemoryPage() {
   };
 
   const handleGenerateMockData = () => {
-    // Generate mock data items
     MOCK_ITEMS.forEach((mock) => {
       addLocalMemoryItem(mock);
     });
@@ -216,18 +292,40 @@ export default function MemoryPage() {
     const statusMatch = item.status === activeTab;
     const categoryMatch =
       selectedCategory === 'all' || item.category === selectedCategory;
+    const typeMatch =
+      selectedType === 'all' || item.memoryType === selectedType;
+
     const searchMatch =
       !searchQuery.trim() ||
-      item.wrongText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.correctText.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.wrongText &&
+        item.wrongText.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.correctText &&
+        item.correctText.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.phrase &&
+        item.phrase.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.trapText &&
+        item.trapText.toLowerCase().includes(searchQuery.toLowerCase())) ||
       item.explanationVi.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.culturalContextVi &&
+        item.culturalContextVi
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())) ||
       item.patternKey.toLowerCase().includes(searchQuery.toLowerCase());
-    return statusMatch && categoryMatch && searchMatch;
+
+    return statusMatch && categoryMatch && typeMatch && searchMatch;
   });
 
   // Calculate statistics for sidebar
   const activeCount = items.filter((item) => item.status === 'active').length;
   const ignoredCount = items.filter((item) => item.status === 'ignored').length;
+
+  // Due counts for SRS
+  const nowStr = new Date().toISOString();
+  const dueCount = items.filter(
+    (item) =>
+      item.status === 'active' &&
+      (!item.nextReviewAt || item.nextReviewAt <= nowStr)
+  ).length;
 
   const categoryStats = categories.reduce<Record<string, number>>(
     (acc, cat) => {
@@ -240,14 +338,64 @@ export default function MemoryPage() {
     {}
   );
 
-  // Dynamic count for category filter chips based on current activeTab
   const getCategoryCount = (catValue: string) => {
     if (catValue === 'all') {
+      return items.filter(
+        (item) =>
+          item.status === activeTab &&
+          (selectedType === 'all' || item.memoryType === selectedType)
+      ).length;
+    }
+    return items.filter(
+      (item) =>
+        item.status === activeTab &&
+        item.category === catValue &&
+        (selectedType === 'all' || item.memoryType === selectedType)
+    ).length;
+  };
+
+  const getMemoryTypeCount = (typeValue: string) => {
+    if (typeValue === 'all') {
       return items.filter((item) => item.status === activeTab).length;
     }
     return items.filter(
-      (item) => item.status === activeTab && item.category === catValue
+      (item) => item.status === activeTab && item.memoryType === typeValue
     ).length;
+  };
+
+  // Badges styling
+  const memoryTypeLabels: Record<string, { label: string; className: string }> =
+    {
+      writing_mistake: {
+        label: 'Lỗi viết sai',
+        className:
+          'bg-rose-500/10 text-rose-600 border-rose-500/20 dark:bg-rose-500/20 dark:text-rose-400',
+      },
+      reusable_phrase: {
+        label: 'Cụm từ hay',
+        className:
+          'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-400',
+      },
+      reading_trap: {
+        label: 'Bẫy đọc hiểu',
+        className:
+          'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:bg-amber-500/20 dark:text-amber-400',
+      },
+    };
+
+  const workflowLabels: Record<
+    string,
+    { label: string; icon: React.ReactNode }
+  > = {
+    message: {
+      label: 'Email & Message Coach',
+      icon: <MessageSquare className="size-3" />,
+    },
+    explanation: {
+      label: 'Document Coach',
+      icon: <FileText className="size-3" />,
+    },
+    reading: { label: 'Reading Coach', icon: <BookOpen className="size-3" /> },
   };
 
   if (!isMounted) {
@@ -263,8 +411,8 @@ export default function MemoryPage() {
       <CoachShell
         headerTitle="SỔ TAY LỖI SAI (MEMORY)"
         headerIcon={<Brain className="size-4 text-primary" />}
-        sidebarTitle="Bộ nhớ không quên lỗi cũ"
-        sidebarDescription="Nơi tổng kết và quản lý tất cả các lỗi tiếng Anh công sở bạn đã từng phạm phải. Ôn tập thường xuyên để không lặp lại lỗi cũ."
+        sidebarTitle="Bộ nhớ học theo vòng lặp"
+        sidebarDescription="Nơi lưu trữ lỗi viết sai, cụm từ chuyên nghiệp và bẫy đọc hiểu ngữ cảnh. Ôn tập thường xuyên để không lặp lại lỗi cũ."
         showReset={items.length > 0}
         onReset={handleResetAll}
         badge="MVP v1"
@@ -297,11 +445,11 @@ export default function MemoryPage() {
                   </span>
                 </div>
                 <div className="p-3.5 rounded-lg bg-background/50 border border-border/40">
-                  <span className="text-2xl font-bold text-muted-foreground block leading-none mb-1">
-                    {ignoredCount}
+                  <span className="text-2xl font-bold text-amber-600 dark:text-amber-400 block leading-none mb-1">
+                    {dueCount}
                   </span>
                   <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                    Đã bỏ qua
+                    Đến hạn ôn
                   </span>
                 </div>
               </div>
@@ -334,6 +482,15 @@ export default function MemoryPage() {
               )}
             </Card>
 
+            {activeCount > 0 && (
+              <Link href="/review" className="w-full">
+                <Button className="w-full text-xs font-bold py-3 bg-primary hover:bg-primary/95 text-primary-foreground shadow-sm rounded-lg border-none flex items-center justify-center gap-1.5 cursor-pointer relative overflow-hidden">
+                  <Play className="size-3.5 fill-current animate-pulse" />
+                  Ôn tập lỗi đến hạn ({dueCount})
+                </Button>
+              </Link>
+            )}
+
             {/* Quick links to Coach Workflows */}
             <div className="flex flex-col gap-2.5">
               <h2 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -346,7 +503,7 @@ export default function MemoryPage() {
                 >
                   <span className="flex items-center gap-2">
                     <MessageSquare className="size-4 text-primary" />
-                    Message Coach
+                    Email & Message Coach
                   </span>
                   <ArrowRight className="size-3.5 text-muted-foreground" />
                 </Link>
@@ -356,7 +513,7 @@ export default function MemoryPage() {
                 >
                   <span className="flex items-center gap-2">
                     <FileText className="size-4 text-primary" />
-                    Explanation Coach
+                    Document Coach
                   </span>
                   <ArrowRight className="size-3.5 text-muted-foreground" />
                 </Link>
@@ -413,17 +570,17 @@ export default function MemoryPage() {
                   </button>
                 </div>
 
-                {/* Premium Search Bar */}
+                {/* Search Bar */}
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground/60" />
                   <label htmlFor="search-input" className="sr-only">
-                    Tìm kiếm lỗi sai, từ sửa đúng hoặc giải thích
+                    Tìm kiếm trong sổ tay...
                   </label>
                   <Input
                     id="search-input"
                     name="search"
                     type="text"
-                    placeholder="Tìm kiếm lỗi sai, từ sửa đúng hoặc giải thích..."
+                    placeholder="Tìm kiếm lỗi sai, cụm từ, văn hóa..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 pr-8 h-9 text-xs focus-visible:ring-primary/40 bg-background/50 border-border/80"
@@ -441,22 +598,61 @@ export default function MemoryPage() {
                 </div>
               </div>
 
+              {/* Memory Type filter */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-border/10 pb-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 select-none">
+                  Loại bộ nhớ:
+                </span>
+                <div className="flex gap-1.5">
+                  {[
+                    { value: 'all', label: 'Tất cả' },
+                    { value: 'writing_mistake', label: 'Lỗi viết sai' },
+                    { value: 'reusable_phrase', label: 'Cụm từ hay' },
+                    { value: 'reading_trap', label: 'Bẫy đọc hiểu' },
+                  ].map((t) => {
+                    const count = getMemoryTypeCount(t.value);
+                    if (
+                      count === 0 &&
+                      t.value !== 'all' &&
+                      selectedType !== t.value
+                    )
+                      return null;
+                    return (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => {
+                          setSelectedType(t.value);
+                          setEditingId(null);
+                        }}
+                        className={cn(
+                          'px-2.5 py-0.5 rounded text-3xs font-bold border transition-all cursor-pointer whitespace-nowrap',
+                          selectedType === t.value
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                            : 'bg-background hover:bg-muted text-muted-foreground hover:text-foreground border-border/80'
+                        )}
+                      >
+                        {t.label} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Category filter */}
               <div className="flex items-start sm:items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 select-none pt-1 sm:pt-0">
-                  Lọc:
+                  Lọc Khung:
                 </span>
                 <div className="flex gap-1.5">
                   {categories.map((cat) => {
                     const count = getCategoryCount(cat.value);
-                    // Hide categories with 0 items unless it's "all" or we are on it
                     if (
                       count === 0 &&
                       cat.value !== 'all' &&
                       selectedCategory !== cat.value
-                    ) {
+                    )
                       return null;
-                    }
 
                     return (
                       <button
@@ -506,10 +702,18 @@ export default function MemoryPage() {
                   >
                     {/* Banner Header */}
                     <div className="py-2.5 px-4 bg-muted/20 border-b border-border/50 flex flex-row items-center justify-between gap-3 text-[10px]">
-                      <div className="flex items-center gap-2">
-                        <code className="font-mono bg-muted px-1.5 py-0.5 rounded border border-border text-foreground font-bold uppercase tracking-wider">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <code className="font-mono bg-muted dark:bg-black/20 px-1.5 py-0.5 rounded border border-border text-foreground font-bold uppercase tracking-wider">
                           {item.patternKey}
                         </code>
+                        <span
+                          className={cn(
+                            'uppercase px-1.5 rounded border font-bold text-[9px] h-5 inline-flex items-center justify-center',
+                            memoryTypeLabels[item.memoryType]?.className
+                          )}
+                        >
+                          {memoryTypeLabels[item.memoryType]?.label}
+                        </span>
                         <span className="uppercase px-1.5 rounded bg-muted/80 text-muted-foreground border border-border font-medium h-5 inline-flex items-center justify-center">
                           {categories.find((c) => c.value === item.category)
                             ?.label || item.category}
@@ -525,56 +729,179 @@ export default function MemoryPage() {
 
                     <CardContent className="p-4 flex flex-col gap-3.5">
                       {editingId === item.id ? (
-                        /* Inline Edit Form */
+                        /* Inline Edit Form per Memory Type */
                         <div className="flex flex-col gap-3">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {item.memoryType === 'writing_mistake' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="flex flex-col gap-1">
+                                <label
+                                  htmlFor={`edit-wrong-${item.id}`}
+                                  className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider"
+                                >
+                                  Lỗi sai (Incorrect):
+                                </label>
+                                <Input
+                                  id={`edit-wrong-${item.id}`}
+                                  name="wrongText"
+                                  value={wrongText}
+                                  onChange={(e) => setWrongText(e.target.value)}
+                                  className="h-8 text-xs font-mono border-red-500/20 focus-visible:ring-red-500/30"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label
+                                  htmlFor={`edit-correct-${item.id}`}
+                                  className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider"
+                                >
+                                  Đúng (Correct):
+                                </label>
+                                <Input
+                                  id={`edit-correct-${item.id}`}
+                                  name="correctText"
+                                  value={correctText}
+                                  onChange={(e) =>
+                                    setCorrectText(e.target.value)
+                                  }
+                                  className="h-8 text-xs font-mono border-emerald-500/20 focus-visible:ring-emerald-500/30"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {item.memoryType === 'reusable_phrase' && (
+                            <div className="grid grid-cols-1 gap-3">
+                              <div className="flex flex-col gap-1">
+                                <label
+                                  htmlFor={`edit-phrase-${item.id}`}
+                                  className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider"
+                                >
+                                  Mẫu câu đề xuất (Phrase):
+                                </label>
+                                <Input
+                                  id={`edit-phrase-${item.id}`}
+                                  name="phrase"
+                                  value={phrase}
+                                  onChange={(e) => setPhrase(e.target.value)}
+                                  className="h-8 text-xs font-mono border-emerald-500/20 focus-visible:ring-emerald-500/30"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label
+                                  htmlFor={`edit-situation-${item.id}`}
+                                  className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider"
+                                >
+                                  Tình huống ứng dụng:
+                                </label>
+                                <Input
+                                  id={`edit-situation-${item.id}`}
+                                  name="situationVi"
+                                  value={situationVi}
+                                  onChange={(e) =>
+                                    setSituationVi(e.target.value)
+                                  }
+                                  className="h-8 text-xs focus-visible:ring-primary/30"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {item.memoryType === 'reading_trap' && (
+                            <div className="grid grid-cols-1 gap-3">
+                              <div className="flex flex-col gap-1">
+                                <label
+                                  htmlFor={`edit-trap-${item.id}`}
+                                  className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider"
+                                >
+                                  Cụm từ dễ hiểu nhầm (Trap):
+                                </label>
+                                <Input
+                                  id={`edit-trap-${item.id}`}
+                                  name="trapText"
+                                  value={trapText}
+                                  onChange={(e) => setTrapText(e.target.value)}
+                                  className="h-8 text-xs font-mono border-red-500/20 focus-visible:ring-red-500/30"
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="flex flex-col gap-1">
+                                  <label
+                                    htmlFor={`edit-wrong-interpretation-${item.id}`}
+                                    className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider"
+                                  >
+                                    Hiểu sai nghĩa:
+                                  </label>
+                                  <Input
+                                    id={`edit-wrong-interpretation-${item.id}`}
+                                    name="wrongInterpretationVi"
+                                    value={wrongInterpretationVi}
+                                    onChange={(e) =>
+                                      setWrongInterpretationVi(e.target.value)
+                                    }
+                                    className="h-8 text-xs focus-visible:ring-red-500/20"
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label
+                                    htmlFor={`edit-correct-interpretation-${item.id}`}
+                                    className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider"
+                                  >
+                                    Hiểu đúng ngữ cảnh:
+                                  </label>
+                                  <Input
+                                    id={`edit-correct-interpretation-${item.id}`}
+                                    name="correctInterpretationVi"
+                                    value={correctInterpretationVi}
+                                    onChange={(e) =>
+                                      setCorrectInterpretationVi(e.target.value)
+                                    }
+                                    className="h-8 text-xs focus-visible:ring-emerald-500/20"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col gap-3">
                             <div className="flex flex-col gap-1">
                               <label
-                                htmlFor={`edit-wrong-${item.id}`}
-                                className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider"
+                                htmlFor={`edit-explanation-${item.id}`}
+                                className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider"
                               >
-                                Lỗi sai (Incorrect):
+                                Giải nghĩa tiếng Việt (Explanation):
                               </label>
-                              <Input
-                                id={`edit-wrong-${item.id}`}
-                                name="wrongText"
-                                value={wrongText}
-                                onChange={(e) => setWrongText(e.target.value)}
-                                className="h-8 text-xs font-mono border-red-500/20 focus-visible:ring-red-500/30"
+                              <Textarea
+                                id={`edit-explanation-${item.id}`}
+                                name="explanationVi"
+                                value={explanationVi}
+                                onChange={(e) =>
+                                  setExplanationVi(e.target.value)
+                                }
+                                rows={2}
+                                className="text-xs focus-visible:ring-primary/30 p-2 min-h-16"
                               />
                             </div>
                             <div className="flex flex-col gap-1">
                               <label
-                                htmlFor={`edit-correct-${item.id}`}
-                                className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider"
+                                htmlFor={`edit-cultural-${item.id}`}
+                                className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider"
                               >
-                                Đúng (Correct):
+                                Ngữ cảnh văn hóa / Giao tiếp Đông-Tây (Cultural
+                                Context):
                               </label>
-                              <Input
-                                id={`edit-correct-${item.id}`}
-                                name="correctText"
-                                value={correctText}
-                                onChange={(e) => setCorrectText(e.target.value)}
-                                className="h-8 text-xs font-mono border-emerald-500/20 focus-visible:ring-emerald-500/30"
+                              <Textarea
+                                id={`edit-cultural-${item.id}`}
+                                name="culturalContextVi"
+                                value={culturalContextVi}
+                                onChange={(e) =>
+                                  setCulturalContextVi(e.target.value)
+                                }
+                                rows={2}
+                                className="text-xs focus-visible:ring-indigo-500/30 p-2 min-h-16"
+                                placeholder="Giải thích sắc thái văn hóa hoặc ngữ cảnh giao tiếp (không bắt buộc)..."
                               />
                             </div>
                           </div>
-                          <div className="flex flex-col gap-1">
-                            <label
-                              htmlFor={`edit-explanation-${item.id}`}
-                              className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider"
-                            >
-                              Giải nghĩa tiếng Việt (Explanation):
-                            </label>
-                            <Textarea
-                              id={`edit-explanation-${item.id}`}
-                              name="explanationVi"
-                              value={explanationVi}
-                              onChange={(e) => setExplanationVi(e.target.value)}
-                              rows={2}
-                              className="text-xs focus-visible:ring-primary/30 p-2 min-h-16"
-                            />
-                          </div>
+
                           <div className="flex justify-end gap-2 mt-1">
                             <Button
                               type="button"
@@ -589,7 +916,7 @@ export default function MemoryPage() {
                             <Button
                               type="button"
                               size="xs"
-                              onClick={() => handleEditSave(item.id)}
+                              onClick={() => handleEditSave(item)}
                               className="text-[10px] h-7.5 px-2.5 font-bold bg-emerald-600 hover:bg-emerald-600/90 text-white cursor-pointer"
                             >
                               <Save className="size-3.5 mr-1" />
@@ -598,30 +925,85 @@ export default function MemoryPage() {
                           </div>
                         </div>
                       ) : (
-                        /* Display Mode */
+                        /* Display Mode per Memory Type */
                         <>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
-                            {/* Incorrect Block */}
-                            <div className="p-3 bg-red-500/[0.03] rounded-lg border border-red-500/10 flex flex-col gap-1">
-                              <span className="text-[9px] text-red-700 dark:text-red-400 uppercase font-bold flex items-center gap-1 select-none">
-                                <XCircle className="size-3" />
-                                Lỗi sai (Incorrect):
-                              </span>
-                              <span className="text-red-600 dark:text-red-400 line-through select-all leading-relaxed break-words font-medium">
-                                {item.wrongText}
-                              </span>
-                            </div>
+                            {item.memoryType === 'writing_mistake' && (
+                              <>
+                                <div className="p-3 bg-red-500/[0.03] rounded-lg border border-red-500/10 flex flex-col gap-1">
+                                  <span className="text-[9px] text-red-700 dark:text-red-400 uppercase font-bold flex items-center gap-1 select-none">
+                                    <XCircle className="size-3" />
+                                    Lỗi sai (Incorrect):
+                                  </span>
+                                  <span className="text-red-600 dark:text-red-400 line-through select-all leading-relaxed break-words font-medium">
+                                    {item.wrongText}
+                                  </span>
+                                </div>
+                                <div className="p-3 bg-emerald-500/[0.03] rounded-lg border border-emerald-500/10 flex flex-col gap-1">
+                                  <span className="text-[9px] text-emerald-700 dark:text-emerald-400 uppercase font-bold flex items-center gap-1 select-none">
+                                    <CheckCircle2 className="size-3" />
+                                    Đúng (Correct):
+                                  </span>
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold select-all leading-relaxed break-words">
+                                    {item.correctText}
+                                  </span>
+                                </div>
+                              </>
+                            )}
 
-                            {/* Correct Block */}
-                            <div className="p-3 bg-emerald-500/[0.03] rounded-lg border border-emerald-500/10 flex flex-col gap-1">
-                              <span className="text-[9px] text-emerald-700 dark:text-emerald-400 uppercase font-bold flex items-center gap-1 select-none">
-                                <CheckCircle2 className="size-3" />
-                                Đúng (Correct):
-                              </span>
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold select-all leading-relaxed break-words">
-                                {item.correctText}
-                              </span>
-                            </div>
+                            {item.memoryType === 'reusable_phrase' && (
+                              <>
+                                <div className="p-3 bg-emerald-500/[0.03] rounded-lg border border-emerald-500/10 flex flex-col gap-1 sm:col-span-2">
+                                  <span className="text-[9px] text-emerald-700 dark:text-emerald-400 uppercase font-bold flex items-center gap-1 select-none">
+                                    <CheckCircle2 className="size-3" />
+                                    Cụm từ hữu ích (Recommended Phrase):
+                                  </span>
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold select-all leading-relaxed break-words">
+                                    {item.phrase}
+                                  </span>
+                                </div>
+                                {item.situationVi && (
+                                  <div className="p-2.5 bg-muted/40 rounded-lg border border-border/60 flex flex-col gap-1 sm:col-span-2 text-[10px] font-sans">
+                                    <span className="text-[9px] text-muted-foreground uppercase font-bold select-none">
+                                      Tình huống ứng dụng:
+                                    </span>
+                                    <span className="text-foreground leading-relaxed">
+                                      {item.situationVi}
+                                    </span>
+                                  </div>
+                                )}
+                              </>
+                            )}
+
+                            {item.memoryType === 'reading_trap' && (
+                              <>
+                                <div className="p-3 bg-red-500/[0.03] rounded-lg border border-red-500/10 flex flex-col gap-1 sm:col-span-2">
+                                  <span className="text-[9px] text-red-700 dark:text-red-400 uppercase font-bold flex items-center gap-1 select-none">
+                                    <XCircle className="size-3" />
+                                    Bẫy dịch nghĩa gốc (Trap Text):
+                                  </span>
+                                  <span className="text-red-600 dark:text-red-400 font-bold select-all leading-relaxed break-words">
+                                    {item.trapText}
+                                  </span>
+                                </div>
+                                <div className="p-2.5 bg-red-500/[0.03] rounded-lg border border-red-500/10 flex flex-col gap-1 font-sans">
+                                  <span className="text-[9px] text-red-700 dark:text-red-400 uppercase font-bold select-none">
+                                    Dễ bị hiểu lầm là:
+                                  </span>
+                                  <span className="text-red-600 dark:text-red-400 font-medium">
+                                    {item.wrongInterpretationVi}
+                                  </span>
+                                </div>
+                                <div className="p-2.5 bg-emerald-500/[0.03] rounded-lg border border-emerald-500/10 flex flex-col gap-1 font-sans">
+                                  <span className="text-[9px] text-emerald-700 dark:text-emerald-400 uppercase font-bold select-none">
+                                    Hiểu đúng ngữ cảnh là:
+                                  </span>
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                    {item.correctInterpretationVi}
+                                  </span>
+                                </div>
+                              </>
+                            )}
                           </div>
 
                           {/* Explanation block */}
@@ -634,24 +1016,79 @@ export default function MemoryPage() {
                             </span>
                           </p>
 
+                          {/* Cultural Context Insight */}
+                          {item.culturalContextVi && (
+                            <p className="text-[11px] text-indigo-600 dark:text-indigo-400 leading-relaxed mt-2 border-t border-border/30 pt-2.5 flex items-start gap-1.5 bg-indigo-500/[0.02] dark:bg-indigo-500/[0.05] p-2.5 rounded-lg border border-indigo-500/10">
+                              <Globe className="size-4 shrink-0 text-indigo-500 mt-0.5" />
+                              <span className="select-text">
+                                <strong className="font-semibold block text-[10px] uppercase tracking-wider text-indigo-700 dark:text-indigo-400 select-none mb-0.5">
+                                  Giải thích văn hóa & Ngữ cảnh:
+                                </strong>
+                                {item.culturalContextVi}
+                              </span>
+                            </p>
+                          )}
+
+                          {/* SRS Status row */}
+                          {item.status === 'active' && (
+                            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[9px] text-muted-foreground font-mono bg-muted/20 dark:bg-black/15 p-2 rounded-lg items-center border border-border/30 mt-1">
+                              <span>
+                                Mức thuộc:{' '}
+                                <strong className="text-foreground">
+                                  {item.correctStreak}🔥
+                                </strong>
+                              </span>
+                              <span>
+                                Đã ôn:{' '}
+                                <strong className="text-foreground">
+                                  {item.reviewCount} lần
+                                </strong>
+                              </span>
+                              <span>
+                                Chu kỳ:{' '}
+                                <strong className="text-foreground">
+                                  {item.intervalDays} ngày
+                                </strong>
+                              </span>
+                              <span>
+                                Lần ôn tới:{' '}
+                                <strong className="text-foreground">
+                                  {item.nextReviewAt &&
+                                  new Date(item.nextReviewAt) <= new Date()
+                                    ? 'Đang đến hạn ⚠️'
+                                    : item.nextReviewAt
+                                      ? new Date(
+                                          item.nextReviewAt
+                                        ).toLocaleDateString('vi-VN')
+                                      : 'Chưa lập lịch'}
+                                </strong>
+                              </span>
+                            </div>
+                          )}
+
                           {/* Actions Footer */}
                           <div className="flex items-center justify-between mt-1 pt-2 border-t border-border/30">
                             {/* Workflow Badge */}
                             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-muted/60 text-[9.5px] text-muted-foreground font-semibold">
-                              {item.sourceWorkflow === 'message' ? (
-                                <>
-                                  <MessageSquare className="size-3" />
-                                  Message Coach
-                                </>
-                              ) : (
-                                <>
-                                  <FileText className="size-3" />
-                                  Explanation Coach
-                                </>
-                              )}
+                              {workflowLabels[item.sourceWorkflow]?.icon}
+                              {workflowLabels[item.sourceWorkflow]?.label ||
+                                item.sourceWorkflow}
                             </span>
 
                             <div className="flex gap-2">
+                              {item.status === 'active' && (
+                                <Link href={`/review?id=${item.id}`}>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="xs"
+                                    className="text-[10px] h-7.5 px-2.5 font-bold border-primary/20 text-primary hover:bg-primary/5 cursor-pointer"
+                                  >
+                                    <Play className="size-3 mr-1" />
+                                    Luyện ngay
+                                  </Button>
+                                </Link>
+                              )}
                               <Button
                                 type="button"
                                 variant="outline"
@@ -716,18 +1153,16 @@ export default function MemoryPage() {
                       ? 'Không tìm thấy lỗi sai nào khớp với từ khóa tìm kiếm của bạn.'
                       : activeTab === 'ignored'
                         ? 'Bạn chưa bỏ qua lỗi sai nào.'
-                        : selectedCategory === 'all'
-                          ? 'Bạn chưa lưu lỗi sai nào vào Sổ tay. Các lỗi sai đề xuất sẽ xuất hiện sau khi bạn dùng Message Coach hoặc Explanation Coach.'
-                          : `Không tìm thấy lỗi sai nào thuộc mục "${
-                              categories.find(
-                                (c) => c.value === selectedCategory
-                              )?.label
-                            }" đang hiển thị.`}
+                        : selectedCategory === 'all' && selectedType === 'all'
+                          ? 'Bạn chưa lưu lỗi sai nào vào Sổ tay. Các lỗi sai đề xuất sẽ xuất hiện sau khi bạn dùng Coach workflows.'
+                          : 'Không tìm thấy lỗi sai nào khớp với bộ lọc đang chọn.'}
                   </p>
                 </div>
 
                 {/* Prepopulate Mock Data or Navigate buttons */}
-                {selectedCategory === 'all' && !searchQuery.trim() ? (
+                {selectedCategory === 'all' &&
+                selectedType === 'all' &&
+                !searchQuery.trim() ? (
                   <div className="flex flex-col gap-3.5 w-full mt-2">
                     {showMockMemoryData && (
                       <>
@@ -745,7 +1180,7 @@ export default function MemoryPage() {
 
                     <Link href="/message" className="w-full">
                       <Button className="w-full text-xs font-semibold cursor-pointer py-4 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground shadow-xs">
-                        Mở Message Coach
+                        Mở Email & Message Coach
                         <ArrowRight className="size-3.5 ml-1" />
                       </Button>
                     </Link>
@@ -755,7 +1190,7 @@ export default function MemoryPage() {
                           variant="outline"
                           className="w-full text-2xs font-semibold cursor-pointer border-border/80 hover:bg-muted text-muted-foreground hover:text-foreground h-8"
                         >
-                          Explanation Coach
+                          Document Coach
                         </Button>
                       </Link>
                       <Link href="/reading" className="flex-1">
@@ -768,19 +1203,20 @@ export default function MemoryPage() {
                       </Link>
                     </div>
                   </div>
-                ) : searchQuery.trim() || selectedCategory !== 'all' ? (
+                ) : (
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => {
                       setSearchQuery('');
                       setSelectedCategory('all');
+                      setSelectedType('all');
                     }}
                     className="text-xs font-semibold border-border/80 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer mt-1 h-8"
                   >
                     Xóa bộ lọc
                   </Button>
-                ) : null}
+                )}
               </div>
             )}
           </div>

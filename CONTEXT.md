@@ -25,11 +25,11 @@ A concrete, reusable learning point extracted from user input or inferred from a
 _Avoid_: Correction, grammar note
 
 **Memory**:
-The user's curated set of recurring personal English mistakes or patterns that are useful for future review to ensure they do not repeat old mistakes.
+The user's curated set of items saved from coaches for personal review to complete the learning loop. It supports three types: `writing_mistake` (incorrect draft vs. natural correction), `reading_trap` (misinterpreted word/phrase vs. actual implied meaning), and `reusable_phrase` (highly reusable workplace phrasing).
 _Avoid_: Saved corrections, history
 
 **Review**:
-A learning workflow where the user revisits Memory items to avoid repeating recurring mistakes, completing the learning loop.
+A learning workflow where the user practices due Memory items (based on spaced repetition) to reinforce memory and prevent repeating mistakes. Exercises differ by memory type (sentence correction, multiple choice interpretation, intention typing).
 _Avoid_: Quiz, flashcard dashboard
 
 **MVP v0**:

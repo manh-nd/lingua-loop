@@ -2,7 +2,12 @@
 
 import { useState, useTransition, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  addLocalMemoryItem,
+  getLocalMemoryItems,
+} from '@/lib/memory/local-memory-store';
+import Link from 'next/link';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
@@ -22,6 +27,9 @@ import {
   AlertTriangle,
   Lightbulb,
   MessageSquareReply,
+  XCircle,
+  CheckCircle2,
+  Brain,
 } from 'lucide-react';
 import { CopyButton } from '@/components/coach/CopyButton';
 import { ErrorPanel } from '@/components/coach/ErrorPanel';
@@ -351,6 +359,26 @@ export default function ReadingPage() {
                 </div>
 
                 <div className="flex flex-col gap-2.5">
+                  {/* Reading Memory Candidates */}
+                  {result.readingMemoryCandidates &&
+                    result.readingMemoryCandidates.length > 0 && (
+                      <CollapsibleSection
+                        title="Đề xuất ôn tập (Memory Candidates)"
+                        defaultOpen={true}
+                      >
+                        <div className="grid grid-cols-1 gap-3.5 mb-2">
+                          {result.readingMemoryCandidates.map(
+                            (candidate, idx) => (
+                              <ReadingCandidateCard
+                                key={idx}
+                                candidate={candidate}
+                              />
+                            )
+                          )}
+                        </div>
+                      </CollapsibleSection>
+                    )}
+
                   {/* Key Phrases */}
                   {result.keyPhrases && result.keyPhrases.length > 0 && (
                     <CollapsibleSection
@@ -502,5 +530,204 @@ export default function ReadingPage() {
         </>
       }
     />
+  );
+}
+
+function ReadingCandidateCard({
+  candidate,
+}: {
+  candidate: NonNullable<ReadingCoachResult['readingMemoryCandidates']>[number];
+}) {
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedItemId, setSavedItemId] = useState<string | null>(null);
+  const [isIgnored, setIsIgnored] = useState(false);
+
+  // Check if it's already in localStorage on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const savedItems = getLocalMemoryItems();
+      const match = savedItems.find(
+        (s) =>
+          s.patternKey === candidate.patternKey &&
+          s.memoryType === candidate.memoryType &&
+          (candidate.memoryType === 'reading_trap'
+            ? s.trapText === candidate.trapText
+            : s.phrase === candidate.phrase)
+      );
+      if (match) {
+        setIsSaved(true);
+        setSavedItemId(match.id);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [candidate]);
+
+  const handleSave = () => {
+    const saved = addLocalMemoryItem({
+      memoryType: candidate.memoryType,
+      sourceWorkflow: 'reading',
+      patternKey: candidate.patternKey,
+      category: candidate.category || 'naturalness',
+      explanationVi: candidate.explanationVi,
+      culturalContextVi: candidate.culturalContextVi,
+      wrongText:
+        candidate.memoryType === 'reading_trap'
+          ? candidate.trapText
+          : undefined,
+      phrase: candidate.phrase,
+      situationVi: candidate.situationVi,
+      trapText: candidate.trapText,
+      wrongInterpretationVi: candidate.wrongInterpretationVi,
+      correctInterpretationVi: candidate.correctInterpretationVi,
+      status: 'active',
+    });
+    setSavedItemId(saved.id);
+    setIsSaved(true);
+  };
+
+  if (isIgnored) return null;
+
+  return (
+    <Card
+      className={cn(
+        'border shadow-none overflow-hidden transition-all duration-300 py-0 rounded-xl',
+        isSaved
+          ? 'border-emerald-500/30 bg-emerald-500/[0.01]'
+          : 'border-border bg-muted/5'
+      )}
+    >
+      {/* Header Banner */}
+      <div
+        className={cn(
+          'py-2 px-3.5 border-b flex flex-row items-center justify-between gap-3 text-[10px]',
+          isSaved
+            ? 'bg-emerald-500/5 border-emerald-500/10'
+            : 'bg-muted/15 border-border'
+        )}
+      >
+        <div className="flex items-center gap-1.5">
+          <code className="font-mono bg-muted dark:bg-black/25 px-1 py-0.5 rounded border border-border text-[9px] font-bold">
+            {candidate.patternKey}
+          </code>
+          <span
+            className={cn(
+              'text-[9px] font-bold px-1.5 rounded uppercase border',
+              candidate.memoryType === 'reading_trap'
+                ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+            )}
+          >
+            {candidate.memoryType === 'reading_trap'
+              ? 'Bẫy đọc hiểu'
+              : 'Cụm từ hay'}
+          </span>
+        </div>
+
+        <div>
+          {isSaved && (
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase text-[9px] flex items-center gap-0.5 select-none">
+              ✓ Đã lưu Sổ tay
+            </span>
+          )}
+        </div>
+      </div>
+
+      <CardContent className="p-3.5 flex flex-col gap-2.5 text-xs">
+        {candidate.memoryType === 'reading_trap' ? (
+          <div className="flex flex-col gap-2">
+            <div className="font-mono text-rose-600 dark:text-rose-400 font-bold select-all leading-relaxed break-all">
+              Bẫy dịch: &ldquo;{candidate.trapText}&rdquo;
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-sans">
+              <div className="p-2 bg-red-500/[0.02] border border-red-500/10 rounded flex flex-col gap-0.5">
+                <span className="text-[9px] text-red-700 dark:text-red-400 block font-bold uppercase select-none">
+                  Dễ hiểu lầm là:
+                </span>
+                <span className="text-red-600 dark:text-red-400 font-medium select-text">
+                  {candidate.wrongInterpretationVi}
+                </span>
+              </div>
+              <div className="p-2 bg-emerald-500/[0.02] border border-emerald-500/10 rounded flex flex-col gap-0.5">
+                <span className="text-[9px] text-emerald-700 dark:text-emerald-400 block font-bold uppercase select-none">
+                  Hiểu đúng ngữ cảnh:
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold select-text">
+                  {candidate.correctInterpretationVi}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <div className="font-mono text-emerald-600 dark:text-emerald-400 font-bold select-all leading-relaxed break-all">
+              Cụm từ: &ldquo;{candidate.phrase}&rdquo;
+            </div>
+            {candidate.situationVi && (
+              <div className="text-[11px] text-muted-foreground leading-relaxed p-2 bg-muted/30 border border-border/40 rounded">
+                <span className="font-bold text-foreground/80">
+                  Tình huống:
+                </span>{' '}
+                {candidate.situationVi}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="text-muted-foreground text-[11px] leading-relaxed border-t border-border/20 pt-2 flex items-start gap-1">
+          <span className="select-none">💡</span>
+          <span className="select-text">{candidate.explanationVi}</span>
+        </div>
+
+        {candidate.culturalContextVi && (
+          <div className="text-indigo-600 dark:text-indigo-400 text-[10.5px] leading-relaxed bg-indigo-500/[0.02] border border-indigo-500/10 p-2.5 rounded flex items-start gap-1.5">
+            <span className="select-none">🌍</span>
+            <span className="select-text">
+              <strong>Văn hóa/Ngữ cảnh:</strong> {candidate.culturalContextVi}
+            </span>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-2 border-t border-border/10 pt-2 mt-0.5 select-none">
+          {isSaved ? (
+            <div className="flex gap-2">
+              <Link
+                href="/memory"
+                className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/5 py-1.5 px-2.5 rounded border border-emerald-500/20"
+              >
+                Xem trong Sổ tay
+              </Link>
+              <Link
+                href={`/review?id=${savedItemId}`}
+                className="inline-flex items-center gap-1 text-[10px] font-bold bg-primary hover:bg-primary/95 text-primary-foreground py-1.5 px-3.5 rounded shadow-xs"
+              >
+                <Brain className="size-3 mr-1" />
+                Luyện ngay
+              </Link>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                type="button"
+                size="xs"
+                onClick={() => setIsIgnored(true)}
+                className="text-[10px] h-7 px-2.5 font-semibold text-muted-foreground border-border hover:bg-muted"
+              >
+                Bỏ qua
+              </Button>
+              <Button
+                type="button"
+                size="xs"
+                onClick={handleSave}
+                className="text-[10px] h-7 px-3.5 font-bold bg-primary hover:bg-primary/95 text-primary-foreground shadow-2xs"
+              >
+                Lưu vào Sổ tay
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

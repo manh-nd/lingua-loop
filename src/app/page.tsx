@@ -279,7 +279,9 @@ export default function Home() {
               <div className="p-3 rounded-xl bg-primary/10 w-fit border border-primary/20">
                 <MessageSquare className="size-6 text-primary" />
               </div>
-              <CardTitle className="text-lg font-bold">Message Coach</CardTitle>
+              <CardTitle className="text-lg font-bold">
+                Email & Message Coach
+              </CardTitle>
               <CardDescription className="text-xs text-muted-foreground/80">
                 Turn workplace intentions into natural English messages.
               </CardDescription>
@@ -292,7 +294,7 @@ export default function Home() {
               <ul className="flex flex-col gap-2 text-xs text-foreground/80">
                 <li className="flex items-start gap-2">
                   <span className="text-primary font-bold">✓</span>
-                  <span>Hỗ trợ dịch trực tiếp từ nháp tiếng Việt</span>
+                  <span>Hỗ trợ viết trực tiếp từ ý định tiếng Việt</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary font-bold">✓</span>
@@ -302,7 +304,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary font-bold">✓</span>
-                  <span>Giải thích chi tiết lỗi sai và từ vựng</span>
+                  <span>Giải thích chi tiết lỗi sai và cụm từ hay</span>
                 </li>
               </ul>
             </CardContent>
@@ -313,7 +315,7 @@ export default function Home() {
                 nativeButton={false}
                 className="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-[0.98] py-4.5 rounded-lg cursor-pointer"
               >
-                Mở Message Coach
+                Mở Email & Message Coach
                 <ArrowRight data-icon="inline-end" className="size-4 ml-1" />
               </Button>
             </CardFooter>
@@ -326,7 +328,7 @@ export default function Home() {
                 <FileText className="size-6 text-primary" />
               </div>
               <CardTitle className="text-lg font-bold">
-                Explanation Coach
+                Document Coach
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground/80">
                 Polish longer workplace writing for clarity and structure.
@@ -363,7 +365,7 @@ export default function Home() {
                 nativeButton={false}
                 className="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-[0.98] py-4.5 rounded-lg cursor-pointer"
               >
-                Mở Explanation Coach
+                Mở Document Coach
                 <ArrowRight data-icon="inline-end" className="size-4 ml-1" />
               </Button>
             </CardFooter>
@@ -420,8 +422,9 @@ export default function Home() {
                 <ArrowRight className="size-3.5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground flex-1">
-                Lưu trữ và quản lý các lỗi sai từ Message Coach và Explanation
-                Coach để ôn tập theo vòng lặp, không bao giờ lặp lại lỗi cũ.
+                Lưu trữ và quản lý các lỗi sai từ Email & Message Coach và
+                Document Coach để ôn tập theo vòng lặp, không bao giờ lặp lại
+                lỗi cũ.
               </p>
               <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20">
                 MỞ NGAY (READY)

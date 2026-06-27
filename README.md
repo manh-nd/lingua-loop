@@ -18,10 +18,13 @@ graph TD
     D -->|Khắc phục lỗi cũ| A
 ```
 
+> [!NOTE]
+> Ở phiên bản hiện tại (**MVP v0**), các tính năng lưu trữ vào **Memory** và **Review** (Spaced Repetition) chỉ mới ở dạng thiết kế đề xuất (trích xuất và hiển thị Mistake Candidates trên giao diện). Tính năng lưu trữ thật và ôn tập sẽ được phát triển đầy đủ trong phiên bản **MVP v1**.
+
 1. **Coaching**: Người dùng soạn thảo tin nhắn công sở (Message Coach) hoặc tài liệu kỹ thuật (Explanation Coach).
 2. **Extraction**: AI không chỉ sửa lỗi mà còn trích xuất các **Mistake Candidates** (mẫu lỗi sai có tính tái sử dụng, phân loại cụ thể).
-3. **Saving (Không quên lỗi cũ)**: Hệ thống đánh dấu các lỗi đáng nhớ (`shouldSave: true`) để lưu vào **Memory**.
-4. **Reviewing (Học theo vòng lặp)**: Người học ôn tập định kỳ thông qua **Review Workflow** (Spaced Repetition) để xóa bỏ hoàn toàn lỗi sai đó khỏi thói quen viết.
+3. **Saving (Không quên lỗi cũ)**: Hệ thống đánh dấu các lỗi đáng nhớ (`shouldSave: true`) để lưu vào **Memory** (sẽ hỗ trợ lưu trữ trong MVP v1).
+4. **Reviewing (Học theo vòng lặp)**: Người học ôn tập định kỳ thông qua **Review Workflow** (Spaced Repetition) để xóa bỏ hoàn toàn lỗi sai đó khỏi thói quen viết (sẽ hỗ trợ trong MVP v1).
 
 ---
 
@@ -29,7 +32,7 @@ graph TD
 
 - **Message Coach**: Tối ưu hóa tin nhắn ngắn cho Slack, Teams, Email theo nhiều tông giọng (Friendly, Polite, Direct, Professional, Casual).
 - **Explanation Coach**: Chuẩn hóa cấu trúc và từ vựng cho tài liệu kỹ thuật dài (Issue descriptions, PR descriptions, Tech specs, Jira comments).
-- **Lưu trữ cục bộ & Đề xuất lỗi**: Trích xuất lỗi sai trực tiếp dưới dạng thẻ học để người học ghi nhớ ngay.
+- **Đề xuất lỗi sai (Mistake Candidates)**: Trích xuất lỗi trực tiếp dưới dạng thẻ học để người học nhận biết và cải thiện ngay trên giao diện kết quả. (Lưu ý: chưa hỗ trợ lưu trữ/persistence trong bản v0).
 
 ---
 

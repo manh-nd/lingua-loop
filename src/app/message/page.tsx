@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useTransition, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -14,17 +13,14 @@ import {
   FieldGroup,
   FieldTitle,
 } from '@/components/ui/field';
-import { Separator } from '@/components/ui/separator';
 import { submitMessageCoach } from './actions';
 import { MessageCoachResult } from '@/core/message/message.schema';
 import { HighlightedText } from '@/components/coach/HighlightedText';
 import {
-  ArrowLeft,
   Sparkle,
   MessageSquare,
   Lightbulb,
   ArrowRight,
-  RotateCcw,
   BookOpen,
   CheckCircle,
   FileCheck,
@@ -36,9 +32,10 @@ import { SampleChips } from '@/components/coach/SampleChips';
 import { CollapsibleSection } from '@/components/coach/CollapsibleSection';
 import { CorrectionList } from '@/components/coach/CorrectionList';
 import { MistakeCandidateList } from '@/components/coach/MistakeCandidateList';
+import { CoachShell } from '@/components/coach/CoachShell';
+import { LoadingPanel } from '@/components/coach/LoadingPanel';
 import { MessageSample, ExplanationSample } from '@/lib/samples';
 import { cn } from '@/lib/utils';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 type MessageMode = 'write_from_vietnamese' | 'improve_english_draft';
 type MessageTone = 'friendly' | 'polite' | 'direct' | 'professional' | 'casual';
@@ -189,266 +186,179 @@ export default function MessagePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
-      {/* Skip to main content link for keyboard accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-      >
-        Skip to content
-      </a>
-
-      {/* Background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-gradient-to-tr from-primary/10 via-pink-500/5 to-transparent rounded-full blur-3xl -z-10 animate-float-1" />
-      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-gradient-to-br from-amber-500/5 via-primary/5 to-transparent rounded-full blur-3xl -z-10 animate-float-2" />
-
-      {/* Header */}
-      <header className="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-border/40">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="size-3" />
-            <span>Quay lại</span>
-          </Link>
-          <Separator orientation="vertical" className="h-4" />
-          <div className="flex items-center gap-2">
-            <div className="p-1 rounded bg-primary/10 border border-primary/20">
-              <MessageSquare className="size-4 text-primary" />
-            </div>
-            <span className="font-heading font-bold text-sm tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
-              MESSAGE COACH
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold">
-            MVP v0
-          </div>
-          <ThemeToggle />
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main
-        id="main-content"
-        className="flex-1 w-full max-w-6xl mx-auto px-6 py-8 flex flex-col md:grid md:grid-cols-12 gap-8"
-      >
-        {/* Left Column: Form Controls */}
-        <section className="md:col-span-5 flex flex-col gap-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h1 className="text-xl font-bold tracking-tight text-balance">
-                Viết tin nhắn thông minh
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Nhập ý định tiếng Việt hoặc bản nháp tiếng Anh để nhận đề xuất
-                tự nhiên nhất cho công sở.
-              </p>
-            </div>
-            {/* New Draft / Clear button */}
-            {(text || context || result) && (
-              <Button
-                type="button"
-                variant="outline"
-                size="xs"
-                onClick={handleReset}
-                className="text-[10px] shrink-0 font-bold border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+    <CoachShell
+      headerTitle="MESSAGE COACH"
+      headerIcon={<MessageSquare className="size-4 text-primary" />}
+      sidebarTitle="Viết tin nhắn thông minh"
+      sidebarDescription="Nhập ý định tiếng Việt hoặc bản nháp tiếng Anh để nhận đề xuất tự nhiên nhất cho công sở."
+      showReset={!!(text || context || result)}
+      onReset={handleReset}
+      sidebarContent={
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <FieldGroup>
+            {/* Mode Toggle */}
+            <Field>
+              <FieldTitle
+                id="mode-label"
+                className="font-bold text-xs uppercase tracking-wider"
               >
-                <RotateCcw className="size-3 mr-1" />
-                Làm mới
-              </Button>
+                Chế độ hoạt động
+              </FieldTitle>
+              <ToggleGroup
+                aria-labelledby="mode-label"
+                value={[mode]}
+                onValueChange={handleModeChange}
+                variant="outline"
+                className="w-full justify-start *:flex-1"
+              >
+                <ToggleGroupItem
+                  value="write_from_vietnamese"
+                  className="text-xs"
+                >
+                  Dịch từ tiếng Việt
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="improve_english_draft"
+                  className="text-xs"
+                >
+                  Sửa nháp tiếng Anh
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </Field>
+
+            {/* Tone Selection */}
+            <Field>
+              <FieldTitle
+                id="tone-label"
+                className="font-bold text-xs uppercase tracking-wider"
+              >
+                Tông giọng (Tone)
+              </FieldTitle>
+              <ToggleGroup
+                aria-labelledby="tone-label"
+                value={[tone]}
+                onValueChange={handleToneChange}
+                variant="outline"
+                className="w-full justify-start grid grid-cols-5 gap-1"
+              >
+                <ToggleGroupItem value="friendly" className="text-[10px] px-1">
+                  Thân thiện
+                </ToggleGroupItem>
+                <ToggleGroupItem value="polite" className="text-[10px] px-1">
+                  Lịch sự
+                </ToggleGroupItem>
+                <ToggleGroupItem value="direct" className="text-[10px] px-1">
+                  Trực tiếp
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="professional"
+                  className="text-[10px] px-1"
+                >
+                  Trang trọng
+                </ToggleGroupItem>
+                <ToggleGroupItem value="casual" className="text-[10px] px-1">
+                  Thường ngày
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </Field>
+
+            {/* Context Input */}
+            <Field>
+              <FieldLabel
+                htmlFor="context-input"
+                className="font-bold text-xs uppercase tracking-wider"
+              >
+                Ngữ cảnh / Mục tiêu (Không bắt buộc)
+              </FieldLabel>
+              <Input
+                id="context-input"
+                name="context"
+                autoComplete="off"
+                placeholder="Ví dụ: gửi cho sếp qua Slack, giải thích việc chậm trễ tiến độ…"
+                value={context}
+                onChange={(e) => setContext(e.target.value)}
+                disabled={isPending}
+                className="h-8.5 text-xs placeholder:text-muted-foreground/60"
+              />
+            </Field>
+
+            {/* Input Text */}
+            <Field>
+              <FieldLabel
+                htmlFor="text-input"
+                className="font-bold text-xs uppercase tracking-wider"
+              >
+                Nội dung nhập
+              </FieldLabel>
+              <Textarea
+                id="text-input"
+                name="text"
+                autoComplete="off"
+                ref={textareaRef}
+                rows={6}
+                placeholder={
+                  mode === 'write_from_vietnamese'
+                    ? 'Chào anh, em gửi báo cáo tiến độ tuần này. Có một số task bị chậm do phát sinh lỗi…'
+                    : 'hi team, i send the report. some task is late because bug…'
+                }
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isPending}
+                required
+                autoFocus
+                className="text-xs p-3 focus-visible:ring-primary/40 resize-y min-h-24"
+              />
+              <FieldDescription className="text-[10px]">
+                Bấm{' '}
+                <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono">
+                  {osBadge}
+                </kbd>{' '}
+                để gửi nhanh khi đang gõ.
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
+
+          {/* Quick chips templates */}
+          <SampleChips
+            type="message"
+            onSelectSample={handleSelectSample}
+            className="mt-1"
+          />
+
+          <Button
+            type="submit"
+            disabled={isPending || !text.trim()}
+            className={cn(
+              'w-full h-9 font-bold uppercase tracking-wider text-xs cursor-pointer select-none active:scale-99 transition-all duration-300',
+              'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30',
+              pulseSubmit && 'animate-bounce',
+              isPending && 'opacity-80 cursor-wait'
             )}
-          </div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <FieldGroup>
-              {/* Mode Toggle */}
-              <Field>
-                <FieldTitle
-                  id="mode-label"
-                  className="font-bold text-xs uppercase tracking-wider"
-                >
-                  Chế độ hoạt động
-                </FieldTitle>
-                <ToggleGroup
-                  aria-labelledby="mode-label"
-                  value={[mode]}
-                  onValueChange={handleModeChange}
-                  variant="outline"
-                  className="w-full justify-start *:flex-1"
-                >
-                  <ToggleGroupItem
-                    value="write_from_vietnamese"
-                    className="text-xs"
-                  >
-                    Dịch từ tiếng Việt
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="improve_english_draft"
-                    className="text-xs"
-                  >
-                    Sửa nháp tiếng Anh
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </Field>
-
-              {/* Tone Selection */}
-              <Field>
-                <FieldTitle
-                  id="tone-label"
-                  className="font-bold text-xs uppercase tracking-wider"
-                >
-                  Tông giọng (Tone)
-                </FieldTitle>
-                <ToggleGroup
-                  aria-labelledby="tone-label"
-                  value={[tone]}
-                  onValueChange={handleToneChange}
-                  variant="outline"
-                  className="w-full justify-start grid grid-cols-5 gap-1"
-                >
-                  <ToggleGroupItem
-                    value="friendly"
-                    className="text-[10px] px-1"
-                  >
-                    Thân thiện
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="polite" className="text-[10px] px-1">
-                    Lịch sự
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="direct" className="text-[10px] px-1">
-                    Trực tiếp
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="professional"
-                    className="text-[10px] px-1"
-                  >
-                    Trang trọng
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="casual" className="text-[10px] px-1">
-                    Thường ngày
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </Field>
-
-              {/* Context Input */}
-              <Field>
-                <FieldLabel
-                  htmlFor="context-input"
-                  className="font-bold text-xs uppercase tracking-wider"
-                >
-                  Ngữ cảnh / Mục tiêu (Không bắt buộc)
-                </FieldLabel>
-                <Input
-                  id="context-input"
-                  name="context"
-                  autoComplete="off"
-                  placeholder="Ví dụ: gửi cho sếp qua Slack, giải thích việc chậm trễ tiến độ…"
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  disabled={isPending}
-                  className="h-8.5 text-xs placeholder:text-muted-foreground/60"
-                />
-              </Field>
-
-              {/* Input Text */}
-              <Field>
-                <FieldLabel
-                  htmlFor="text-input"
-                  className="font-bold text-xs uppercase tracking-wider"
-                >
-                  Nội dung nhập
-                </FieldLabel>
-                <Textarea
-                  id="text-input"
-                  name="text"
-                  autoComplete="off"
-                  ref={textareaRef}
-                  rows={6}
-                  placeholder={
-                    mode === 'write_from_vietnamese'
-                      ? 'Chào anh, em gửi báo cáo tiến độ tuần này. Có một số task bị chậm do phát sinh lỗi…'
-                      : 'hi team, i send the report. some task is late because bug…'
-                  }
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={isPending}
-                  required
-                  autoFocus
-                  className="text-xs p-3 focus-visible:ring-primary/40 resize-y min-h-24"
-                />
-                <FieldDescription className="text-[10px]">
-                  Bấm{' '}
-                  <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px] font-mono">
-                    {osBadge}
-                  </kbd>{' '}
-                  để gửi nhanh khi đang gõ.
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-
-            {/* Quick chips templates */}
-            <SampleChips
-              type="message"
-              onSelectSample={handleSelectSample}
-              className="mt-1"
-            />
-
-            <Button
-              type="submit"
-              disabled={isPending || !text.trim()}
-              className={cn(
-                'w-full h-9 font-bold uppercase tracking-wider text-xs cursor-pointer select-none active:scale-99 transition-all duration-300',
-                'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30',
-                pulseSubmit && 'animate-bounce',
-                isPending && 'opacity-80 cursor-wait'
-              )}
-            >
-              {isPending ? (
-                <>
-                  <span className="animate-spin mr-2 size-3.5 border-2 border-current border-t-transparent rounded-full" />
-                  Coach đang phân tích…
-                </>
-              ) : (
-                <span className="flex items-center gap-1.5 justify-center">
-                  Gửi Coach
-                  <kbd className="px-1 py-0.5 rounded bg-primary-foreground/15 text-[8.5px] font-mono select-none tracking-normal opacity-85">
-                    {osBadge.replace('↵', 'Enter')}
-                  </kbd>
-                  <ArrowRight className="size-3.5" />
-                </span>
-              )}
-            </Button>
-          </form>
-        </section>
-
-        {/* Right Column: Coach Response */}
-        <section className="md:col-span-7 flex flex-col gap-6">
+          >
+            {isPending ? (
+              <>
+                <span className="animate-spin mr-2 size-3.5 border-2 border-current border-t-transparent rounded-full" />
+                Coach đang phân tích…
+              </>
+            ) : (
+              <span className="flex items-center gap-1.5 justify-center">
+                Gửi Coach
+                <kbd className="px-1 py-0.5 rounded bg-primary-foreground/15 text-[8.5px] font-mono select-none tracking-normal opacity-85">
+                  {osBadge.replace('↵', 'Enter')}
+                </kbd>
+                <ArrowRight className="size-3.5" />
+              </span>
+            )}
+          </Button>
+        </form>
+      }
+      mainContent={
+        <>
           <ErrorPanel error={error} />
 
           {isPending ? (
-            /* Loading State */
-            <div className="flex flex-col gap-5 animate-pulse">
-              <div className="flex items-center gap-2">
-                <span className="animate-spin size-4 border-2 border-primary border-t-transparent rounded-full" />
-                <div className="h-4 bg-muted/60 rounded w-1/4" />
-              </div>
-              <Card className="border border-border bg-card">
-                <CardHeader className="pb-3 border-b border-border/20">
-                  <div className="h-4 bg-muted/60 rounded w-1/3 mb-2" />
-                  <div className="h-9 bg-muted/30 rounded w-full" />
-                </CardHeader>
-                <CardContent className="pt-4 flex flex-col gap-4">
-                  <div className="h-3 bg-muted/50 rounded w-1/5" />
-                  <div className="h-6 bg-muted/30 rounded w-full" />
-                  <div className="h-3 bg-muted/50 rounded w-1/4" />
-                  <div className="h-14 bg-muted/30 rounded w-full" />
-                </CardContent>
-              </Card>
-            </div>
+            <LoadingPanel layoutType="message" />
           ) : result ? (
             /* Results Panel */
             <div className="flex flex-col gap-6 animate-in fade-in duration-300">
@@ -574,8 +484,8 @@ export default function MessagePage() {
               className="py-8"
             />
           )}
-        </section>
-      </main>
-    </div>
+        </>
+      }
+    />
   );
 }

@@ -18,7 +18,7 @@ The immediate implementation focus is making the writing workflows useful in dai
 - Explanation Coach
 - Eval scripts for both workflows
 - Simple UI for both workflows
-- No persistence, or only temporary/local state
+- No persistence, or only temporary/local state (currently, Mistake Candidates are extracted and displayed temporarily on-screen, with no disk or database saving)
 
 ### MVP v1
 

@@ -297,7 +297,7 @@ export default function LiveCoachPage() {
         </div>
       }
       mainContent={
-        <div className="flex flex-col gap-6 max-w-4xl mx-auto py-1">
+        <div className="flex flex-col gap-6 max-w-2xl w-full mx-auto py-1">
           {/* Connection Error Banner */}
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs rounded-2xl animate-in fade-in duration-200">
@@ -356,8 +356,8 @@ export default function LiveCoachPage() {
 
           {/* Connected call view */}
           {(isConnected || isConnecting) && (
-            <Card className="min-h-[580px] border border-border/80 shadow-sm rounded-3xl overflow-hidden bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 flex flex-col">
-              <CardContent className="p-8 flex-1 flex flex-col items-center justify-between gap-6">
+            <Card className="w-full border border-border/80 shadow-sm rounded-3xl bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300">
+              <CardContent className="p-6 flex flex-col items-center gap-5.5">
                 {/* Call Status Indicator */}
                 <div className="flex flex-col items-center gap-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-primary px-3 py-1 bg-primary/10 rounded-full animate-pulse">
@@ -386,7 +386,7 @@ export default function LiveCoachPage() {
                   </span>
                   <div
                     ref={scrollRef}
-                    className="w-full h-36 overflow-y-auto border border-border/60 bg-muted/30 rounded-2xl p-4 flex flex-col gap-3 scroll-smooth select-text"
+                    className="w-full h-40 overflow-y-auto border border-border/60 bg-muted/30 rounded-2xl p-4 flex flex-col gap-3 scroll-smooth select-text"
                   >
                     {transcript.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground/60 italic font-medium">
@@ -433,7 +433,7 @@ export default function LiveCoachPage() {
 
                 {/* SOS Rescue / Help hint */}
                 {isConnected && (
-                  <div className="w-full border-t border-border/40 pt-5 flex flex-col gap-3 items-center">
+                  <div className="w-full border-t border-border/40 pt-4 flex flex-col gap-3 items-center">
                     {sosHint ? (
                       <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-foreground text-xs rounded-2xl w-full flex justify-between items-start gap-3 animate-in slide-in-from-bottom-2 duration-200">
                         <div className="flex-1">

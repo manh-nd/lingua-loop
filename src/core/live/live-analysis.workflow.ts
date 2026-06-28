@@ -40,11 +40,13 @@ Context provided:
 - transcript: Array of messages of role "user" (the user's voice input transcribed) and "assistant" (the AI coach's voice responses).
 
 Analysis Guidelines:
+CRITICAL: You must ONLY analyze the turns spoken by the "user" role. NEVER correct, analyze, or suggest alternatives for sentences spoken by the "assistant" role under any circumstances. The "assistant" turns represent the native-speaking model guiding the call, and their speech is already correct and intentional.
+
 1. Identify grammatical errors, vocabulary mistakes, or clear spelling/transcription errors in the "user" turns. For each mistake, output:
    - originalText: The exact phrase/sentence spoken by the user that had an error.
    - correctedText: The grammatically correct version.
    - explanationVi: A warm, clear, and simple explanation of the error in Vietnamese.
-2. Identify sentences spoken by the user that were grammatically correct but sounded awkward, too literal (translated directly from Vietnamese), or unprofessional for a corporate setting. For these, output:
+2. Identify sentences spoken by the "user" that were grammatically correct but sounded awkward, too literal (translated directly from Vietnamese), or unprofessional for a corporate setting. For these, output:
    - originalText: The user's original phrasing.
    - betterAlternative: A natural, professional native English alternative.
    - explanationVi: The difference in nuance or why this alternative sounds better in Vietnamese.

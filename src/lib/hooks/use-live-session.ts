@@ -125,9 +125,17 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
         };
 
         ws.onmessage = async (event) => {
-          if (typeof event.data !== 'string') return;
+          let messageData = '';
+          if (typeof Blob !== 'undefined' && event.data instanceof Blob) {
+            messageData = await event.data.text();
+          } else if (typeof event.data === 'string') {
+            messageData = event.data;
+          } else {
+            return;
+          }
+
           try {
-            const response = JSON.parse(event.data);
+            const response = JSON.parse(messageData);
 
             // Handle setup complete
             if (response.setupComplete) {

@@ -147,6 +147,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden transition-colors duration-300">
+      {/* Background Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(120,119,198,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(120,119,198,0.03)_1px,transparent_1px)] bg-[size:32px_32px] -z-20 pointer-events-none" />
       {/* Skip to main content link for keyboard accessibility */}
       <a
         href="#main-content"
@@ -184,10 +186,14 @@ export default function Home() {
         className="flex-1 w-full max-w-5xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-14 justify-center"
       >
         <section className="max-w-2xl flex flex-col gap-5 text-left">
-          <span className="text-xs uppercase tracking-widest text-primary font-bold">
-            Vietnamese Professional Coach
-          </span>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance leading-tight">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary w-fit animate-pulse">
+            <span className="relative flex size-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full size-2 bg-primary"></span>
+            </span>
+            Học tiếng Anh theo vòng lặp, không quên lỗi cũ
+          </div>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-balance leading-none">
             Workplace English,{' '}
             <span className="bg-gradient-to-r from-primary via-indigo-500 to-pink-500 bg-clip-text text-transparent">
               refined.
@@ -232,10 +238,17 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
             {/* Left Panel: Vietnamese Draft */}
-            <div className="flex flex-col gap-2 p-4 rounded-xl bg-background/50 border border-border/40 min-h-36 relative overflow-hidden">
-              <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">
-                Nháp thô tiếng Việt (Your Draft)
-              </span>
+            <div className="flex flex-col gap-2.5 p-4 rounded-xl bg-background/50 border border-border/40 min-h-36 relative overflow-hidden">
+              <div className="flex items-center justify-between border-b border-border/10 pb-1.5 mb-1">
+                <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">
+                  Nháp thô tiếng Việt (Your Draft)
+                </span>
+                <div className="flex gap-1.5">
+                  <span className="size-1.5 rounded-full bg-red-400/50" />
+                  <span className="size-1.5 rounded-full bg-yellow-400/50" />
+                  <span className="size-1.5 rounded-full bg-emerald-400/50" />
+                </div>
+              </div>
               <p className="text-xs font-medium leading-relaxed text-foreground select-none">
                 {streamedInput}
                 {isStreaming && (
@@ -245,26 +258,35 @@ export default function Home() {
             </div>
 
             {/* Right Panel: Coached Result */}
-            <div className="flex flex-col gap-2 p-4 rounded-xl bg-gradient-to-br from-primary/[0.03] to-indigo-500/[0.01] border border-primary/25 shadow-sm relative overflow-hidden min-h-36">
+            <div className="flex flex-col gap-2.5 p-4 rounded-xl bg-gradient-to-br from-primary/[0.03] to-indigo-500/[0.01] border border-primary/25 shadow-sm relative overflow-hidden min-h-36">
               <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-indigo-500" />
-              <div className="flex items-center justify-between border-b border-primary/10 pb-1.5">
+              <div className="flex items-center justify-between border-b border-primary/10 pb-1.5 mb-1">
                 <span className="text-[9px] uppercase tracking-wider font-bold text-primary flex items-center gap-1">
                   <FileCheck className="size-3 text-primary" />
                   Gợi ý khuyên dùng (Coached)
                 </span>
-                <span className="text-[9px] uppercase px-1.5 py-0.5 rounded-full font-bold bg-primary/10 text-primary border border-primary/20">
-                  Polite
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] uppercase px-1.5 py-0.5 rounded-full font-bold bg-primary/10 text-primary border border-primary/20">
+                    Polite
+                  </span>
+                  <div className="flex gap-1.5">
+                    <span className="size-1.5 rounded-full bg-red-400/50" />
+                    <span className="size-1.5 rounded-full bg-yellow-400/50" />
+                    <span className="size-1.5 rounded-full bg-emerald-400/50" />
+                  </div>
+                </div>
               </div>
               {/* Inset text container */}
-              <div className="text-xs select-none font-mono leading-relaxed text-foreground p-3.5 bg-white/70 dark:bg-black/50 border border-border/40 rounded-lg shadow-inner flex-1 flex flex-col justify-center">
-                <p>{demoTabsData[activeTab].highlights}</p>
+              <div className="text-xs select-none leading-relaxed text-foreground p-3.5 bg-white/70 dark:bg-black/50 border border-border/40 rounded-lg shadow-inner flex-1 flex flex-col justify-center">
+                <p className="font-sans font-medium text-pretty leading-relaxed text-sm">
+                  {demoTabsData[activeTab].highlights}
+                </p>
               </div>
             </div>
           </div>
           <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-3 text-[11px] text-muted-foreground flex gap-2 border border-primary/10 items-start">
             <span className="text-primary font-bold shrink-0 whitespace-nowrap">
-              💡 Code Coach:
+              💡 Phân tích từ Coach:
             </span>
             <p className="leading-relaxed">
               {demoTabsData[activeTab].explanation}
@@ -403,7 +425,8 @@ export default function Home() {
                 Hiểu ngữ cảnh, dịch sát nghĩa thành ngữ, từ lóng tiếng Anh và
                 phân tích hàm ý/tông giọng của người nói.
               </p>
-              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20">
+              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20 flex items-center gap-1">
+                <span className="flex size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 MỞ NGAY (READY)
               </span>
             </Link>
@@ -426,7 +449,8 @@ export default function Home() {
                 Luyện nói phản xạ thời gian thực với AI qua kịch bản công sở,
                 đàm phán và phỏng vấn thử.
               </p>
-              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20">
+              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20 flex items-center gap-1">
+                <span className="flex size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 MỞ NGAY (READY)
               </span>
             </Link>
@@ -450,7 +474,8 @@ export default function Home() {
                 Document Coach để ôn tập theo vòng lặp, không bao giờ lặp lại
                 lỗi cũ.
               </p>
-              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20">
+              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20 flex items-center gap-1">
+                <span className="flex size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 MỞ NGAY (READY)
               </span>
             </Link>

@@ -145,12 +145,10 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
                   if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
                     const audioPayload = {
                       realtimeInput: {
-                        mediaChunks: [
-                          {
-                            mimeType: 'audio/pcm',
-                            data: base64PCM,
-                          },
-                        ],
+                        audio: {
+                          mimeType: 'audio/pcm;rate=16000',
+                          data: base64PCM,
+                        },
                       },
                     };
                     ws.send(JSON.stringify(audioPayload));

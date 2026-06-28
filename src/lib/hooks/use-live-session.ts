@@ -35,6 +35,9 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     assistant: '',
   });
 
+  // Track committed messages of previous turns to avoid repetition bugs
+  const committedMessagesRef = useRef<LiveMessage[]>([]);
+
   useEffect(() => {
     isMutedRef.current = isMuted;
   }, [isMuted]);
@@ -72,6 +75,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
       setTranscript([]);
       setSosHint(null);
       currentTurnTextRef.current = { user: '', assistant: '' };
+      committedMessagesRef.current = [];
 
       try {
         // 1. Fetch ephemeral token from backend
@@ -243,25 +247,15 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     const userText = currentTurnTextRef.current.user.trim();
     const assistantText = currentTurnTextRef.current.assistant.trim();
 
-    setTranscript((prev) => {
-      const base = [...prev];
-      // If there are current uncommitted texts, append or update them
-      const currentMessages: LiveMessage[] = [];
-      if (userText) {
-        currentMessages.push({ role: 'user', text: userText });
-      }
-      if (assistantText) {
-        currentMessages.push({ role: 'assistant', text: assistantText });
-      }
+    const currentMessages: LiveMessage[] = [];
+    if (userText) {
+      currentMessages.push({ role: 'user', text: userText });
+    }
+    if (assistantText) {
+      currentMessages.push({ role: 'assistant', text: assistantText });
+    }
 
-      // Filter out previous uncommitted temporary messages at the end
-      // In this setup, we just append current temporary ones. We will clear them on commit.
-      // To keep it simple: we store completed messages in `transcript` state and append current turn dynamically.
-      return [
-        ...base.filter((m) => !m.text.endsWith(' (đang nói...)')),
-        ...currentMessages,
-      ];
-    });
+    setTranscript([...committedMessagesRef.current, ...currentMessages]);
   };
 
   const commitCurrentTurn = () => {
@@ -269,13 +263,19 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     const assistantText = currentTurnTextRef.current.assistant.trim();
 
     if (userText || assistantText) {
-      setTranscript((prev) => {
-        const committed: LiveMessage[] = [];
-        if (userText) committed.push({ role: 'user', text: userText });
-        if (assistantText)
-          committed.push({ role: 'assistant', text: assistantText });
-        return [...prev, ...committed];
-      });
+      const turnMessages: LiveMessage[] = [];
+      if (userText) {
+        turnMessages.push({ role: 'user', text: userText });
+      }
+      if (assistantText) {
+        turnMessages.push({ role: 'assistant', text: assistantText });
+      }
+
+      committedMessagesRef.current = [
+        ...committedMessagesRef.current,
+        ...turnMessages,
+      ];
+      setTranscript(committedMessagesRef.current);
       currentTurnTextRef.current = { user: '', assistant: '' };
     }
   };

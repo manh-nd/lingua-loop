@@ -41,8 +41,8 @@ export function CoachShell({
       </a>
 
       {/* Background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-gradient-to-tr from-primary/10 via-pink-500/5 to-transparent rounded-full blur-3xl -z-10 animate-float-1" />
-      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-gradient-to-br from-amber-500/5 via-primary/5 to-transparent rounded-full blur-3xl -z-10 animate-float-2" />
+      <div className="absolute top-[-10%] left-[-10%] size-[500px] bg-gradient-to-tr from-primary/15 via-accent/5 to-transparent rounded-full blur-3xl -z-10 animate-float-1" />
+      <div className="absolute bottom-[-10%] right-[-10%] size-[500px] bg-gradient-to-br from-accent/5 via-primary/5 to-transparent rounded-full blur-3xl -z-10 animate-float-2" />
 
       {/* Header */}
       <header className="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-border/40">
@@ -59,7 +59,7 @@ export function CoachShell({
             <div className="p-1 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
               {headerIcon}
             </div>
-            <span className="font-heading font-bold text-sm tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent uppercase">
+            <span className="font-heading font-extrabold text-sm tracking-tight bg-gradient-to-r from-primary via-emerald-400 to-accent bg-clip-text text-transparent uppercase">
               {headerTitle}
             </span>
           </div>
@@ -67,7 +67,7 @@ export function CoachShell({
         <div className="flex items-center gap-4">
           <Link
             href="/memory"
-            className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+            className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
           >
             Sổ tay lỗi (Memory)
           </Link>

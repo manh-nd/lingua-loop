@@ -542,7 +542,17 @@ function ReviewContent() {
             /* Review Card Game State */
             <div className="flex flex-col gap-5.5">
               {/* Dynamic Mistake Card depending on memoryType */}
-              <Card className="border border-border bg-white/[0.01] rounded-2xl overflow-hidden shadow-2xs">
+              <Card
+                className={cn(
+                  'border border-border bg-white/[0.01] rounded-2xl overflow-hidden transition-all duration-300 shadow-sm',
+                  isSubmitted &&
+                    isCorrect &&
+                    'animate-glow-emerald border-emerald-500/30',
+                  isSubmitted &&
+                    !isCorrect &&
+                    'animate-shake border-rose-500/30 bg-rose-500/[0.01]'
+                )}
+              >
                 {/* Header Tag */}
                 <div className="py-2.5 px-4 bg-muted/20 border-b border-border/50 flex flex-row items-center justify-between text-[10px]">
                   <div className="flex items-center gap-1.5">
@@ -737,7 +747,7 @@ function ReviewContent() {
                 {isSubmitted && gradeResult && (
                   <Card
                     className={cn(
-                      'border rounded-2xl p-4.5 animate-in fade-in slide-in-from-top-1 duration-250 shadow-none border-l-4 font-sans',
+                      'border rounded-2xl p-4.5 animate-slide-up shadow-sm border-l-4 font-sans',
                       isCorrect
                         ? 'border-emerald-500 bg-emerald-500/[0.01] border-l-emerald-500'
                         : 'border-rose-500 bg-rose-500/[0.01] border-l-rose-500'

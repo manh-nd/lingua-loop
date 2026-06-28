@@ -299,30 +299,32 @@ export default function ReadingPage() {
             <LoadingPanel layoutType="explanation" />
           ) : result ? (
             /* Results Panel */
-            <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+            <div className="flex flex-col gap-6 animate-slide-up">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkle className="size-4 text-primary animate-pulse" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <h2 className="font-heading text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Phân tích từ Reading Coach
                   </h2>
                 </div>
               </div>
 
               {/* 1. Natural Translation & Summary */}
-              <div className="flex flex-col gap-2 animate-in fade-in duration-300">
+              <div className="flex flex-col gap-2">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1.5 px-1 select-none">
                   <Languages className="size-4 text-primary" />
                   Bản dịch nghĩa tự nhiên (Translation Slate):
                 </span>
 
-                <Card className="border border-border bg-slate-50/50 dark:bg-black/20 rounded-2xl p-5 flex flex-col gap-4 shadow-xs relative overflow-hidden">
+                <Card className="glass-card rounded-2xl p-5 flex flex-col gap-4 shadow-md relative overflow-hidden">
                   {/* Mock Editor Window Header Bar */}
                   <div className="flex items-center justify-between border-b border-border/40 pb-3 -mt-1 select-none">
                     <div className="flex items-center gap-2">
-                      <div className="size-2.5 rounded-full bg-red-400" />
-                      <div className="size-2.5 rounded-full bg-amber-400" />
-                      <div className="size-2.5 rounded-full bg-emerald-400" />
+                      <div className="flex gap-1.5">
+                        <div className="size-2.5 rounded-full bg-red-400/80 hover:bg-red-400 transition-colors" />
+                        <div className="size-2.5 rounded-full bg-amber-400/80 hover:bg-amber-400 transition-colors" />
+                        <div className="size-2.5 rounded-full bg-emerald-400/80 hover:bg-emerald-400 transition-colors" />
+                      </div>
                       <span className="text-[10.5px] font-semibold text-muted-foreground/80 font-mono ml-2">
                         Reader translation view
                       </span>
@@ -331,26 +333,26 @@ export default function ReadingPage() {
                       <TTSButton
                         text={text}
                         size="icon-sm"
-                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-xs interactive-hover"
                       />
                       <CopyButton
                         text={result.naturalTranslation}
                         size="icon-sm"
-                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-xs interactive-hover"
                       />
                     </div>
                   </div>
 
                   {/* Document Slate Body */}
-                  <div className="bg-white dark:bg-zinc-900 border border-border/80 p-5 rounded-xl shadow-2xs text-xs leading-relaxed text-foreground select-all font-sans font-semibold">
+                  <div className="bg-white dark:bg-zinc-950 border border-border p-5 rounded-xl shadow-xs text-xs leading-relaxed text-foreground select-all font-sans font-semibold transition-all duration-300 hover:border-primary/30">
                     {result.naturalTranslation}
                   </div>
 
                   {/* Summary section */}
-                  <div className="bg-amber-500/[0.03] border border-amber-500/10 rounded-xl p-3.5 flex gap-2.5 items-start text-[11px] text-muted-foreground/95 select-text mt-1">
-                    <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="bg-amber-500/[0.03] border border-amber-500/10 rounded-xl p-3.5 flex gap-2.5 items-start text-[11px] text-foreground/90 select-text mt-1">
+                    <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5 animate-pulse" />
                     <div className="leading-relaxed">
-                      <span className="font-bold text-amber-800 dark:text-amber-400 block mb-0.5 select-none">
+                      <span className="font-bold text-amber-800 dark:text-accent block mb-0.5 select-none">
                         Tóm tắt đại ý:
                       </span>
                       {result.summaryVi}
@@ -360,18 +362,18 @@ export default function ReadingPage() {
               </div>
 
               {/* 2. Tone Analysis */}
-              <Card className="border border-border bg-white/20 dark:bg-black/10 shadow-none rounded-xl p-5 flex flex-col gap-3">
+              <Card className="border border-border bg-white/60 dark:bg-black/25 shadow-none rounded-xl p-5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                    <BadgeAlert className="size-4 text-indigo-500" />
+                  <div className="flex items-center gap-1.5 text-[10.5px] uppercase font-bold tracking-wider text-foreground/85">
+                    <BadgeAlert className="size-4 text-indigo-600 dark:text-indigo-400" />
                     Phân tích tông giọng (Tone & Implied Meaning)
                   </div>
-                  <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                  <span className="text-[9.5px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
                     {result.toneAnalysis.toneVi}
                   </span>
                 </div>
                 <p className="text-xs text-foreground/90 leading-relaxed">
-                  <span className="font-semibold text-muted-foreground">
+                  <span className="font-semibold text-foreground/85">
                     Hàm ý/Sắc thái:{' '}
                   </span>
                   {result.toneAnalysis.impliedMeaningVi}
@@ -434,11 +436,11 @@ export default function ReadingPage() {
                                 key={idx}
                                 className="p-4 rounded-lg bg-red-500/[0.02] border border-red-500/15 flex flex-col gap-2 text-xs"
                               >
-                                <span className="font-semibold text-red-500 flex items-center gap-1">
+                                <span className="font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
                                   <AlertTriangle className="size-3.5 shrink-0" />
                                   Dễ nhầm lẫn: &ldquo;{m.trapVi}&rdquo;
                                 </span>
-                                <p className="leading-relaxed text-muted-foreground">
+                                <p className="leading-relaxed text-foreground/90 font-medium">
                                   {m.explanationVi}
                                 </p>
                               </div>
@@ -459,19 +461,19 @@ export default function ReadingPage() {
                             let catLabel = '';
                             if (s.category === 'typo') {
                               catColor =
-                                'bg-rose-500/10 text-rose-500 border-rose-500/20';
+                                'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
                               catLabel = 'Chính tả';
                             } else if (s.category === 'grammar') {
                               catColor =
-                                'bg-amber-500/10 text-amber-500 border-amber-500/20';
+                                'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20';
                               catLabel = 'Ngữ pháp';
                             } else if (s.category === 'awkward_wording') {
                               catColor =
-                                'bg-sky-500/10 text-sky-500 border-sky-500/20';
+                                'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20';
                               catLabel = 'Dựng câu vụng';
                             } else {
                               catColor =
-                                'bg-purple-500/10 text-purple-500 border-purple-500/20';
+                                'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
                               catLabel = 'Mơ hồ';
                             }
 
@@ -481,7 +483,7 @@ export default function ReadingPage() {
                                 className="p-4 rounded-lg bg-card border border-border flex flex-col gap-2.5 text-xs shadow-2xs"
                               >
                                 <div className="flex justify-between items-center gap-2">
-                                  <span className="font-mono font-bold text-foreground/80 line-through decoration-rose-500/60 select-all">
+                                  <span className="font-mono font-bold text-foreground/90 line-through decoration-rose-500/60 select-all">
                                     {s.originalText}
                                   </span>
                                   <span
@@ -494,7 +496,7 @@ export default function ReadingPage() {
                                   </span>
                                 </div>
                                 <p className="leading-relaxed text-foreground/90 font-medium">
-                                  <span className="text-muted-foreground font-normal">
+                                  <span className="text-foreground/75 font-normal">
                                     Góp ý:
                                   </span>{' '}
                                   {s.issueVi}
@@ -529,12 +531,12 @@ export default function ReadingPage() {
                       {result.replySuggestions.map((reply, index) => (
                         <Card
                           key={index}
-                          className="border border-border bg-white/20 dark:bg-black/10 hover:border-primary/35 hover:bg-white/40 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4.5 flex flex-col gap-3"
+                          className="glass-card hover:border-primary/45 hover:shadow-md transition-all duration-300 rounded-xl p-4.5 flex flex-col gap-3 interactive-hover"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 leading-relaxed">
+                            <span className="text-[10px] text-foreground/80 font-medium flex items-center gap-1 leading-relaxed">
                               💡{' '}
-                              <span className="font-semibold text-foreground/80">
+                              <span className="font-semibold text-foreground/90">
                                 Trường hợp dùng:
                               </span>{' '}
                               {reply.contextVi}
@@ -620,10 +622,8 @@ function ReadingCandidateCard({
   return (
     <Card
       className={cn(
-        'border shadow-none overflow-hidden transition-all duration-300 py-0 rounded-xl',
-        isSaved
-          ? 'border-emerald-500/30 bg-emerald-500/[0.01]'
-          : 'border-border bg-muted/5'
+        'glass-card overflow-hidden transition-all duration-300 py-0 rounded-xl interactive-hover',
+        isSaved && 'border-emerald-500/35 bg-emerald-500/[0.02]'
       )}
     >
       {/* Header Banner */}
@@ -669,19 +669,19 @@ function ReadingCandidateCard({
               Bẫy dịch: &ldquo;{candidate.trapText}&rdquo;
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-sans">
-              <div className="p-2 bg-red-500/[0.02] border border-red-500/10 rounded flex flex-col gap-0.5">
+              <div className="p-2 bg-red-500/[0.03] border border-red-500/10 rounded flex flex-col gap-0.5">
                 <span className="text-[9px] text-red-700 dark:text-red-400 block font-bold uppercase select-none">
                   Dễ hiểu lầm là:
                 </span>
-                <span className="text-red-600 dark:text-red-400 font-medium select-text">
+                <span className="text-red-700 dark:text-red-300 font-semibold select-text">
                   {candidate.wrongInterpretationVi}
                 </span>
               </div>
-              <div className="p-2 bg-emerald-500/[0.02] border border-emerald-500/10 rounded flex flex-col gap-0.5">
+              <div className="p-2 bg-emerald-500/[0.03] border border-emerald-500/10 rounded flex flex-col gap-0.5">
                 <span className="text-[9px] text-emerald-700 dark:text-emerald-400 block font-bold uppercase select-none">
                   Hiểu đúng ngữ cảnh:
                 </span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold select-text">
+                <span className="text-emerald-700 dark:text-emerald-300 font-bold select-text">
                   {candidate.correctInterpretationVi}
                 </span>
               </div>
@@ -693,8 +693,8 @@ function ReadingCandidateCard({
               Cụm từ: &ldquo;{candidate.phrase}&rdquo;
             </div>
             {candidate.situationVi && (
-              <div className="text-[11px] text-muted-foreground leading-relaxed p-2 bg-muted/30 border border-border/40 rounded">
-                <span className="font-bold text-foreground/80">
+              <div className="text-[11px] text-foreground/80 leading-relaxed p-2 bg-muted/30 border border-border/40 rounded">
+                <span className="font-bold text-foreground/90">
                   Tình huống:
                 </span>{' '}
                 {candidate.situationVi}
@@ -703,13 +703,13 @@ function ReadingCandidateCard({
           </div>
         )}
 
-        <div className="text-muted-foreground text-[11px] leading-relaxed border-t border-border/20 pt-2 flex items-start gap-1">
+        <div className="text-foreground/90 font-medium text-[11.5px] leading-relaxed border-t border-border/20 pt-2 flex items-start gap-1">
           <span className="select-none">💡</span>
           <span className="select-text">{candidate.explanationVi}</span>
         </div>
 
         {candidate.culturalContextVi && (
-          <div className="text-indigo-600 dark:text-indigo-400 text-[10.5px] leading-relaxed bg-indigo-500/[0.02] border border-indigo-500/10 p-2.5 rounded flex items-start gap-1.5">
+          <div className="text-indigo-700 dark:text-indigo-300 text-[11px] leading-relaxed bg-indigo-500/[0.03] dark:bg-indigo-950/20 border border-indigo-500/15 p-2.5 rounded flex items-start gap-1.5 font-medium">
             <span className="select-none">🌍</span>
             <span className="select-text">
               <strong>Văn hóa/Ngữ cảnh:</strong> {candidate.culturalContextVi}

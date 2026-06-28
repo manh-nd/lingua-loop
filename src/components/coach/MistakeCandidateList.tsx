@@ -204,7 +204,7 @@ function MistakeCandidateCard({
   return (
     <Card
       className={cn(
-        'border shadow-none overflow-hidden animate-in fade-in duration-200 py-0',
+        'border shadow-none overflow-hidden animate-slide-up py-0 container-card-wrapper',
         isSaved
           ? 'border-emerald-500/30 bg-emerald-500/[0.01]'
           : 'border-border bg-muted/5'
@@ -247,7 +247,7 @@ function MistakeCandidateCard({
         {isEditing ? (
           /* Inline Editing Form */
           <div className="flex flex-col gap-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="responsive-candidate-grid">
               <div className="flex flex-col gap-1">
                 <label
                   htmlFor={`candidate-wrong-${candidate.patternKey}`}
@@ -321,7 +321,7 @@ function MistakeCandidateCard({
         ) : (
           /* View Mode */
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
+            <div className="responsive-candidate-grid text-[11px] font-mono">
               <div className="p-2.5 bg-red-500/[0.03] rounded-lg border border-red-500/10">
                 <span className="text-[9px] text-red-700 dark:text-red-400 block uppercase font-bold mb-0.5 select-none">
                   {mode === 'write_from_vietnamese'

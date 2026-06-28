@@ -83,7 +83,7 @@ export function ReusablePhraseList({
   return (
     <div
       className={cn(
-        'flex flex-col border border-border/85 rounded-2xl bg-white dark:bg-zinc-950 divide-y divide-border/60 overflow-hidden shadow-3xs',
+        'flex flex-col rounded-2xl glass-card divide-y divide-border/40 overflow-hidden shadow-sm animate-slide-up',
         className
       )}
     >
@@ -139,7 +139,7 @@ export function ReusablePhraseList({
                   type="button"
                   size="xs"
                   onClick={() => handleSave(item, idx)}
-                  className="text-[10px] h-7 px-3 font-bold bg-muted hover:bg-primary hover:text-primary-foreground text-foreground border border-border/80 hover:border-primary shadow-3xs cursor-pointer flex items-center gap-1"
+                  className="text-[10px] h-7 px-3 font-bold bg-muted hover:bg-primary hover:text-primary-foreground text-foreground border border-border/80 hover:border-primary shadow-xs cursor-pointer flex items-center gap-1 interactive-hover"
                 >
                   <Brain className="size-3.5 text-primary group-hover:text-primary-foreground" />
                   Lưu sổ tay

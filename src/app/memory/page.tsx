@@ -801,10 +801,8 @@ export default function MemoryPage() {
                   <Card
                     key={item.id}
                     className={cn(
-                      'border shadow-none overflow-hidden transition-all duration-300 py-0 rounded-xl',
-                      item.status === 'ignored'
-                        ? 'opacity-80 border-border/70 bg-muted/5'
-                        : 'border-border bg-white/[0.01]'
+                      'glass-card overflow-hidden transition-all duration-300 py-0 rounded-xl interactive-hover',
+                      item.status === 'ignored' && 'opacity-60 bg-muted/5'
                     )}
                   >
                     {/* Banner Header */}

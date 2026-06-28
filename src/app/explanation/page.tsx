@@ -540,7 +540,7 @@ export default function ExplanationPage() {
             disabled={isPending || !text.trim()}
             className={cn(
               'w-full h-9 font-bold uppercase tracking-wider text-xs cursor-pointer select-none active:scale-99 transition-all duration-300',
-              'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30',
+              'bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/95 hover:to-emerald-600/95 text-white shadow-md shadow-emerald-500/10 hover:shadow-lg hover:shadow-emerald-500/20',
               pulseSubmit && 'animate-bounce',
               isPending && 'opacity-80 cursor-wait'
             )}
@@ -570,11 +570,11 @@ export default function ExplanationPage() {
             <LoadingPanel layoutType="explanation" />
           ) : result ? (
             /* Results Panel */
-            <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+            <div className="flex flex-col gap-6 animate-slide-up">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkle className="size-4 text-primary animate-pulse" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <h2 className="font-heading text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Phân tích & Đề xuất cấu trúc
                   </h2>
                 </div>
@@ -589,13 +589,15 @@ export default function ExplanationPage() {
                     : 'Bản tinh chỉnh đề xuất:'}
                 </span>
 
-                <Card className="border border-border bg-slate-50/50 dark:bg-black/20 rounded-2xl p-5 flex flex-col gap-4 shadow-xs relative overflow-hidden">
+                <Card className="glass-card rounded-2xl p-5 flex flex-col gap-4 shadow-md relative overflow-hidden">
                   {/* Mock Editor Window Header Bar */}
                   <div className="flex items-center justify-between border-b border-border/40 pb-3 -mt-1 select-none">
                     <div className="flex items-center gap-2">
-                      <div className="size-2.5 rounded-full bg-red-400" />
-                      <div className="size-2.5 rounded-full bg-amber-400" />
-                      <div className="size-2.5 rounded-full bg-emerald-400" />
+                      <div className="flex gap-1.5">
+                        <div className="size-2.5 rounded-full bg-red-400/80 hover:bg-red-400 transition-colors" />
+                        <div className="size-2.5 rounded-full bg-amber-400/80 hover:bg-amber-400 transition-colors" />
+                        <div className="size-2.5 rounded-full bg-emerald-400/80 hover:bg-emerald-400 transition-colors" />
+                      </div>
                       <span className="text-[10.5px] font-semibold text-muted-foreground/80 font-mono ml-2">
                         GitHub / Jira Description Editor
                       </span>
@@ -604,18 +606,18 @@ export default function ExplanationPage() {
                       <TTSButton
                         text={result.improvedText}
                         size="icon-sm"
-                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-xs interactive-hover"
                       />
                       <CopyButton
                         text={result.improvedText}
                         size="icon-sm"
-                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-xs interactive-hover"
                       />
                     </div>
                   </div>
 
                   {/* Document Slate Body */}
-                  <div className="bg-white dark:bg-zinc-900 border border-border/80 p-5 rounded-xl shadow-2xs text-xs leading-relaxed text-foreground select-all min-h-48 max-h-[28rem] overflow-y-auto font-sans font-medium whitespace-pre-wrap">
+                  <div className="bg-white dark:bg-zinc-900 border border-border/80 p-5 rounded-xl shadow-xs text-xs leading-relaxed text-foreground select-all min-h-48 max-h-[28rem] overflow-y-auto font-sans font-medium whitespace-pre-wrap transition-all duration-300 hover:border-primary/20">
                     <HighlightedText
                       text={result.improvedText}
                       corrections={result.corrections}

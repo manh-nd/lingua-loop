@@ -422,7 +422,7 @@ export default function MessagePage() {
             disabled={isPending || !text.trim()}
             className={cn(
               'w-full h-9 font-bold uppercase tracking-wider text-xs cursor-pointer select-none active:scale-99 transition-all duration-300',
-              'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30',
+              'bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/95 hover:to-emerald-600/95 text-white shadow-md shadow-emerald-500/10 hover:shadow-lg hover:shadow-emerald-500/20',
               pulseSubmit && 'animate-bounce',
               isPending && 'opacity-80 cursor-wait'
             )}
@@ -452,11 +452,11 @@ export default function MessagePage() {
             <LoadingPanel layoutType="message" />
           ) : result ? (
             /* Results Panel */
-            <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+            <div className="flex flex-col gap-6 animate-slide-up">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkle className="size-4 text-primary animate-pulse" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <h2 className="font-heading text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Phản hồi từ Coach
                   </h2>
                 </div>
@@ -471,13 +471,15 @@ export default function MessagePage() {
                     : 'Bản sửa đổi đề xuất:'}
                 </span>
 
-                <Card className="border border-border bg-slate-50/50 dark:bg-black/20 rounded-2xl p-5 flex flex-col gap-4.5 shadow-xs relative overflow-hidden">
+                <Card className="glass-card rounded-2xl p-5 flex flex-col gap-4.5 shadow-md relative overflow-hidden">
                   {/* Mock Chat Window Header Bar */}
                   <div className="flex items-center justify-between border-b border-border/40 pb-3 -mt-1 select-none">
                     <div className="flex items-center gap-2">
-                      <div className="size-2.5 rounded-full bg-red-400" />
-                      <div className="size-2.5 rounded-full bg-amber-400" />
-                      <div className="size-2.5 rounded-full bg-emerald-400" />
+                      <div className="flex gap-1.5">
+                        <div className="size-2.5 rounded-full bg-red-400/80 hover:bg-red-400 transition-colors" />
+                        <div className="size-2.5 rounded-full bg-amber-400/80 hover:bg-amber-400 transition-colors" />
+                        <div className="size-2.5 rounded-full bg-emerald-400/80 hover:bg-emerald-400 transition-colors" />
+                      </div>
                       <span className="text-[10.5px] font-semibold text-muted-foreground/80 font-mono ml-2">
                         Slack #communication
                       </span>
@@ -486,12 +488,12 @@ export default function MessagePage() {
                       <TTSButton
                         text={result.recommendedMessage}
                         size="icon-sm"
-                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-xs interactive-hover"
                       />
                       <CopyButton
                         text={result.recommendedMessage}
                         size="icon-sm"
-                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-xs interactive-hover"
                       />
                     </div>
                   </div>
@@ -499,8 +501,12 @@ export default function MessagePage() {
                   {/* Message Bubble Block */}
                   <div className="flex gap-3 items-start py-1">
                     {/* Bot Avatar */}
-                    <div className="size-8.5 rounded-lg bg-indigo-600 text-white font-black text-xs flex items-center justify-center select-none shadow-xs shrink-0">
-                      LC
+                    <div className="relative shrink-0">
+                      <div className="size-8.5 rounded-lg bg-gradient-to-tr from-primary to-indigo-600 text-white font-black text-xs flex items-center justify-center select-none shadow-sm">
+                        LC
+                      </div>
+                      {/* Active Status Indicator dot */}
+                      <span className="absolute bottom-0 right-0 block size-2 rounded-full bg-emerald-500 ring-1.5 ring-white dark:ring-zinc-900" />
                     </div>
                     <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                       <div className="flex items-baseline gap-2 select-none">
@@ -519,7 +525,7 @@ export default function MessagePage() {
                       </div>
 
                       {/* Chat Bubble Body */}
-                      <div className="bg-white dark:bg-zinc-900 border border-border/80 p-4 rounded-2xl rounded-tl-xs shadow-2xs text-xs font-medium leading-relaxed text-foreground select-all relative group">
+                      <div className="bg-white dark:bg-zinc-900 border border-border/80 p-4 rounded-2xl rounded-tl-xs shadow-xs text-xs font-medium leading-relaxed text-foreground select-all relative group transition-all duration-300 hover:border-primary/20">
                         <HighlightedText
                           text={result.recommendedMessage}
                           corrections={result.corrections}
@@ -530,7 +536,7 @@ export default function MessagePage() {
 
                   {/* Coach Advice section inside bubble */}
                   <div className="bg-amber-500/[0.03] border border-amber-500/10 rounded-xl p-3.5 flex gap-2.5 items-start text-[11px] text-muted-foreground/95 select-text mt-1">
-                    <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
+                    <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5 animate-pulse" />
                     <div className="leading-relaxed">
                       <span className="font-bold text-amber-800 dark:text-amber-400 block mb-0.5 select-none">
                         Mẹo của Coach:

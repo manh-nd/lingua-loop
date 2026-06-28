@@ -356,8 +356,8 @@ export default function LiveCoachPage() {
 
           {/* Connected call view */}
           {(isConnected || isConnecting) && (
-            <Card className="border border-border/80 shadow-sm rounded-3xl overflow-hidden bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300">
-              <CardContent className="p-8 flex flex-col items-center gap-8">
+            <Card className="min-h-[580px] border border-border/80 shadow-sm rounded-3xl overflow-hidden bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 flex flex-col">
+              <CardContent className="p-8 flex-1 flex flex-col items-center justify-between gap-6">
                 {/* Call Status Indicator */}
                 <div className="flex flex-col items-center gap-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-primary px-3 py-1 bg-primary/10 rounded-full animate-pulse">

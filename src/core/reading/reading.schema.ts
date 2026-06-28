@@ -121,6 +121,11 @@ export const ReadingCoachResultSchema = z.object({
             /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
             'patternKey must be lowercase_snake_case'
           ),
+        patternNameVi: z
+          .string()
+          .trim()
+          .min(1)
+          .describe('Tên tự nhiên tiếng Việt cho mẫu/bẫy đọc hiểu'),
         memoryType: z.enum(['reading_trap', 'reusable_phrase']),
         category: z.string().trim().default('naturalness'),
         explanationVi: z.string().trim().min(1),

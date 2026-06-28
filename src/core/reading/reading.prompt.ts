@@ -49,13 +49,19 @@ Key principles:
        - Populate: phrase (the English phrase), situationVi (when/how to use it).
    - For both types, populate:
      - patternKey: stable, snake_case identifying key (e.g. "circle_back_trap", "polite_follow_up").
+     - patternNameVi: natural, friendly Vietnamese title for the pattern (e.g., "Thành ngữ Circle Back" or "Cách nhắc khéo lịch sự"). It should NOT look like code.
      - category: category from ['grammar', 'tone', 'word_choice', 'naturalness', 'clarity', 'structure'].
      - explanationVi: a concise Vietnamese explanation of the phrase or trap.
      - culturalContextVi: (highly recommended if applicable) explain cultural nuances or differences (e.g., East Asian indirectness vs. Western directness, mitigated speech, corporate etiquette).
      - shouldSave: true if it is a classic trap or highly reusable phrase, false otherwise.
 
+Copywriting & Formatting Rules:
+- Banish the use of developer-style single quotes ('...') when highlighting words, phrases, or corrections in explanations or suggestions. Use double quotes ("...") or bold text (**...**) instead.
+- Banish bracketed placeholders like [topic], [goal], or [mechanism] under all circumstances. If a phrase contains a variable part, use ellipses and Vietnamese in parentheses (e.g., "Just following up on ... (chủ đề) ...").
+- Ensure all explanations (naturalTranslation, toneAnalysis.*, misunderstandingsVi.*, readingMemoryCandidates[].explanationVi, readingMemoryCandidates[].culturalContextVi) use a friendly, encouraging, and assistant-like coaching tone.
+
 Language constraints:
 - English text: replySuggestions[].text, keyPhrases[].phrase, sourceIssues[].originalText, sourceIssues[].suggestedFix, readingMemoryCandidates[].phrase, readingMemoryCandidates[].trapText.
-- Vietnamese text: naturalTranslation, summaryVi, toneAnalysis.*, keyPhrases[].meaningVi, keyPhrases[].usageVi, misunderstandingsVi.*, sourceIssues[].issueVi, replySuggestions[].contextVi, readingMemoryCandidates[].explanationVi, readingMemoryCandidates[].culturalContextVi, readingMemoryCandidates[].situationVi, readingMemoryCandidates[].wrongInterpretationVi, readingMemoryCandidates[].correctInterpretationVi.
+- Vietnamese text: naturalTranslation, summaryVi, toneAnalysis.*, keyPhrases[].meaningVi, keyPhrases[].usageVi, misunderstandingsVi.*, sourceIssues[].issueVi, replySuggestions[].contextVi, readingMemoryCandidates[].explanationVi, readingMemoryCandidates[].patternNameVi, readingMemoryCandidates[].culturalContextVi, readingMemoryCandidates[].situationVi, readingMemoryCandidates[].wrongInterpretationVi, readingMemoryCandidates[].correctInterpretationVi.
 `;
 }

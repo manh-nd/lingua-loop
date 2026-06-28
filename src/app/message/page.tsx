@@ -13,8 +13,9 @@ import {
   FieldGroup,
   FieldTitle,
 } from '@/components/ui/field';
-import { submitMessageCoach } from './actions';
+import { submitMessageCoach, submitFollowUpQuestion } from './actions';
 import { MessageCoachResult } from '@/core/message/message.schema';
+import { FollowUpChatMessage } from '@/core/message/follow-up.schema';
 import { HighlightedText } from '@/components/coach/HighlightedText';
 import {
   Sparkle,
@@ -24,8 +25,11 @@ import {
   BookOpen,
   CheckCircle,
   FileCheck,
+  Loader2,
+  Send,
 } from 'lucide-react';
 import { CopyButton } from '@/components/coach/CopyButton';
+import { TTSButton } from '@/components/coach/TTSButton';
 import { ErrorPanel } from '@/components/coach/ErrorPanel';
 import { StarterScreen } from '@/components/coach/StarterScreen';
 import { SampleChips } from '@/components/coach/SampleChips';
@@ -47,6 +51,12 @@ export default function MessagePage() {
   const [text, setText] = useState('');
   const [context, setContext] = useState('');
   const [result, setResult] = useState<MessageCoachResult | null>(null);
+
+  // Follow-up chat thread states
+  const [followUpQuestion, setFollowUpQuestion] = useState('');
+  const [thread, setThread] = useState<FollowUpChatMessage[]>([]);
+  const [isFollowUpPending, setIsFollowUpPending] = useState(false);
+  const [followUpError, setFollowUpError] = useState<string | null>(null);
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +106,10 @@ export default function MessagePage() {
     }
 
     setError(null);
+    setThread([]);
+    setFollowUpQuestion('');
+    setFollowUpError(null);
+
     startTransition(async () => {
       try {
         const data = await submitMessageCoach({
@@ -120,6 +134,10 @@ export default function MessagePage() {
   ) => {
     setResult(null);
     setError(null);
+    setThread([]);
+    setFollowUpQuestion('');
+    setFollowUpError(null);
+
     const msgSample = sample as MessageSample;
     setMode(msgSample.mode);
     setTone(msgSample.tone);
@@ -165,8 +183,54 @@ export default function MessagePage() {
     setContext('');
     setResult(null);
     setError(null);
+    setThread([]);
+    setFollowUpQuestion('');
+    setFollowUpError(null);
+
     if (textareaRef.current) {
       textareaRef.current.focus();
+    }
+  };
+
+  const handleFollowUpSubmit = async (
+    e?: React.FormEvent,
+    presetQuestion?: string
+  ) => {
+    if (e) e.preventDefault();
+    const question = (presetQuestion || followUpQuestion).trim();
+    if (!question || isFollowUpPending || !result) return;
+
+    setFollowUpError(null);
+    setIsFollowUpPending(true);
+
+    const newUserMessage: FollowUpChatMessage = {
+      role: 'user',
+      text: question,
+    };
+    const updatedThread = [...thread, newUserMessage];
+    setThread(updatedThread);
+    setFollowUpQuestion('');
+
+    try {
+      const res = await submitFollowUpQuestion({
+        originalInput: text,
+        recommendedDraft: result.recommendedMessage,
+        userQuestion: question,
+        history: thread,
+      });
+
+      setThread([...updatedThread, { role: 'assistant', text: res.answerVi }]);
+    } catch (err) {
+      console.error(err);
+      setFollowUpError(
+        err instanceof Error
+          ? err.message
+          : 'Đã xảy ra lỗi khi trao đổi với AI.'
+      );
+      // Rollback user question on failure
+      setThread(thread);
+    } finally {
+      setIsFollowUpPending(false);
     }
   };
 
@@ -214,79 +278,98 @@ export default function MessagePage() {
                 aria-labelledby="mode-label"
                 value={[mode]}
                 onValueChange={handleModeChange}
-                variant="outline"
-                className="w-full justify-start *:flex-1"
+                spacing={0}
+                className="w-full bg-muted/60 dark:bg-black/30 p-1 rounded-xl border border-border/80"
               >
                 <ToggleGroupItem
                   value="write_from_vietnamese"
-                  className="text-xs"
+                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                 >
                   Viết từ ý định
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="improve_english_draft"
-                  className="text-xs"
+                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                 >
                   Sửa bản nháp tiếng Anh
                 </ToggleGroupItem>
               </ToggleGroup>
             </Field>
 
-            {/* Tone Selection */}
-            <Field>
-              <FieldTitle
-                id="tone-label"
-                className="font-bold text-xs uppercase tracking-wider"
-              >
-                Tông giọng (Tone)
-              </FieldTitle>
-              <ToggleGroup
-                aria-labelledby="tone-label"
-                value={[tone]}
-                onValueChange={handleToneChange}
-                variant="outline"
-                className="w-full justify-start grid grid-cols-5 gap-1"
-              >
-                <ToggleGroupItem value="friendly" className="text-[10px] px-1">
-                  Thân thiện
-                </ToggleGroupItem>
-                <ToggleGroupItem value="polite" className="text-[10px] px-1">
-                  Lịch sự
-                </ToggleGroupItem>
-                <ToggleGroupItem value="direct" className="text-[10px] px-1">
-                  Trực tiếp
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="professional"
-                  className="text-[10px] px-1"
-                >
-                  Trang trọng
-                </ToggleGroupItem>
-                <ToggleGroupItem value="casual" className="text-[10px] px-1">
-                  Thường ngày
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </Field>
+            {/* Advanced Options (Tone & Context collapsed) */}
+            <div className="pt-1 pb-1.5 border-t border-border/35">
+              <CollapsibleSection title="Tùy chọn nâng cao" defaultOpen={false}>
+                <div className="flex flex-col gap-4.5 mt-3.5 pb-1">
+                  {/* Tone Selection */}
+                  <Field>
+                    <FieldTitle
+                      id="tone-label"
+                      className="font-bold text-xs uppercase tracking-wider"
+                    >
+                      Tông giọng (Tone)
+                    </FieldTitle>
+                    <ToggleGroup
+                      aria-labelledby="tone-label"
+                      value={[tone]}
+                      onValueChange={handleToneChange}
+                      spacing={0}
+                      className="w-full bg-muted/60 dark:bg-black/30 p-1 rounded-xl border border-border/80"
+                    >
+                      <ToggleGroupItem
+                        value="friendly"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                      >
+                        Thân thiện
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="polite"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                      >
+                        Lịch sự
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="direct"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                      >
+                        Trực tiếp
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="professional"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                      >
+                        Trang trọng
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="casual"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                      >
+                        Thường ngày
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </Field>
 
-            {/* Context Input */}
-            <Field>
-              <FieldLabel
-                htmlFor="context-input"
-                className="font-bold text-xs uppercase tracking-wider"
-              >
-                Ngữ cảnh / Mục tiêu (Không bắt buộc)
-              </FieldLabel>
-              <Input
-                id="context-input"
-                name="context"
-                autoComplete="off"
-                placeholder="Ví dụ: gửi cho sếp qua Slack, giải thích việc chậm trễ tiến độ…"
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                disabled={isPending}
-                className="h-8.5 text-xs placeholder:text-muted-foreground/60"
-              />
-            </Field>
+                  {/* Context Input */}
+                  <Field>
+                    <FieldLabel
+                      htmlFor="context-input"
+                      className="font-bold text-xs uppercase tracking-wider"
+                    >
+                      Ngữ cảnh / Mục tiêu (Không bắt buộc)
+                    </FieldLabel>
+                    <Input
+                      id="context-input"
+                      name="context"
+                      autoComplete="off"
+                      placeholder="Ví dụ: gửi cho sếp qua Slack, giải thích việc chậm trễ tiến độ…"
+                      value={context}
+                      onChange={(e) => setContext(e.target.value)}
+                      disabled={isPending}
+                      className="h-8.5 text-xs placeholder:text-muted-foreground/60"
+                    />
+                  </Field>
+                </div>
+              </CollapsibleSection>
+            </div>
 
             {/* Input Text */}
             <Field>
@@ -379,34 +462,84 @@ export default function MessagePage() {
                 </div>
               </div>
 
-              {/* 1. Recommended Message */}
-              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl p-5 flex flex-col gap-4">
-                <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary to-indigo-500" />
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary flex items-center gap-1.5 h-5 inline-flex items-center justify-center">
-                    <FileCheck className="size-3.5" />
-                    Tin nhắn khuyên dùng (Recommended)
-                  </span>
-                  <CopyButton
-                    text={result.recommendedMessage}
-                    size="icon-sm"
-                    className="bg-background dark:bg-black/40 border border-border shadow-2xs hover:bg-muted"
-                  />
-                </div>
-                <div className="text-sm font-semibold leading-relaxed text-foreground select-all">
-                  <HighlightedText
-                    text={result.recommendedMessage}
-                    corrections={result.corrections}
-                  />
-                </div>
-                <div className="h-px bg-border/80 w-full" />
-                <div className="flex gap-2 items-start text-xs text-muted-foreground">
-                  <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="leading-relaxed italic">
-                    {result.explanationVi}
-                  </p>
-                </div>
-              </Card>
+              {/* 1. Recommended Message Chat Preview */}
+              <div className="flex flex-col gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1.5 px-1 select-none">
+                  <FileCheck className="size-3.5 text-primary" />
+                  {mode === 'write_from_vietnamese'
+                    ? 'Bản xem trước tin nhắn gửi đi (Chat Preview):'
+                    : 'Bản sửa đổi đề xuất:'}
+                </span>
+
+                <Card className="border border-border bg-slate-50/50 dark:bg-black/20 rounded-2xl p-5 flex flex-col gap-4.5 shadow-xs relative overflow-hidden">
+                  {/* Mock Chat Window Header Bar */}
+                  <div className="flex items-center justify-between border-b border-border/40 pb-3 -mt-1 select-none">
+                    <div className="flex items-center gap-2">
+                      <div className="size-2.5 rounded-full bg-red-400" />
+                      <div className="size-2.5 rounded-full bg-amber-400" />
+                      <div className="size-2.5 rounded-full bg-emerald-400" />
+                      <span className="text-[10.5px] font-semibold text-muted-foreground/80 font-mono ml-2">
+                        Slack #communication
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <TTSButton
+                        text={result.recommendedMessage}
+                        size="icon-sm"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                      />
+                      <CopyButton
+                        text={result.recommendedMessage}
+                        size="icon-sm"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Message Bubble Block */}
+                  <div className="flex gap-3 items-start py-1">
+                    {/* Bot Avatar */}
+                    <div className="size-8.5 rounded-lg bg-indigo-600 text-white font-black text-xs flex items-center justify-center select-none shadow-xs shrink-0">
+                      LC
+                    </div>
+                    <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2 select-none">
+                        <span className="text-xs font-bold text-foreground hover:underline cursor-pointer">
+                          Lingua Coach
+                        </span>
+                        <span className="text-[9.5px] text-muted-foreground/70">
+                          {new Date().toLocaleTimeString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <span className="text-[8px] bg-primary/10 text-primary border border-primary/15 font-bold uppercase rounded px-1 scale-90 origin-left">
+                          Trợ lý
+                        </span>
+                      </div>
+
+                      {/* Chat Bubble Body */}
+                      <div className="bg-white dark:bg-zinc-900 border border-border/80 p-4 rounded-2xl rounded-tl-xs shadow-2xs text-xs font-medium leading-relaxed text-foreground select-all relative group">
+                        <HighlightedText
+                          text={result.recommendedMessage}
+                          corrections={result.corrections}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Coach Advice section inside bubble */}
+                  <div className="bg-amber-500/[0.03] border border-amber-500/10 rounded-xl p-3.5 flex gap-2.5 items-start text-[11px] text-muted-foreground/95 select-text mt-1">
+                    <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="leading-relaxed">
+                      <span className="font-bold text-amber-800 dark:text-amber-400 block mb-0.5 select-none">
+                        Mẹo của Coach:
+                      </span>
+                      {result.explanationVi}
+                    </div>
+                  </div>
+                </Card>
+              </div>
 
               {/* 2. Alternatives */}
               {result.alternatives && result.alternatives.length > 0 && (
@@ -425,9 +558,12 @@ export default function MessagePage() {
                           <span className="text-[9px] uppercase tracking-wider px-2 rounded-full font-bold bg-primary/10 text-primary border border-primary/20 h-5 inline-flex items-center justify-center">
                             {alt.label.replace('more_', 'Tông giọng ')}
                           </span>
-                          <CopyButton text={alt.text} size="icon-xs" />
+                          <div className="flex items-center gap-1">
+                            <TTSButton text={alt.text} size="icon-xs" />
+                            <CopyButton text={alt.text} size="icon-xs" />
+                          </div>
                         </div>
-                        <div className="text-xs font-mono font-medium p-3 bg-muted/40 dark:bg-black/30 border border-border/80 select-all rounded-lg shadow-xs leading-relaxed">
+                        <div className="text-xs font-sans font-semibold p-3 bg-muted/40 dark:bg-black/30 border border-border/80 select-all rounded-lg shadow-xs leading-relaxed">
                           {alt.text}
                         </div>
                         <p className="text-[10px] text-muted-foreground flex items-start gap-1">
@@ -440,63 +576,206 @@ export default function MessagePage() {
                 </div>
               )}
 
-              {/* 3. Learning Notes (Collapsible accordions) */}
-              <div className="flex flex-col gap-3.5 border-t border-border/30 pt-5">
-                <div className="flex items-center gap-1.5">
-                  <BookOpen className="size-4 text-primary" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/80">
-                    Chi tiết học tập (Learning Notes)
-                  </h3>
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  {/* Detailed Explanation */}
-                  <CollapsibleSection title="Tại sao cách diễn đạt này tốt hơn?">
-                    <div className="flex gap-2.5 items-start">
-                      <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                      <p className="leading-relaxed text-foreground/90 font-medium">
-                        {result.explanationVi}
-                      </p>
+              {/* 3. Follow-up Chat Thread Panel */}
+              <div className="flex flex-col gap-4.5 border-t border-border/30 pt-5">
+                {(thread.length > 0 || isFollowUpPending || followUpError) && (
+                  <div className="flex flex-col gap-3.5 bg-slate-50/30 dark:bg-black/10 border border-border/60 rounded-2xl p-4.5">
+                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground select-none">
+                      <MessageSquare className="size-3.5 text-primary animate-pulse" />
+                      Trò chuyện cùng Coach về tin nhắn này:
                     </div>
-                  </CollapsibleSection>
 
-                  {/* Corrections */}
-                  {result.corrections && result.corrections.length > 0 && (
-                    <CollapsibleSection
-                      title={`Lỗi sai & Cải thiện (${result.corrections.length})`}
+                    <div className="flex flex-col gap-3 max-h-[24rem] overflow-y-auto pr-1">
+                      {thread.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className={cn(
+                            'flex gap-2.5 items-start max-w-[85%]',
+                            msg.role === 'user'
+                              ? 'self-end flex-row-reverse'
+                              : 'self-start'
+                          )}
+                        >
+                          {msg.role === 'assistant' ? (
+                            <div className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
+                              LC
+                            </div>
+                          ) : (
+                            <div className="size-7.5 rounded-lg bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
+                              U
+                            </div>
+                          )}
+                          <div
+                            className={cn(
+                              'p-3 rounded-2xl text-xs leading-relaxed font-sans font-medium select-text',
+                              msg.role === 'user'
+                                ? 'bg-primary text-primary-foreground rounded-tr-xs'
+                                : 'bg-white dark:bg-zinc-900 border border-border/60 text-foreground rounded-tl-xs shadow-3xs'
+                            )}
+                          >
+                            {msg.text}
+                          </div>
+                        </div>
+                      ))}
+
+                      {isFollowUpPending && (
+                        <div className="flex gap-2.5 items-start max-w-[85%] self-start animate-pulse">
+                          <div className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
+                            LC
+                          </div>
+                          <div className="bg-white dark:bg-zinc-900 border border-border/60 p-3 rounded-2xl rounded-tl-xs text-xs font-sans font-medium flex items-center gap-2 select-none shadow-3xs">
+                            <Loader2 className="size-3.5 animate-spin text-primary" />
+                            <span>Đang trả lời...</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {followUpError && (
+                        <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/10 text-destructive text-[11px] font-sans">
+                          ⚠️ Lỗi: {followUpError}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Follow-up Question Input & Preset Chips */}
+                <div className="flex flex-col gap-3 bg-slate-50/50 dark:bg-black/20 border border-border/75 rounded-2xl p-4.5">
+                  <div className="flex flex-wrap gap-1.5 select-none">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      disabled={isFollowUpPending}
+                      onClick={() =>
+                        handleFollowUpSubmit(
+                          undefined,
+                          'Tại sao lại sửa như vậy?'
+                        )
+                      }
+                      className="text-[10px] font-semibold border-border/80 text-muted-foreground hover:text-foreground bg-background hover:bg-muted cursor-pointer"
                     >
-                      <CorrectionList corrections={result.corrections} />
-                    </CollapsibleSection>
-                  )}
+                      💡 Tại sao lại sửa như vậy?
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      disabled={isFollowUpPending}
+                      onClick={() =>
+                        handleFollowUpSubmit(
+                          undefined,
+                          'Câu này gửi cho sếp nước ngoài có ổn không?'
+                        )
+                      }
+                      className="text-[10px] font-semibold border-border/80 text-muted-foreground hover:text-foreground bg-background hover:bg-muted cursor-pointer"
+                    >
+                      👔 Gửi cho sếp có ổn không?
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      disabled={isFollowUpPending}
+                      onClick={() =>
+                        handleFollowUpSubmit(
+                          undefined,
+                          'Viết ngắn gọn hơn nữa giúp tôi.'
+                        )
+                      }
+                      className="text-[10px] font-semibold border-border/80 text-muted-foreground hover:text-foreground bg-background hover:bg-muted cursor-pointer"
+                    >
+                      ⚡ Viết ngắn gọn hơn
+                    </Button>
+                  </div>
 
-                  {/* Reusable Phrases */}
-                  {result.reusablePhrases &&
-                    result.reusablePhrases.length > 0 && (
-                      <CollapsibleSection
-                        title={`Mẫu cấu trúc câu khuyên dùng (${result.reusablePhrases.length})`}
-                        defaultOpen={true}
-                      >
-                        <ReusablePhraseList
-                          phrases={result.reusablePhrases}
-                          sourceWorkflow="message"
-                        />
-                      </CollapsibleSection>
-                    )}
-
-                  {/* Mistake Candidates */}
-                  {result.mistakeCandidates &&
-                    result.mistakeCandidates.length > 0 && (
-                      <CollapsibleSection
-                        title={`Đề xuất học theo vòng lặp (Không quên lỗi cũ) (${result.mistakeCandidates.length})`}
-                        defaultOpen={true}
-                      >
-                        <MistakeCandidateList
-                          candidates={result.mistakeCandidates}
-                          sourceWorkflow="message"
-                        />
-                      </CollapsibleSection>
-                    )}
+                  <form onSubmit={handleFollowUpSubmit} className="flex gap-2">
+                    <Input
+                      type="text"
+                      value={followUpQuestion}
+                      onChange={(e) => setFollowUpQuestion(e.target.value)}
+                      disabled={isFollowUpPending}
+                      placeholder="Hỏi trợ lý thêm về câu này (ví dụ: giải thích từ vựng, sắc thái)..."
+                      className="text-xs focus-visible:ring-primary/40 h-8.5 bg-background font-sans font-medium"
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      size="icon-xs"
+                      disabled={isFollowUpPending}
+                      className="h-8.5 w-8.5 cursor-pointer shrink-0"
+                      title="Gửi câu hỏi"
+                    >
+                      {isFollowUpPending ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Send className="size-3.5" />
+                      )}
+                    </Button>
+                  </form>
                 </div>
+              </div>
+
+              {/* 4. Learning Notes (Collapsible accordions grouped) */}
+              <div className="flex flex-col gap-3.5 border-t border-border/30 pt-5">
+                <CollapsibleSection
+                  title="Xem giải thích & Tích lũy sổ tay"
+                  defaultOpen={false}
+                >
+                  <div className="flex flex-col gap-4 mt-4">
+                    {/* Detailed Explanation */}
+                    <div className="p-4 bg-muted/30 dark:bg-black/10 rounded-xl border border-border/80 flex gap-2.5 items-start">
+                      <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div className="leading-relaxed text-xs text-foreground/90 font-medium">
+                        <span className="font-bold text-foreground block mb-0.5">
+                          Tại sao cách diễn đạt này tốt hơn?
+                        </span>
+                        {result.explanationVi}
+                      </div>
+                    </div>
+
+                    {/* Corrections */}
+                    {mode === 'improve_english_draft' &&
+                      result.corrections &&
+                      result.corrections.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-1">
+                            Lỗi sai & Cải thiện chi tiết:
+                          </h4>
+                          <CorrectionList corrections={result.corrections} />
+                        </div>
+                      )}
+
+                    {/* Reusable Phrases */}
+                    {result.reusablePhrases &&
+                      result.reusablePhrases.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-1">
+                            Mẫu cấu trúc câu khuyên dùng:
+                          </h4>
+                          <ReusablePhraseList
+                            phrases={result.reusablePhrases}
+                            sourceWorkflow="message"
+                          />
+                        </div>
+                      )}
+
+                    {/* Mistake Candidates */}
+                    {result.mistakeCandidates &&
+                      result.mistakeCandidates.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-1">
+                            Đề xuất lưu học theo vòng lặp (Không quên lỗi cũ):
+                          </h4>
+                          <MistakeCandidateList
+                            candidates={result.mistakeCandidates}
+                            sourceWorkflow="message"
+                            mode={mode}
+                          />
+                        </div>
+                      )}
+                  </div>
+                </CollapsibleSection>
               </div>
             </div>
           ) : (

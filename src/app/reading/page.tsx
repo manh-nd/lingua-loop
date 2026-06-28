@@ -32,6 +32,7 @@ import {
   Brain,
 } from 'lucide-react';
 import { CopyButton } from '@/components/coach/CopyButton';
+import { TTSButton } from '@/components/coach/TTSButton';
 import { ErrorPanel } from '@/components/coach/ErrorPanel';
 import { StarterScreen } from '@/components/coach/StarterScreen';
 import { SampleChips } from '@/components/coach/SampleChips';
@@ -309,26 +310,54 @@ export default function ReadingPage() {
               </div>
 
               {/* 1. Natural Translation & Summary */}
-              <Card className="border border-primary/35 bg-gradient-to-br from-primary/[0.02] to-indigo-500/[0.01] backdrop-blur-md shadow-sm relative overflow-hidden rounded-xl p-5 flex flex-col gap-4">
-                <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary to-indigo-500" />
-                <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-primary">
-                  <Languages className="size-4" />
-                  Dịch nghĩa tự nhiên (Natural Translation)
-                </div>
-                <div className="text-sm font-semibold leading-relaxed text-foreground select-all bg-white/40 dark:bg-black/20 p-4 rounded-lg border border-border/40">
-                  {result.naturalTranslation}
-                </div>
-                <div className="h-px bg-border/80 w-full" />
-                <div className="flex gap-2 items-start text-xs text-muted-foreground">
-                  <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="leading-relaxed italic">
-                    <span className="font-bold text-foreground/80 not-italic">
-                      Tóm tắt:{' '}
-                    </span>
-                    {result.summaryVi}
-                  </p>
-                </div>
-              </Card>
+              <div className="flex flex-col gap-2 animate-in fade-in duration-300">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1.5 px-1 select-none">
+                  <Languages className="size-4 text-primary" />
+                  Bản dịch nghĩa tự nhiên (Translation Slate):
+                </span>
+
+                <Card className="border border-border bg-slate-50/50 dark:bg-black/20 rounded-2xl p-5 flex flex-col gap-4 shadow-xs relative overflow-hidden">
+                  {/* Mock Editor Window Header Bar */}
+                  <div className="flex items-center justify-between border-b border-border/40 pb-3 -mt-1 select-none">
+                    <div className="flex items-center gap-2">
+                      <div className="size-2.5 rounded-full bg-red-400" />
+                      <div className="size-2.5 rounded-full bg-amber-400" />
+                      <div className="size-2.5 rounded-full bg-emerald-400" />
+                      <span className="text-[10.5px] font-semibold text-muted-foreground/80 font-mono ml-2">
+                        Reader translation view
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <TTSButton
+                        text={text}
+                        size="icon-sm"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                      />
+                      <CopyButton
+                        text={result.naturalTranslation}
+                        size="icon-sm"
+                        className="bg-background hover:bg-muted border border-border h-7 w-7 shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Document Slate Body */}
+                  <div className="bg-white dark:bg-zinc-900 border border-border/80 p-5 rounded-xl shadow-2xs text-xs leading-relaxed text-foreground select-all font-sans font-semibold">
+                    {result.naturalTranslation}
+                  </div>
+
+                  {/* Summary section */}
+                  <div className="bg-amber-500/[0.03] border border-amber-500/10 rounded-xl p-3.5 flex gap-2.5 items-start text-[11px] text-muted-foreground/95 select-text mt-1">
+                    <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="leading-relaxed">
+                      <span className="font-bold text-amber-800 dark:text-amber-400 block mb-0.5 select-none">
+                        Tóm tắt đại ý:
+                      </span>
+                      {result.summaryVi}
+                    </div>
+                  </div>
+                </Card>
+              </div>
 
               {/* 2. Tone Analysis */}
               <Card className="border border-border bg-white/20 dark:bg-black/10 shadow-none rounded-xl p-5 flex flex-col gap-3">
@@ -351,143 +380,141 @@ export default function ReadingPage() {
 
               {/* 3. Collapsible Learning Sections */}
               <div className="flex flex-col gap-3.5 border-t border-border/30 pt-5">
-                <div className="flex items-center gap-1.5">
-                  <BookOpen className="size-4 text-primary" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/80">
-                    Chi tiết ngôn ngữ & Góp ý nguồn
-                  </h3>
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  {/* Reading Memory Candidates */}
-                  {result.readingMemoryCandidates &&
-                    result.readingMemoryCandidates.length > 0 && (
-                      <CollapsibleSection
-                        title="Đề xuất ôn tập (Memory Candidates)"
-                        defaultOpen={true}
-                      >
-                        <div className="grid grid-cols-1 gap-3.5 mb-2">
-                          {result.readingMemoryCandidates.map(
-                            (candidate, idx) => (
-                              <ReadingCandidateCard
-                                key={idx}
-                                candidate={candidate}
-                              />
-                            )
-                          )}
+                <CollapsibleSection
+                  title="Xem giải thích ngữ nghĩa & Góp ý nguồn"
+                  defaultOpen={false}
+                >
+                  <div className="flex flex-col gap-4 mt-4">
+                    {/* Reading Memory Candidates */}
+                    {result.readingMemoryCandidates &&
+                      result.readingMemoryCandidates.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-1">
+                            Đề xuất lưu học theo vòng lặp (Không quên lỗi cũ):
+                          </h4>
+                          <div className="grid grid-cols-1 gap-3.5 mb-2">
+                            {result.readingMemoryCandidates.map(
+                              (candidate, idx) => (
+                                <ReadingCandidateCard
+                                  key={idx}
+                                  candidate={candidate}
+                                />
+                              )
+                            )}
+                          </div>
                         </div>
-                      </CollapsibleSection>
-                    )}
+                      )}
 
-                  {/* Key Phrases */}
-                  {result.keyPhrases && result.keyPhrases.length > 0 && (
-                    <CollapsibleSection
-                      title="Cụm từ hữu ích (Key Phrases)"
-                      defaultOpen={true}
-                    >
-                      <ReusablePhraseList
-                        phrases={result.keyPhrases.map((kp) => ({
-                          phrase: kp.phrase,
-                          meaningVi: kp.meaningVi,
-                          situationVi: kp.usageVi,
-                        }))}
-                      />
-                    </CollapsibleSection>
-                  )}
-
-                  {/* Word-by-word traps / Misunderstandings */}
-                  {result.misunderstandingsVi &&
-                    result.misunderstandingsVi.length > 0 && (
-                      <CollapsibleSection
-                        title="Bẫy dịch nghĩa & Hiểu lầm dễ gặp"
-                        defaultOpen={true}
-                      >
-                        <div className="grid grid-cols-1 gap-3">
-                          {result.misunderstandingsVi.map((m, idx) => (
-                            <div
-                              key={idx}
-                              className="p-4 rounded-lg bg-red-500/[0.02] border border-red-500/15 flex flex-col gap-2 text-xs"
-                            >
-                              <span className="font-semibold text-red-500 flex items-center gap-1">
-                                <AlertTriangle className="size-3.5 shrink-0" />
-                                Dễ nhầm lẫn: &ldquo;{m.trapVi}&rdquo;
-                              </span>
-                              <p className="leading-relaxed text-muted-foreground">
-                                {m.explanationVi}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </CollapsibleSection>
-                    )}
-
-                  {/* Source Issues */}
-                  {result.sourceIssues && result.sourceIssues.length > 0 && (
-                    <CollapsibleSection
-                      title="Lỗi sai & Diễn đạt của nguồn (Source Issues)"
-                      defaultOpen={true}
-                    >
-                      <div className="grid grid-cols-1 gap-3">
-                        {result.sourceIssues.map((s, idx) => {
-                          let catColor = '';
-                          let catLabel = '';
-                          if (s.category === 'typo') {
-                            catColor =
-                              'bg-rose-500/10 text-rose-500 border-rose-500/20';
-                            catLabel = 'Chính tả';
-                          } else if (s.category === 'grammar') {
-                            catColor =
-                              'bg-amber-500/10 text-amber-500 border-amber-500/20';
-                            catLabel = 'Ngữ pháp';
-                          } else if (s.category === 'awkward_wording') {
-                            catColor =
-                              'bg-sky-500/10 text-sky-500 border-sky-500/20';
-                            catLabel = 'Dựng câu vụng';
-                          } else {
-                            catColor =
-                              'bg-purple-500/10 text-purple-500 border-purple-500/20';
-                            catLabel = 'Mơ hồ';
-                          }
-
-                          return (
-                            <div
-                              key={idx}
-                              className="p-4 rounded-lg bg-card border border-border flex flex-col gap-2.5 text-xs shadow-2xs"
-                            >
-                              <div className="flex justify-between items-center gap-2">
-                                <span className="font-mono font-bold text-foreground/80 line-through decoration-rose-500/60 select-all">
-                                  {s.originalText}
-                                </span>
-                                <span
-                                  className={cn(
-                                    'text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold border',
-                                    catColor
-                                  )}
-                                >
-                                  {catLabel}
-                                </span>
-                              </div>
-                              <p className="leading-relaxed text-foreground/90 font-medium">
-                                <span className="text-muted-foreground font-normal">
-                                  Góp ý:
-                                </span>{' '}
-                                {s.issueVi}
-                              </p>
-                              <div className="flex items-center gap-2 mt-0.5 bg-muted/40 p-2 rounded border border-border/40 font-mono text-[11px]">
-                                <span className="text-emerald-500 font-bold">
-                                  Nên là:
-                                </span>
-                                <span className="text-foreground select-all font-semibold">
-                                  {s.suggestedFix}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
+                    {/* Key Phrases */}
+                    {result.keyPhrases && result.keyPhrases.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-1">
+                          Cụm từ hữu ích cần ghi nhớ:
+                        </h4>
+                        <ReusablePhraseList
+                          phrases={result.keyPhrases.map((kp) => ({
+                            phrase: kp.phrase,
+                            meaningVi: kp.meaningVi,
+                            situationVi: kp.usageVi,
+                          }))}
+                        />
                       </div>
-                    </CollapsibleSection>
-                  )}
-                </div>
+                    )}
+
+                    {/* Word-by-word traps / Misunderstandings */}
+                    {result.misunderstandingsVi &&
+                      result.misunderstandingsVi.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-1">
+                            Bẫy dịch nghĩa & Hiểu lầm dễ gặp:
+                          </h4>
+                          <div className="grid grid-cols-1 gap-3">
+                            {result.misunderstandingsVi.map((m, idx) => (
+                              <div
+                                key={idx}
+                                className="p-4 rounded-lg bg-red-500/[0.02] border border-red-500/15 flex flex-col gap-2 text-xs"
+                              >
+                                <span className="font-semibold text-red-500 flex items-center gap-1">
+                                  <AlertTriangle className="size-3.5 shrink-0" />
+                                  Dễ nhầm lẫn: &ldquo;{m.trapVi}&rdquo;
+                                </span>
+                                <p className="leading-relaxed text-muted-foreground">
+                                  {m.explanationVi}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Source Issues */}
+                    {result.sourceIssues && result.sourceIssues.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-1">
+                          Góp ý chi tiết về câu nguồn (Source Issues):
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {result.sourceIssues.map((s, idx) => {
+                            let catColor = '';
+                            let catLabel = '';
+                            if (s.category === 'typo') {
+                              catColor =
+                                'bg-rose-500/10 text-rose-500 border-rose-500/20';
+                              catLabel = 'Chính tả';
+                            } else if (s.category === 'grammar') {
+                              catColor =
+                                'bg-amber-500/10 text-amber-500 border-amber-500/20';
+                              catLabel = 'Ngữ pháp';
+                            } else if (s.category === 'awkward_wording') {
+                              catColor =
+                                'bg-sky-500/10 text-sky-500 border-sky-500/20';
+                              catLabel = 'Dựng câu vụng';
+                            } else {
+                              catColor =
+                                'bg-purple-500/10 text-purple-500 border-purple-500/20';
+                              catLabel = 'Mơ hồ';
+                            }
+
+                            return (
+                              <div
+                                key={idx}
+                                className="p-4 rounded-lg bg-card border border-border flex flex-col gap-2.5 text-xs shadow-2xs"
+                              >
+                                <div className="flex justify-between items-center gap-2">
+                                  <span className="font-mono font-bold text-foreground/80 line-through decoration-rose-500/60 select-all">
+                                    {s.originalText}
+                                  </span>
+                                  <span
+                                    className={cn(
+                                      'text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold border',
+                                      catColor
+                                    )}
+                                  >
+                                    {catLabel}
+                                  </span>
+                                </div>
+                                <p className="leading-relaxed text-foreground/90 font-medium">
+                                  <span className="text-muted-foreground font-normal">
+                                    Góp ý:
+                                  </span>{' '}
+                                  {s.issueVi}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5 bg-muted/40 p-2 rounded border border-border/40 font-mono text-[11px]">
+                                  <span className="text-emerald-500 font-bold">
+                                    Nên là:
+                                  </span>
+                                  <span className="text-foreground select-all font-semibold">
+                                    {s.suggestedFix}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CollapsibleSection>
               </div>
 
               {/* 4. Reply Suggestions */}
@@ -512,9 +539,12 @@ export default function ReadingPage() {
                               </span>{' '}
                               {reply.contextVi}
                             </span>
-                            <CopyButton text={reply.text} size="icon-sm" />
+                            <div className="flex items-center gap-1">
+                              <TTSButton text={reply.text} size="icon-sm" />
+                              <CopyButton text={reply.text} size="icon-sm" />
+                            </div>
                           </div>
-                          <div className="text-xs font-mono font-medium p-3 bg-muted/60 dark:bg-black/30 border border-border select-all rounded-lg leading-relaxed text-foreground">
+                          <div className="text-xs font-sans font-semibold p-3 bg-muted/60 dark:bg-black/30 border border-border select-all rounded-lg leading-relaxed text-foreground">
                             {reply.text}
                           </div>
                         </Card>
@@ -606,9 +636,9 @@ function ReadingCandidateCard({
         )}
       >
         <div className="flex items-center gap-1.5">
-          <code className="font-mono bg-muted dark:bg-black/25 px-1 py-0.5 rounded border border-border text-[9px] font-bold">
-            {candidate.patternKey}
-          </code>
+          <span className="font-bold bg-primary/10 dark:bg-primary/20 text-primary px-1.5 py-0.5 rounded border border-primary/20 text-[9px] tracking-wide">
+            {candidate.patternNameVi}
+          </span>
           <span
             className={cn(
               'text-[9px] font-bold px-1.5 rounded uppercase border',

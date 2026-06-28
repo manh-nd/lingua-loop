@@ -25,6 +25,7 @@ import {
 
 export type MistakeCandidateItem = {
   patternKey: string;
+  patternNameVi: string;
   category: string;
   wrongText: string;
   correctText: string;
@@ -37,12 +38,14 @@ export type MistakeCandidateItem = {
 interface MistakeCandidateListProps {
   candidates: MistakeCandidateItem[];
   sourceWorkflow: 'message' | 'explanation';
+  mode?: 'write_from_vietnamese' | 'improve_english_draft';
   className?: string;
 }
 
 export function MistakeCandidateList({
   candidates,
   sourceWorkflow,
+  mode = 'improve_english_draft',
   className,
 }: MistakeCandidateListProps) {
   if (!candidates || candidates.length === 0) return null;
@@ -54,6 +57,7 @@ export function MistakeCandidateList({
           key={idx}
           candidate={candidate}
           sourceWorkflow={sourceWorkflow}
+          mode={mode}
         />
       ))}
     </div>
@@ -63,11 +67,13 @@ export function MistakeCandidateList({
 interface MistakeCandidateCardProps {
   candidate: MistakeCandidateItem;
   sourceWorkflow: 'message' | 'explanation';
+  mode: 'write_from_vietnamese' | 'improve_english_draft';
 }
 
 function MistakeCandidateCard({
   candidate,
   sourceWorkflow,
+  mode,
 }: MistakeCandidateCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [savedItemId, setSavedItemId] = useState<string | null>(null);
@@ -117,6 +123,7 @@ function MistakeCandidateCard({
     const saved = addLocalMemoryItem({
       sourceWorkflow,
       patternKey: candidate.patternKey,
+      patternNameVi: candidate.patternNameVi,
       wrongText,
       correctText,
       explanationVi,
@@ -134,6 +141,7 @@ function MistakeCandidateCard({
     addLocalMemoryItem({
       sourceWorkflow,
       patternKey: candidate.patternKey,
+      patternNameVi: candidate.patternNameVi,
       wrongText,
       correctText,
       explanationVi,
@@ -150,6 +158,7 @@ function MistakeCandidateCard({
     const saved = addLocalMemoryItem({
       sourceWorkflow,
       patternKey: candidate.patternKey,
+      patternNameVi: candidate.patternNameVi,
       wrongText,
       correctText,
       explanationVi,
@@ -211,9 +220,9 @@ function MistakeCandidateCard({
         )}
       >
         <div className="flex items-center gap-2">
-          <code className="font-mono bg-muted dark:bg-black/25 px-1.5 py-0.5 rounded border border-border text-foreground font-bold uppercase tracking-wider">
-            {candidate.patternKey}
-          </code>
+          <span className="font-bold bg-primary/10 dark:bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/20 tracking-wide text-[10px]">
+            {candidate.patternNameVi}
+          </span>
           <span className="uppercase px-1.5 rounded bg-muted/80 dark:bg-black/15 text-muted-foreground border border-border font-medium h-5 inline-flex items-center justify-center">
             Khung: {candidate.category}
           </span>
@@ -244,15 +253,15 @@ function MistakeCandidateCard({
                   htmlFor={`candidate-wrong-${candidate.patternKey}`}
                   className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider"
                 >
-                  Lỗi sai (Incorrect):
+                  {mode === 'write_from_vietnamese'
+                    ? 'Cách viết dễ sai:'
+                    : 'Bản nháp gốc:'}
                 </label>
                 <Input
                   id={`candidate-wrong-${candidate.patternKey}`}
-                  name="wrongText"
                   value={wrongText}
                   onChange={(e) => setWrongText(e.target.value)}
-                  className="h-8 text-xs font-mono border-red-500/20 focus-visible:ring-red-500/30"
-                  placeholder="Nhập phần lỗi sai..."
+                  className="font-mono text-xs focus-visible:ring-emerald-500/40"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -260,15 +269,15 @@ function MistakeCandidateCard({
                   htmlFor={`candidate-correct-${candidate.patternKey}`}
                   className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider"
                 >
-                  Đúng (Correct):
+                  {mode === 'write_from_vietnamese'
+                    ? 'Cách viết tự nhiên:'
+                    : 'Bản sửa đổi:'}
                 </label>
                 <Input
                   id={`candidate-correct-${candidate.patternKey}`}
-                  name="correctText"
                   value={correctText}
                   onChange={(e) => setCorrectText(e.target.value)}
-                  className="h-8 text-xs font-mono border-emerald-500/20 focus-visible:ring-emerald-500/30"
-                  placeholder="Nhập bản sửa đúng..."
+                  className="font-mono text-xs focus-visible:ring-emerald-500/40"
                 />
               </div>
             </div>
@@ -277,16 +286,14 @@ function MistakeCandidateCard({
                 htmlFor={`candidate-explanation-${candidate.patternKey}`}
                 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider"
               >
-                Giải nghĩa tiếng Việt (Explanation):
+                Giải thích tiếng Việt:
               </label>
               <Textarea
                 id={`candidate-explanation-${candidate.patternKey}`}
-                name="explanationVi"
                 value={explanationVi}
                 onChange={(e) => setExplanationVi(e.target.value)}
                 rows={2}
-                className="text-xs focus-visible:ring-primary/30 p-2 min-h-16"
-                placeholder="Nhập giải thích tiếng Việt..."
+                className="text-xs focus-visible:ring-emerald-500/40"
               />
             </div>
             <div className="flex justify-end gap-2 mt-1">
@@ -317,15 +324,24 @@ function MistakeCandidateCard({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-mono">
               <div className="p-2.5 bg-red-500/[0.03] rounded-lg border border-red-500/10">
                 <span className="text-[9px] text-red-700 dark:text-red-400 block uppercase font-bold mb-0.5 select-none">
-                  Lỗi sai (Incorrect):
+                  {mode === 'write_from_vietnamese'
+                    ? 'Cách viết dễ sai:'
+                    : 'Bản nháp gốc:'}
                 </span>
-                <span className="text-red-600 dark:text-red-400 line-through select-all leading-relaxed break-words">
+                <span
+                  className={cn(
+                    'text-red-600 dark:text-red-400 select-all leading-relaxed break-words',
+                    mode === 'improve_english_draft' && 'line-through'
+                  )}
+                >
                   {wrongText}
                 </span>
               </div>
               <div className="p-2.5 bg-emerald-500/[0.03] rounded-lg border border-emerald-500/10">
                 <span className="text-[9px] text-emerald-700 dark:text-emerald-400 block uppercase font-bold mb-0.5 select-none">
-                  Đúng (Correct):
+                  {mode === 'write_from_vietnamese'
+                    ? 'Cách viết tự nhiên:'
+                    : 'Bản sửa đổi:'}
                 </span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-semibold select-all leading-relaxed break-words">
                   {correctText}

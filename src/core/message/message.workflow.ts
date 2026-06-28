@@ -77,6 +77,7 @@ Mistake candidate rules:
 - Return at most 3 mistakeCandidates.
 - Only include reusable mistake patterns worth reviewing later.
 - patternKey must be specific, stable, lowercase_snake_case.
+- patternNameVi must be a natural, conversational, and friendly Vietnamese title for the mistake pattern (e.g., "Thiếu động từ To Be" instead of "missing_be_before_adjective", or "Dùng từ chưa tự nhiên" instead of "awkward_word"). It should NOT look like code.
 - Bad patternKey examples: "missing_verb", "bad_tone", "wrong_word".
 - Good patternKey examples: "missing_be_before_adjective", "too_direct_request", "explain_someone_vs_explain_to_someone".
 - Set shouldSave=true only if this mistake is concrete, reusable, and worth turning into a future review exercise.
@@ -88,8 +89,9 @@ Observed mistake rule:
 - Do not mark general patterns such as "Please + verb", "Is it fixed?", or "Help me..." as observed unless that exact phrase or very close wording appears in the input.
 - Tone advice should usually be source="inferred" and shouldSave=false unless the user clearly wrote that exact problematic wording.
 
-Vietnamese input rule:
-- If the input is Vietnamese, mistakeCandidates are inferred, not observed.
+Vietnamese input and corrections rule:
+- If the input mode is write_from_vietnamese (Vietnamese intent input), the corrections array MUST be empty. Translating or phrasing Vietnamese intent into English is not a correction of a draft.
+- If the input is Vietnamese, any inferred mistakeCandidates must have both wrongText and correctText in English (representing a common incorrect English draft vs. a correct natural phrasing). Never put Vietnamese text in wrongText.
 - For inferred mistakeCandidates, default shouldSave=false.
 - Set shouldSave=true only when the inferred mistake is extremely common, specific, and directly useful for future review.
 - Do not set shouldSave=true for generic tone advice such as "be more polite", "avoid direct questions", or "use softer wording".
@@ -103,9 +105,14 @@ Memory quality rule:
 - Prefer one high-quality mistakeCandidate over multiple weak candidates.
 - It is acceptable to return zero mistakeCandidates if there is no clear reusable mistake.
 
+Copywriting & Formatting Rules:
+- Banish the use of developer-style single quotes ('...') when highlighting words, phrases, or corrections in explanations or reasons. Use double quotes ("...") or bold text (**...**) instead (e.g. use "affect" instead of 'affect').
+- Banish bracketed placeholders like [topic], [goal], or [mechanism] under all circumstances. If a phrase contains a variable part, use ellipses and Vietnamese in parentheses (e.g., "Just following up on ... (chủ đề) ...").
+- Ensure all explanations (explanationVi, reasonVi) use a friendly, encouraging, and assistant-like coaching tone (e.g., "Bạn nên ưu tiên dùng..." or "Cách nói này giúp bạn..." instead of "Lỗi sai..." or "Diễn đạt chưa tốt").
+
 Language rules:
 - recommendedMessage and alternatives must be in English.
-- explanationVi, reasonVi, meaningVi, situationVi, and whenToUseVi must be in Vietnamese.
+- explanationVi, reasonVi, meaningVi, situationVi, patternNameVi, and whenToUseVi must be in Vietnamese.
 
 Tone judgment rule:
 - Avoid overclaiming cultural or tone judgments.

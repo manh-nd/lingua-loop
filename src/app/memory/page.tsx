@@ -46,7 +46,7 @@ import {
   addLocalMemoryItem,
   LocalMemoryItem,
 } from '@/lib/memory/local-memory-store';
-import { cn } from '@/lib/utils';
+import { cn, formatPatternKey } from '@/lib/utils';
 import Link from 'next/link';
 
 // Category mapping helper
@@ -382,6 +382,8 @@ export default function MemoryPage() {
         item.culturalContextVi
           .toLowerCase()
           .includes(searchQuery.toLowerCase())) ||
+      (item.patternNameVi &&
+        item.patternNameVi.toLowerCase().includes(searchQuery.toLowerCase())) ||
       item.patternKey.toLowerCase().includes(searchQuery.toLowerCase());
 
     return statusMatch && categoryMatch && typeMatch && searchMatch;
@@ -808,9 +810,10 @@ export default function MemoryPage() {
                     {/* Banner Header */}
                     <div className="py-2.5 px-4 bg-muted/20 border-b border-border/50 flex flex-row items-center justify-between gap-3 text-[10px]">
                       <div className="flex flex-wrap items-center gap-2">
-                        <code className="font-mono bg-muted dark:bg-black/20 px-1.5 py-0.5 rounded border border-border text-foreground font-bold uppercase tracking-wider">
-                          {item.patternKey}
-                        </code>
+                        <span className="font-bold bg-primary/10 dark:bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/20 text-[10px] tracking-wide">
+                          {item.patternNameVi ||
+                            formatPatternKey(item.patternKey)}
+                        </span>
                         <span
                           className={cn(
                             'uppercase px-1.5 rounded border font-bold text-[9px] h-5 inline-flex items-center justify-center',

@@ -32,6 +32,7 @@ export const LocalMemoryItemSchema = z.object({
       /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
       'patternKey must be lowercase_snake_case'
     ),
+  patternNameVi: z.string().trim().optional(),
   category: z.string().trim().default('naturalness'),
   explanationVi: z.string().trim().min(1),
   culturalContextVi: z.string().trim().optional(),

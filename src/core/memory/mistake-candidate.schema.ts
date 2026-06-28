@@ -17,6 +17,11 @@ export const MistakeCandidateSchema = z.object({
       /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
       'patternKey must be lowercase_snake_case'
     ),
+  patternNameVi: z
+    .string()
+    .trim()
+    .min(1)
+    .describe('Tên tự nhiên tiếng Việt cho mẫu lỗi/câu'),
   wrongText: z.string().trim().min(1),
   correctText: z.string().trim().min(1),
   explanationVi: z.string().trim().min(1),

@@ -56,6 +56,7 @@ describe('local-memory-store', () => {
     const itemData = {
       sourceWorkflow: 'message' as const,
       patternKey: 'test_key',
+      patternNameVi: 'Lỗi kiểm thử',
       wrongText: 'I am test.',
       correctText: 'I am a test.',
       explanationVi: 'Giải nghĩa test.',
@@ -73,6 +74,7 @@ describe('local-memory-store', () => {
     expect(newItem.createdAt).toBeDefined();
     expect(newItem.updatedAt).toBeDefined();
     expect(newItem.wrongText).toBe('I am test.');
+    expect(newItem.patternNameVi).toBe('Lỗi kiểm thử');
 
     const items = getLocalMemoryItems();
     expect(items.length).toBe(1);

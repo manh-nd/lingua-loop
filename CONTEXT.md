@@ -43,3 +43,7 @@ _Avoid_: Initial MVP, later someday
 **Later**:
 The stage for product capabilities that should not shape the current implementation, such as authentication, a database, spaced repetition scheduling, dashboards, and rich editing.
 _Avoid_: Backlog, MVP scope
+
+## UX & Copywriting Conventions
+
+For UI design and copywriting guidelines (such as hiding technical codes, formatting variable placeholders, and choosing conversational labels), refer to [ADR-0003](file:///Users/manhnd/lingua-loop/docs/adr/0003-ai-native-ux-and-friendly-copywriting.md).

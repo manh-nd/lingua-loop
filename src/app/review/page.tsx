@@ -25,7 +25,7 @@ import {
   updateLocalMemoryItem,
   LocalMemoryItem,
 } from '@/lib/memory/local-memory-store';
-import { cn } from '@/lib/utils';
+import { cn, formatPatternKey } from '@/lib/utils';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { submitReviewGrade } from './actions';
@@ -546,9 +546,10 @@ function ReviewContent() {
                 {/* Header Tag */}
                 <div className="py-2.5 px-4 bg-muted/20 border-b border-border/50 flex flex-row items-center justify-between text-[10px]">
                   <div className="flex items-center gap-1.5">
-                    <code className="font-mono bg-muted dark:bg-black/25 px-1.5 py-0.5 rounded border border-border text-foreground font-bold uppercase tracking-wider">
-                      {currentItem.patternKey}
-                    </code>
+                    <span className="font-bold bg-primary/10 dark:bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/20 text-[10px] tracking-wide">
+                      {currentItem.patternNameVi ||
+                        formatPatternKey(currentItem.patternKey)}
+                    </span>
                     <span
                       className={cn(
                         'text-[9px] font-bold px-1.5 py-0.5 rounded uppercase border',
@@ -582,8 +583,8 @@ function ReviewContent() {
                         <span className="text-[9px] text-red-700 dark:text-red-400 uppercase font-bold flex items-center gap-1 select-none">
                           <XCircle className="size-3 shrink-0" />
                           {currentItem.reviewPromptText
-                            ? 'Biến thể ôn tập (New Variation):'
-                            : 'Câu diễn đạt sai/chưa tốt:'}
+                            ? 'Biến thể thực hành:'
+                            : 'Bản nháp cần cải thiện:'}
                         </span>
                         <span className="text-red-600 dark:text-red-400 select-all leading-relaxed break-words font-medium text-xs">
                           {currentItem.reviewPromptText ||
@@ -609,8 +610,8 @@ function ReviewContent() {
                         <span className="text-[9px] text-emerald-700 dark:text-emerald-400 uppercase font-bold flex items-center gap-1 select-none">
                           <FileText className="size-3.5 shrink-0" />
                           {currentItem.reviewPromptText
-                            ? 'Tình huống ôn tập mới (New Situation):'
-                            : 'Tình huống giao tiếp cần diễn đạt:'}
+                            ? 'Ngữ cảnh ôn tập mới:'
+                            : 'Ý định diễn đạt tiếng Việt:'}
                         </span>
                         <span className="text-emerald-800 dark:text-emerald-400 leading-relaxed font-semibold text-xs pt-1 select-text">
                           {currentItem.reviewPromptText ||
@@ -636,8 +637,8 @@ function ReviewContent() {
                         <span className="text-[9px] text-amber-700 dark:text-amber-400 uppercase font-bold flex items-center gap-1 select-none">
                           <AlertTriangle className="size-3.5 shrink-0" />
                           {currentItem.reviewPromptText
-                            ? 'Ví dụ bẫy đọc hiểu mới (New Context):'
-                            : 'Cụm từ tiếng Anh dễ dịch sai:'}
+                            ? 'Ngữ cảnh thực hành mới:'
+                            : 'Từ/cụm từ tiếng Anh dễ nhầm lẫn:'}
                         </span>
                         <span className="text-amber-800 dark:text-amber-400 leading-relaxed font-bold text-sm pt-1 select-all">
                           {currentItem.reviewPromptText || currentItem.trapText}
@@ -665,11 +666,11 @@ function ReviewContent() {
                       className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider"
                     >
                       {currentItem.memoryType === 'writing_mistake' &&
-                        'Viết lại phiên bản sửa đổi đúng (English):'}
+                        'Viết câu tiếng Anh đã sửa đổi:'}
                       {currentItem.memoryType === 'reusable_phrase' &&
-                        'Viết câu/cụm từ tương ứng (English):'}
+                        'Nhập cụm từ/câu tương ứng bằng tiếng Anh:'}
                       {currentItem.memoryType === 'reading_trap' &&
-                        'Giải thích nghĩa thực tế/sắc thái ẩn (Vietnamese hoặc English):'}
+                        'Giải thích nghĩa/sắc thái thực tế của cụm từ này:'}
                     </label>
                     {currentItem.memoryType === 'reusable_phrase' &&
                       currentItem.phrase &&

@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { addLocalMemoryItem } from '@/lib/memory/local-memory-store';
 import Link from 'next/link';
-import { Brain, Check, ExternalLink } from 'lucide-react';
+import { Brain, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export type ReusablePhraseItem = {
@@ -82,75 +81,72 @@ export function ReusablePhraseList({
   if (!phrases || phrases.length === 0) return null;
 
   return (
-    <div className={cn('grid grid-cols-1 sm:grid-cols-2 gap-4', className)}>
+    <div
+      className={cn(
+        'flex flex-col border border-border/85 rounded-2xl bg-white dark:bg-zinc-950 divide-y divide-border/60 overflow-hidden shadow-3xs',
+        className
+      )}
+    >
       {phrases.map((item, idx) => {
         const savedId = savedIds[idx];
         const isSaved = !!savedId;
 
         return (
-          <Card
+          <div
             key={idx}
             className={cn(
-              'border hover:shadow-xs transition-all duration-200 shadow-none overflow-hidden animate-in fade-in duration-200 py-0 rounded-xl',
-              isSaved
-                ? 'border-emerald-500/30 bg-emerald-500/[0.01]'
-                : 'border-border bg-card'
+              'flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 transition-all duration-200 hover:bg-slate-50/40 dark:hover:bg-black/10 select-text',
+              isSaved && 'bg-emerald-500/[0.01]'
             )}
           >
-            <CardContent className="p-4.5 flex flex-col gap-3.5 text-xs">
-              <span className="font-mono font-bold text-primary select-all text-[13px] border-b border-border pb-2.5 leading-normal">
-                {item.phrase}
-              </span>
-              <div className="flex flex-col gap-2">
-                <span className="text-[11px] text-foreground/90 font-medium leading-relaxed">
-                  🇻🇳{' '}
-                  <span className="text-muted-foreground font-normal">
-                    Nghĩa:
-                  </span>{' '}
-                  {item.meaningVi}
+            {/* Left side: Phrase, meaning, context */}
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <span className="font-sans font-bold text-foreground text-[12.5px] select-all leading-normal">
+                  {item.phrase}
                 </span>
-                <span className="text-[11px] text-muted-foreground leading-relaxed">
-                  💼{' '}
-                  <span className="font-semibold text-foreground/80">
-                    Ngữ cảnh:
-                  </span>{' '}
-                  {item.situationVi}
+                <span className="text-[11.5px] text-muted-foreground font-sans font-medium">
+                  — {item.meaningVi}
                 </span>
               </div>
+              <p className="text-[10.5px] text-muted-foreground/80 leading-relaxed font-sans font-medium">
+                💼 {item.situationVi}
+              </p>
+            </div>
 
-              {/* Save/Review Action Footer */}
-              <div className="flex justify-end items-center gap-2 pt-2 border-t border-border/40 mt-1 select-none">
-                {isSaved ? (
-                  <div className="flex gap-2">
-                    <Link
-                      href="/memory"
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/5 py-1 px-2 rounded border border-emerald-500/20"
-                    >
-                      Xem trong Sổ tay
-                      <ExternalLink className="size-3" />
-                    </Link>
-                    <Link
-                      href={`/review?id=${savedId}`}
-                      className="inline-flex items-center gap-1 text-[10px] font-bold bg-primary hover:bg-primary/95 text-primary-foreground py-1 px-2.5 rounded shadow-xs"
-                    >
-                      <Brain className="size-3 mr-0.5" />
-                      Luyện ngay
-                    </Link>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    size="xs"
-                    onClick={() => handleSave(item, idx)}
-                    className="text-[10px] h-7 px-3.5 font-bold bg-primary hover:bg-primary/95 text-primary-foreground shadow-2xs cursor-pointer"
+            {/* Right side: Actions */}
+            <div className="shrink-0 flex items-center gap-2 select-none self-end sm:self-center">
+              {isSaved ? (
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    href="/memory"
+                    className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/5 py-1 px-2.5 rounded border border-emerald-500/20 h-7"
+                    title="Xem trong Sổ tay"
                   >
-                    <Brain className="size-3 mr-1" />
-                    Lưu vào Sổ tay
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                    Đã lưu
+                    <Check className="size-3" />
+                  </Link>
+                  <Link
+                    href={`/review?id=${savedId}`}
+                    className="inline-flex items-center gap-1.5 text-[10px] font-bold bg-primary hover:bg-primary/95 text-primary-foreground py-1 px-2.5 rounded shadow-2xs h-7"
+                  >
+                    <Brain className="size-3" />
+                    Luyện ngay
+                  </Link>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  size="xs"
+                  onClick={() => handleSave(item, idx)}
+                  className="text-[10px] h-7 px-3 font-bold bg-muted hover:bg-primary hover:text-primary-foreground text-foreground border border-border/80 hover:border-primary shadow-3xs cursor-pointer flex items-center gap-1"
+                >
+                  <Brain className="size-3.5 text-primary group-hover:text-primary-foreground" />
+                  Lưu sổ tay
+                </Button>
+              )}
+            </div>
+          </div>
         );
       })}
     </div>

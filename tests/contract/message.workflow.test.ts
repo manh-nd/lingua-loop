@@ -35,6 +35,7 @@ describe('runMessageCoach', () => {
         mistakeCandidates: [
           {
             patternKey: 'missing_be_when_free',
+            patternNameVi: 'Thiếu động từ to-be',
             wrongText: 'when you free',
             correctText: "when you're free",
             explanationVi: "Trong tiếng Anh cần có động từ 'are'.",

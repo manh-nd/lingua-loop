@@ -122,42 +122,46 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
             },
           };
           ws.send(JSON.stringify(setupPayload));
-
-          // 5. Start recording audio
-          try {
-            await controller.startRecording((base64PCM) => {
-              if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
-                const audioPayload = {
-                  realtimeInput: {
-                    mediaChunks: [
-                      {
-                        mimeType: 'audio/pcm;rate=16000',
-                        data: base64PCM,
-                      },
-                    ],
-                  },
-                };
-                ws.send(JSON.stringify(audioPayload));
-              }
-            });
-
-            setIsConnected(true);
-            setIsConnecting(false);
-          } catch (audioErr) {
-            console.error('Failed to access microphone:', audioErr);
-            setError(
-              'Không thể truy cập Microphone. Vui lòng cho phép quyền truy cập micro.'
-            );
-            cleanupSession();
-          }
         };
 
-        ws.onmessage = (event) => {
+        ws.onmessage = async (event) => {
           if (typeof event.data !== 'string') return;
           try {
             const response = JSON.parse(event.data);
-            const serverContent = response.serverContent;
 
+            // Handle setup complete
+            if (response.setupComplete) {
+              // 5. Start recording audio now that setup is complete
+              try {
+                await controller.startRecording((base64PCM) => {
+                  if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
+                    const audioPayload = {
+                      realtimeInput: {
+                        mediaChunks: [
+                          {
+                            mimeType: 'audio/pcm',
+                            data: base64PCM,
+                          },
+                        ],
+                      },
+                    };
+                    ws.send(JSON.stringify(audioPayload));
+                  }
+                });
+
+                setIsConnected(true);
+                setIsConnecting(false);
+              } catch (audioErr) {
+                console.error('Failed to access microphone:', audioErr);
+                setError(
+                  'Không thể truy cập Microphone. Vui lòng cho phép quyền truy cập micro.'
+                );
+                cleanupSession();
+              }
+              return;
+            }
+
+            const serverContent = response.serverContent;
             if (!serverContent) return;
 
             // A: Handle interruption

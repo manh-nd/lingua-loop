@@ -399,11 +399,11 @@ export default function Home() {
         <section className="flex flex-col gap-6 w-full pt-8 border-t border-border/20">
           <div className="flex flex-col gap-1.5 text-left">
             <h2 className="text-sm font-bold tracking-wider uppercase text-primary">
-              Learning Loop Roadmap
+              Core Learning Loop Features
             </h2>
             <p className="text-xs text-muted-foreground text-pretty">
-              Các tính năng đang phát triển để hoàn thiện vòng lặp học tập, giúp
-              bạn lưu trữ và không bao giờ lặp lại các lỗi cũ.
+              Các tính năng cốt lõi giúp hoàn thiện vòng lặp học tập khép kín,
+              từ lưu giữ đến ôn tập và sửa lỗi.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -481,22 +481,29 @@ export default function Home() {
             </Link>
 
             {/* Bento Card 4: Spaced Review */}
-            <div className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/30 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/[0.02] transition-all duration-300">
-              <div className="flex items-center gap-2 border-b border-border/30 pb-2.5">
-                <TrendingUp className="size-4 text-primary" />
-                <h3 className="text-xs font-bold font-heading text-foreground">
-                  Spaced Review
-                </h3>
+            <Link
+              href="/review"
+              className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/40 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-2 border-b border-border/30 pb-2.5 justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-4 text-primary" />
+                  <h3 className="text-xs font-bold font-heading text-foreground group-hover:text-primary transition-colors">
+                    Spaced Review
+                  </h3>
+                </div>
+                <ArrowRight className="size-3.5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground flex-1">
                 Nhắc nhở ôn tập thông minh dựa trên vòng lặp Spaced Repetition
                 từ chính các lỗi sai bạn đã phạm phải trong công việc hàng ngày,
                 đảm bảo không quên lỗi cũ.
               </p>
-              <span className="text-[9px] uppercase tracking-wider text-pink-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-pink-500/10 w-fit border border-pink-500/20">
-                LATER
+              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20 flex items-center gap-1">
+                <span className="flex size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                MỞ NGAY (READY)
               </span>
-            </div>
+            </Link>
           </div>
         </section>
       </main>

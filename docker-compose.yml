@@ -1,0 +1,15 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lingua-loop-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - npm_network
+
+networks:
+  npm_network:
+    external: true

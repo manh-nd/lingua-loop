@@ -20,6 +20,7 @@ import {
   Sparkle,
   TrendingUp,
   FileCheck,
+  Activity,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
@@ -383,7 +384,7 @@ export default function Home() {
               bạn lưu trữ và không bao giờ lặp lại các lỗi cũ.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Bento Card 1: Reading Coach */}
             <Link
               href="/reading"
@@ -407,7 +408,30 @@ export default function Home() {
               </span>
             </Link>
 
-            {/* Bento Card 2: Memory Candidates */}
+            {/* Bento Card 2: Live Speak Coach */}
+            <Link
+              href="/live"
+              className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/40 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
+            >
+              <div className="flex items-center gap-2 border-b border-border/30 pb-2.5 justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="size-4 text-primary" />
+                  <h3 className="text-xs font-bold font-heading text-foreground group-hover:text-primary transition-colors">
+                    Live Speak Coach
+                  </h3>
+                </div>
+                <ArrowRight className="size-3.5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <p className="text-[11px] leading-relaxed text-muted-foreground flex-1">
+                Luyện nói phản xạ thời gian thực với AI qua kịch bản công sở,
+                đàm phán và phỏng vấn thử.
+              </p>
+              <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold mt-auto px-2 py-0.5 rounded-full bg-emerald-500/10 w-fit border border-emerald-500/20">
+                MỞ NGAY (READY)
+              </span>
+            </Link>
+
+            {/* Bento Card 3: Memory Candidates */}
             <Link
               href="/memory"
               className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/40 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 group cursor-pointer"
@@ -431,7 +455,7 @@ export default function Home() {
               </span>
             </Link>
 
-            {/* Bento Card 3: Spaced Review */}
+            {/* Bento Card 4: Spaced Review */}
             <div className="border border-border/50 bg-white/20 dark:bg-black/15 backdrop-blur-md p-5 rounded-xl flex flex-col gap-3.5 hover:border-primary/30 hover:bg-white/30 dark:hover:bg-black/20 hover:shadow-md hover:shadow-primary/[0.02] transition-all duration-300">
               <div className="flex items-center gap-2 border-b border-border/30 pb-2.5">
                 <TrendingUp className="size-4 text-primary" />

@@ -43,6 +43,18 @@
       "skillPath": "skills/frontend-design/SKILL.md",
       "computedHash": "4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336"
     },
+    "gemini-api-dev": {
+      "source": "google-gemini/gemini-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gemini-api-dev/SKILL.md",
+      "computedHash": "e358693ab81864c2ed8fae87dd404ee41173e615f0d04834161cc1343bff1354"
+    },
+    "gemini-live-api-dev": {
+      "source": "google-gemini/gemini-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gemini-live-api-dev/SKILL.md",
+      "computedHash": "d4d52c9a639bd79fe5eeef0722a9d4d6ed256b99172375b60e96920c8b111836"
+    },
     "grill-me": {
       "source": "mattpocock/skills",
       "sourceType": "github",

@@ -161,6 +161,24 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
 
                 setIsConnected(true);
                 setIsConnecting(false);
+
+                // Send an initial silent nudge to trigger the AI to start speaking first
+                const initialNudge = {
+                  clientContent: {
+                    turns: [
+                      {
+                        role: 'user',
+                        parts: [
+                          {
+                            text: 'Hello. Please initiate the conversation according to your role instructions.',
+                          },
+                        ],
+                      },
+                    ],
+                    turnComplete: true,
+                  },
+                };
+                ws.send(JSON.stringify(initialNudge));
               } catch (audioErr) {
                 console.error('Failed to access microphone:', audioErr);
                 setError(

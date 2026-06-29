@@ -25,6 +25,7 @@ describe('runLiveAnalysisWorkflow', () => {
           explanationVi: 'Cách nói trang trọng và chuyên nghiệp hơn.',
         },
       ],
+      practiceMonologue: 'I went to the office yesterday to finish my work.',
     };
 
     const mockGenerateJson = vi.fn().mockResolvedValue(mockReport);

@@ -4,15 +4,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLiveSession, LiveMessage } from '@/lib/hooks/use-live-session';
 import { LiveWaveform } from '@/components/coach/LiveWaveform';
 import { CoachShell } from '@/components/coach/CoachShell';
+import { CopyButton } from '@/components/coach/CopyButton';
+import { TTSButton } from '@/components/coach/TTSButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { addLocalMemoryItem } from '@/lib/memory/local-memory-store';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import {
   Phone,
   PhoneOff,
   Mic,
   MicOff,
-  Sparkles,
   Brain,
   Check,
   RotateCcw,
@@ -48,6 +57,85 @@ Vary the topics naturally. Gently prompt the user if they pause. Always match th
       'How has your day been so far?',
       "Let's talk about your hobbies.",
       'Could you tell me about your plans for the weekend?',
+    ],
+  },
+  {
+    id: 'active_correction',
+    title: 'Active Grammar Coach (Sửa lỗi trực tiếp)',
+    descriptionVi:
+      'AI sẽ chủ động phát hiện và sửa ngay lập tức các lỗi ngữ pháp hoặc diễn đạt chưa tự nhiên bằng tiếng Việt trước khi tiếp tục trò chuyện.',
+    systemPrompt: `
+Role: Strict English Coach for Vietnamese learners.
+Goal: Correct errors, enforce correct repetition, expand short answers, and continuously build a personal story.
+
+Rules:
+Evaluate the user's input and execute EXACTLY ONE of the following cases:
+
+Case 0 (Explanation Request): If the user asks for help, explanation, translation, or clarification (e.g., "I don't understand", "why?", "what does this mean?", "tại sao?", "nghĩa là gì?"):
+- Explain the rule, vocabulary meaning, or structure clearly in English or Vietnamese depending on the context/language of their question.
+- Keep the explanation brief (1-2 sentences).
+- Prompt exactly once: "Bây giờ bạn hãy thử nói lại câu/đoạn này nhé: '[Target Sentence]'" and wait.
+
+Case 1 (Repetition Check): If you previously asked the user to repeat/read a target sentence or story:
+- Check if their input matches the target.
+- If incorrect: Prompt exactly once: "Chưa chính xác, nói lại câu này nhé: '[Target Sentence]'" and wait.
+- If correct: Praise the user in English (e.g. "Excellent job!", "Perfect!", "Great pronunciation!"), clear lock, and resume the conversation.
+
+Case 2 (Mistake Correction & Unnatural Phrasing): If the input has any grammar error (tenses, prepositions, articles, subject-verb agreement, etc.) or awkward/unnatural phrasing:
+- You must check word-by-word meticulously (especially long inputs). Do not let any mistake slide.
+- Pause the conversation. Explain the error or unnatural phrasing in Vietnamese (1-2 sentences), explaining clearly WHY it should be corrected (e.g., the underlying grammar rule, or why a different word choice is more natural in this context).
+- Prompt exactly once: "Bạn hãy lặp lại câu này nhé: '[Target Sentence]'" and wait.
+
+Case 3 (Short Answer Expansion): If the input is correct but too short (fewer than 5 words):
+- Suggest how to expand in Vietnamese (1 sentence).
+- Prompt exactly once: "Để nói dài và hay hơn, bạn hãy thử nói câu này nhé: '[Expanded Sentence]'" and wait.
+(Do not show the expanded sentence anywhere else in your response. Show it ONLY inside the quotes of the prompt).
+
+Case 4 (Story Accumulation): Every 4-5 successful turns, compile/append details to the ongoing English story:
+- Prompt exactly once in Vietnamese: "Chúng ta hãy cùng đọc lại toàn bộ câu chuyện tích lũy để luyện trôi chảy nhé: '[Accumulated Story]'" and wait.
+
+Case 5 (Normal Flow): If correct and >=5 words:
+- Reply in English (1-2 sentences) and end with an engaging question. Increment successful turn count.
+`.trim(),
+    phrases: [
+      'How was your day? Tell me about what you did.',
+      'I went to the office yesterday and meet my boss...',
+      'Do you have any plans for tonight?',
+    ],
+  },
+  {
+    id: 'toeic_speaking',
+    title: 'TOEIC Speaking Simulator (Thi nói TOEIC)',
+    descriptionVi:
+      'Giả lập giám khảo phòng thi TOEIC Speaking (Part 3 & Part 5). AI sẽ hỏi từng câu, sửa lỗi ngữ pháp và hướng dẫn cách mở rộng ý đạt điểm cao.',
+    systemPrompt: `
+Role: Strict TOEIC Speaking Examiner & Coach.
+Goal: Simulate TOEIC Speaking Part 3 and Part 5. For EVERY user response, provide immediate feedback, suggest a high-scoring/natural alternative, and require them to practice speaking it.
+
+Rules:
+Evaluate the user's input and execute EXACTLY ONE of the following cases:
+
+Case 0 (Explanation Request): If the user asks for help, explanation, translation, or clarification (e.g., "I don't understand", "why?", "what does this mean?", "tại sao?", "nghĩa là gì?"):
+- Explain the grammar rule, vocabulary choice, or response structure clearly in English or Vietnamese depending on the context/language of their question.
+- Keep the explanation brief (1-2 sentences).
+- Prompt exactly once: "Bây giờ bạn hãy thử đọc lại câu này nhé: '[Target Sentence]'" and wait.
+
+Case 1 (Repetition Check): If you previously asked the user to repeat a suggested version:
+- Check if their input matches the target.
+- If incorrect: Prompt exactly once: "Chưa chính xác lắm, hãy đọc lại câu này nhé: '[Target Sentence]'" and wait.
+- If correct: Praise the user in English (e.g. "Excellent reading!", "Perfect repetition!") and proceed to the next exam question.
+
+Case 2 (New Exam Response & Suggestion): If the user just answered a new exam question:
+- Meticulously inspect their answer for any grammatical mistakes, pronunciation issues, or unnatural phrasing.
+- If there are errors: Point them out and explain clearly WHY they should be corrected in Vietnamese (e.g., explaining the grammar rules violated or why a certain word makes the response sound unnatural for TOEIC criteria).
+- If there are no errors: Give 1 sentence of encouraging feedback/praise in English (e.g. "Great answer! You covered the topic well with natural expressions.").
+- Always formulate a polished, natural, and advanced English version of their answer (TOEIC high band).
+- Prompt exactly once: "Để tối ưu điểm số và nói tự nhiên hơn, bạn hãy đọc to bản nâng cấp này nhé: '[Target Sentence]'" and wait.
+`.trim(),
+    phrases: [
+      'I prefer watching movies at home because it is more comfortable...',
+      'In my opinion, working in an office has many benefits...',
+      'I disagree with the statement because face-to-face communication is important...',
     ],
   },
   {
@@ -125,6 +213,7 @@ type AnalysisReport = {
     betterAlternative: string;
     explanationVi: string;
   }>;
+  practiceMonologue?: string;
 };
 
 export default function LiveCoachPage() {
@@ -134,6 +223,12 @@ export default function LiveCoachPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [savedItems, setSavedItems] = useState<Record<string, boolean>>({});
+
+  // Reset report state when switching scenarios
+  useEffect(() => {
+    setShowReport(false);
+    setReport(null);
+  }, [selectedScenarioId]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -149,13 +244,9 @@ export default function LiveCoachPage() {
     speakerLevel,
     isMuted,
     isThinking,
-    sosHint,
-    isSosPending,
     startSession,
     endSession,
     toggleMute,
-    requestSosHint,
-    clearSosHint,
   } = useLiveSession({ voiceName });
 
   // Scroll live transcription view to bottom when transcript updates
@@ -170,15 +261,37 @@ export default function LiveCoachPage() {
     setShowReport(false);
     setReport(null);
     setSavedItems({});
-    startSession(selectedScenario.title, selectedScenario.systemPrompt);
+
+    const globalGuardPrompt = `
+Additional Critical Rule:
+The speech-to-text system may sometimes incorrectly transcribe the user's Vietnamese/English speech into other languages like Korean, Japanese, Chinese, etc.
+If the transcribed user input contains characters or words from languages other than English or Vietnamese (such as Hangul/Korean, Kanji/Hanzi, Hiragana/Katakana):
+- Treat it strictly as a transcription/recognition error.
+- Do not respond to that foreign text.
+- Instead, say in Vietnamese: "Xin lỗi, tôi chưa nghe rõ câu vừa rồi. Bạn nói lại bằng tiếng Anh hoặc tiếng Việt được không?" and wait for their response.
+`.trim();
+
+    const voiceGender = ['Aoede', 'Kore'].includes(voiceName)
+      ? 'female'
+      : 'male';
+    const voiceAnchorPrompt = `
+Voice Anchor:
+You are speaking as ${voiceName}. You must always speak in a consistent, clear ${voiceGender} voice matching the character of ${voiceName}. Do not drift, change pitch, or switch to a different gender/voice under any circumstances.
+`.trim();
+
+    const finalSystemPrompt = `${selectedScenario.systemPrompt}\n\n${globalGuardPrompt}\n\n${voiceAnchorPrompt}`;
+    startSession(selectedScenario.title, finalSystemPrompt);
   };
 
-  // Handle call end and trigger post-call analysis
   const handleEndCall = async () => {
     // 1. Terminate WebSocket session
     endSession();
 
-    if (transcript.length === 0) {
+    // Only analyze if the user actually spoke during the session
+    const hasUserSpoken = transcript.some((msg) => msg.role === 'user');
+    if (!hasUserSpoken) {
+      setShowReport(false);
+      setReport(null);
       return;
     }
 
@@ -247,6 +360,7 @@ export default function LiveCoachPage() {
       sidebarDescription="Chọn kịch bản công sở thực tế hoặc nói chuyện tự do để luyện nói phản xạ thời gian thực với AI."
       showReset={false}
       onReset={() => {}}
+      focusMode={isConnected || isConnecting || showReport}
       sidebarContent={
         <div className="flex flex-col gap-5">
           {/* Scenario Selector */}
@@ -281,18 +395,24 @@ export default function LiveCoachPage() {
             <label className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
               Giọng nói AI (Google Live)
             </label>
-            <select
+            <Select
               disabled={isConnected || isConnecting}
               value={voiceName}
-              onChange={(e) => setVoiceName(e.target.value)}
-              className="w-full text-xs h-8.5 px-2 bg-background border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-60"
+              onValueChange={(val) => {
+                if (val) setVoiceName(val);
+              }}
             >
-              <option value="Aoede">Aoede (Nữ - Truyền cảm)</option>
-              <option value="Kore">Kore (Nữ - Rõ ràng)</option>
-              <option value="Charon">Charon (Nam - Trầm ấm)</option>
-              <option value="Fenrir">Fenrir (Nam - Mạnh mẽ)</option>
-              <option value="Puck">Puck (Nam - Năng động)</option>
-            </select>
+              <SelectTrigger className="w-full text-xs h-8.5 bg-background border border-border rounded-xl">
+                <SelectValue placeholder="Chọn giọng nói" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                <SelectItem value="Aoede">Aoede (Nữ - Truyền cảm)</SelectItem>
+                <SelectItem value="Kore">Kore (Nữ - Rõ ràng)</SelectItem>
+                <SelectItem value="Charon">Charon (Nam - Trầm ấm)</SelectItem>
+                <SelectItem value="Fenrir">Fenrir (Nam - Mạnh mẽ)</SelectItem>
+                <SelectItem value="Puck">Puck (Nam - Năng động)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       }
@@ -386,7 +506,7 @@ export default function LiveCoachPage() {
                   </span>
                   <div
                     ref={scrollRef}
-                    className="w-full h-40 overflow-y-auto border border-border/60 bg-muted/30 rounded-2xl p-4 flex flex-col gap-3 scroll-smooth select-text"
+                    className="w-full h-[380px] overflow-y-auto border border-border/60 bg-muted/30 rounded-2xl p-4 flex flex-col gap-3 scroll-smooth select-text"
                   >
                     {transcript.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground/60 italic font-medium">
@@ -405,15 +525,22 @@ export default function LiveCoachPage() {
                           <span className="text-[9px] font-bold text-muted-foreground mb-0.5 capitalize">
                             {msg.role === 'user' ? 'Bạn' : 'Coach'}
                           </span>
-                          <div
-                            className={`p-2.5 rounded-2xl leading-relaxed font-sans ${
-                              msg.role === 'user'
-                                ? 'bg-primary text-primary-foreground rounded-tr-none'
-                                : 'bg-white dark:bg-zinc-800 text-foreground border border-border/80 rounded-tl-none'
-                            }`}
+                          <Bubble
+                            variant={
+                              msg.role === 'user' ? 'default' : 'outline'
+                            }
+                            align={msg.role === 'user' ? 'end' : 'start'}
                           >
-                            {msg.text}
-                          </div>
+                            <BubbleContent
+                              className={
+                                msg.role === 'user'
+                                  ? 'rounded-2xl rounded-tr-none p-2.5 font-sans leading-relaxed text-xs'
+                                  : 'rounded-2xl rounded-tl-none p-2.5 font-sans leading-relaxed text-xs bg-white dark:bg-zinc-800 border border-border/80'
+                              }
+                            >
+                              {msg.text}
+                            </BubbleContent>
+                          </Bubble>
                         </div>
                       ))
                     )}
@@ -422,53 +549,16 @@ export default function LiveCoachPage() {
                         <span className="text-[9px] font-bold text-muted-foreground mb-0.5">
                           Coach
                         </span>
-                        <div className="p-2.5 rounded-2xl rounded-tl-none bg-white dark:bg-zinc-800 text-foreground border border-border/80 italic text-muted-foreground/60 flex items-center gap-1.5">
-                          <Loader2 className="size-3 animate-spin text-primary" />
-                          Đang suy nghĩ...
-                        </div>
+                        <Bubble variant="outline" align="start">
+                          <BubbleContent className="rounded-2xl rounded-tl-none p-2.5 font-sans leading-relaxed text-xs bg-white dark:bg-zinc-800 border border-border/80 italic text-muted-foreground/60 flex items-center gap-1.5">
+                            <Loader2 className="size-3 animate-spin text-primary" />
+                            Đang suy nghĩ...
+                          </BubbleContent>
+                        </Bubble>
                       </div>
                     )}
                   </div>
                 </div>
-
-                {/* SOS Rescue / Help hint */}
-                {isConnected && (
-                  <div className="w-full border-t border-border/40 pt-4 flex flex-col gap-3 items-center">
-                    {sosHint ? (
-                      <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-foreground text-xs rounded-2xl w-full flex justify-between items-start gap-3 animate-in slide-in-from-bottom-2 duration-200">
-                        <div className="flex-1">
-                          <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 block mb-1">
-                            💡 Gợi ý câu nói tiếp theo (SOS Hint):
-                          </span>
-                          <span className="font-semibold select-all font-sans italic text-foreground/90">
-                            {sosHint}
-                          </span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="xs"
-                          onClick={clearSosHint}
-                          className="text-muted-foreground hover:text-foreground text-[10px] px-2 h-6"
-                        >
-                          Đóng
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        disabled={isSosPending}
-                        onClick={requestSosHint}
-                        className="text-xs h-8 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-4 rounded-xl cursor-pointer flex items-center gap-1"
-                      >
-                        <Sparkles className="size-3.5 fill-current" />
-                        {isSosPending
-                          ? 'Đang tạo gợi ý...'
-                          : 'Bí từ? Gợi ý câu tiếp theo'}
-                      </Button>
-                    )}
-                  </div>
-                )}
 
                 {/* Call Controls */}
                 <div className="flex items-center gap-5 pt-2 border-t border-border/40 w-full justify-center">
@@ -590,6 +680,38 @@ export default function LiveCoachPage() {
                       </span>{' '}
                       {report.summaryVi}
                     </div>
+
+                    {/* Practice Monologue */}
+                    {report.practiceMonologue && (
+                      <div className="border border-border/80 rounded-2xl p-4.5 bg-primary/[0.01] flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            📖 Bài nói tổng hợp của bạn (Practice Monologue):
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <TTSButton
+                              text={report.practiceMonologue}
+                              size="icon-xs"
+                              variant="outline"
+                            />
+                            <CopyButton
+                              text={report.practiceMonologue}
+                              size="icon-xs"
+                              variant="outline"
+                            />
+                          </div>
+                        </div>
+                        <div className="bg-white dark:bg-zinc-950 border border-border/40 rounded-xl p-3.5 text-xs text-foreground font-sans leading-relaxed select-text italic">
+                          "{report.practiceMonologue}"
+                        </div>
+                        <span className="text-[10px] text-muted-foreground leading-normal font-medium">
+                          💡 Mẹo: Đây là bài nói tổng hợp hoàn chỉnh từ tất cả ý
+                          tưởng bạn chia sẻ trong phòng Live, được viết lại theo
+                          phong cách tự nhiên, chuẩn bản xứ. Hãy đọc to đoạn văn
+                          này hàng ngày để tăng phản xạ phát âm và từ vựng!
+                        </span>
+                      </div>
+                    )}
 
                     {/* Grammar mistakes check */}
                     <div>

@@ -58,6 +58,10 @@ CRITICAL: You must ONLY analyze the turns spoken by the "user" role. NEVER corre
 4. Output a summary (summaryVi) in Vietnamese:
    - Keep it encouraging, positive, and constructive.
    - Target a user who is anxious about speaking English. Keep explanations extremely simple and actionable.
+5. Compile a practice monologue (practiceMonologue) in English:
+   - Synthesize all thoughts, ideas, experiences, and facts that the user expressed during the entire conversation into a single, cohesive, and fluent English monologue or short narrative.
+   - It must represent what the user tried to express, but polished into elegant, natural, and high-quality English (max 150 words).
+   - The user will use this monologue to practice reading aloud and learning vocabulary later.
 
 Strict Copywriting Rules (Vietnamese text):
 - Never use code-style single quotes '...' (e.g., 'fixed', 'addressed'). Instead, use double quotes "..." or bold text **...** (e.g., "fixed", **fixed**).

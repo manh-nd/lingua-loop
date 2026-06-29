@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { PcmAudioController } from '@/lib/audio/pcm-recorder';
+import {
+  playCallStartSound,
+  playCallEndSound,
+} from '@/lib/audio/interface-sounds';
 
 export type LiveMessage = {
   role: 'user' | 'assistant';
@@ -22,12 +26,16 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
   const [isMuted, setIsMuted] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
 
-  const [sosHint, setSosHint] = useState<string | null>(null);
-  const [isSosPending, setIsSosPending] = useState(false);
-
   const wsRef = useRef<WebSocket | null>(null);
   const audioControllerRef = useRef<PcmAudioController | null>(null);
   const isMutedRef = useRef(isMuted);
+  const nudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const sessionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isConnectedRef = useRef(false);
+
+  useEffect(() => {
+    isConnectedRef.current = isConnected;
+  }, [isConnected]);
 
   // Track real-time transcripts separately so we can edit them dynamically
   const currentTurnTextRef = useRef<{ user: string; assistant: string }>({
@@ -42,6 +50,27 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     isMutedRef.current = isMuted;
   }, [isMuted]);
 
+  const clearNudgeTimer = useCallback(() => {
+    if (nudgeTimerRef.current) {
+      clearTimeout(nudgeTimerRef.current);
+      nudgeTimerRef.current = null;
+    }
+  }, []);
+
+  const startNudgeTimer = useCallback(() => {
+    clearNudgeTimer();
+    nudgeTimerRef.current = setTimeout(() => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        const nudgePayload = {
+          realtimeInput: {
+            text: '[System: Người dùng đã im lặng hơn 7 giây kể từ câu trả lời của bạn. Hãy chủ động gợi ý tiếp câu chuyện hoặc hỏi xem họ có cần giúp đỡ gì không bằng một câu nói ngắn gọn.]',
+          },
+        };
+        wsRef.current.send(JSON.stringify(nudgePayload));
+      }
+    }, 7000);
+  }, [clearNudgeTimer]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -50,6 +79,11 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
   }, []);
 
   const cleanupSession = () => {
+    clearNudgeTimer();
+    if (sessionTimeoutRef.current) {
+      clearTimeout(sessionTimeoutRef.current);
+      sessionTimeoutRef.current = null;
+    }
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -59,12 +93,14 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
       audioControllerRef.current.cleanupPlayback();
       audioControllerRef.current = null;
     }
+    if (isConnectedRef.current) {
+      playCallEndSound();
+    }
     setIsConnected(false);
     setIsConnecting(false);
     setIsThinking(false);
     setMicLevel(0);
     setSpeakerLevel(0);
-    setSosHint(null);
   };
 
   const startSession = useCallback(
@@ -73,7 +109,6 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
       setIsConnecting(true);
       setError(null);
       setTranscript([]);
-      setSosHint(null);
       currentTurnTextRef.current = { user: '', assistant: '' };
       committedMessagesRef.current = [];
 
@@ -123,6 +158,12 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
                 parts: [{ text: systemPrompt }],
               },
               inputAudioTranscription: {},
+              realtimeInputConfig: {
+                automaticActivityDetection: {
+                  disabled: false,
+                  silenceDurationMs: 1500, // Wait 1.5 seconds of silence before thinking user finished speaking
+                },
+              },
             },
           };
           ws.send(JSON.stringify(setupPayload));
@@ -147,6 +188,11 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
               try {
                 await controller.startRecording((base64PCM) => {
                   if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
+                    // Suppress sending mic data if the speaker is currently playing AI audio
+                    // to prevent echo feedback loop / self-interruption.
+                    if (controller.isPlaying()) {
+                      return;
+                    }
                     const audioPayload = {
                       realtimeInput: {
                         audio: {
@@ -161,6 +207,20 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
 
                 setIsConnected(true);
                 setIsConnecting(false);
+                playCallStartSound();
+
+                // Set a hard timeout of 10 minutes (600,000 ms) to limit token usage and duration
+                if (sessionTimeoutRef.current)
+                  clearTimeout(sessionTimeoutRef.current);
+                sessionTimeoutRef.current = setTimeout(
+                  () => {
+                    setError(
+                      'Cuộc trò chuyện đã tự động kết thúc sau 10 phút để tối ưu hóa hiệu năng và bảo vệ lượng token.'
+                    );
+                    endSession();
+                  },
+                  10 * 60 * 1000
+                );
 
                 // Send an initial silent nudge to trigger the AI to start speaking first
                 const initialNudge = {
@@ -198,11 +258,13 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
               setIsThinking(false);
               // End the current turn if interrupted
               commitCurrentTurn();
+              clearNudgeTimer();
               return;
             }
 
             // B: Receive model audio stream
             if (serverContent.modelTurn?.parts) {
+              clearNudgeTimer();
               setIsThinking(false);
               for (const part of serverContent.modelTurn.parts) {
                 if (part.inlineData) {
@@ -216,8 +278,22 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
 
             // Handle User input speech-to-text transcription
             if (serverContent.inputTranscription?.text) {
-              currentTurnTextRef.current.user +=
-                serverContent.inputTranscription.text;
+              clearNudgeTimer();
+              const transcriptText = serverContent.inputTranscription.text;
+
+              // Regex detects East Asian scripts: Korean (Hangul), Japanese (Hiragana/Katakana), Chinese (Hanzi/Kanji)
+              const hasForeignScript =
+                /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(
+                  transcriptText
+                );
+
+              if (hasForeignScript) {
+                currentTurnTextRef.current.user = '[Lỗi nhận diện âm thanh]';
+              } else if (
+                currentTurnTextRef.current.user !== '[Lỗi nhận diện âm thanh]'
+              ) {
+                currentTurnTextRef.current.user += transcriptText;
+              }
               setIsThinking(true); // User finished speaking, AI is thinking
               updated = true;
             }
@@ -236,6 +312,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
             // If turn is completed (e.g. model finished speaking its turn)
             if (serverContent.turnComplete) {
               commitCurrentTurn();
+              startNudgeTimer();
             }
           } catch (e) {
             console.error('Failed to parse WebSocket message:', e);
@@ -304,59 +381,18 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
   }, []);
 
   const toggleMute = useCallback(() => {
-    setIsMuted((prev) => !prev);
-  }, []);
-
-  /**
-   * Request SOS hint response by calling Gemini background analysis
-   */
-  const requestSosHint = useCallback(async () => {
-    if (!isConnected || isSosPending) return;
-    setIsSosPending(true);
-    setSosHint(null);
-
-    try {
-      // Create a prompt to fetch the next English sentence
-      // We pass the conversation context so far
-      const lastMessages = transcript
-        .map((t) => `${t.role === 'user' ? 'User' : 'Coach'}: ${t.text}`)
-        .join('\n');
-
-      const res = await fetch('/api/live/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          scenarioTitle: 'SOS Hint Helper',
-          transcript: [
-            ...transcript,
-            {
-              role: 'user',
-              text: '[System Request: Generate a single natural, brief English sentence the user can say next to reply to the Coach. Return only the English sentence in double quotes, nothing else.]',
-            },
-          ],
-        }),
-      });
-
-      if (!res.ok) throw new Error('SOS request failed');
-      const data = await res.json();
-
-      // Since analyze returns LiveAnalysisResult, let's extract alternative or construct a prompt helper
-      // Wait, we can just run a quick server action or call a simpler endpoint!
-      // Actually, for SOS Hint, we can create a simpler background completion, or just use the analyze route
-      // Let's adapt: if we use analyze, it evaluates mistakes. If we want a quick SOS response sentence,
-      // let's look at if we can call a general gemini endpoint or make a simple API call.
-      // Wait, let's create a dedicated Next.js route for SOS hints, or simply implement it:
-      const hint =
-        data.summaryVi ||
-        "I agree with your point. Let's move on to the next topic.";
-      setSosHint(hint);
-    } catch (e) {
-      console.error(e);
-      setSosHint('I see. Can you tell me more about it?');
-    } finally {
-      setIsSosPending(false);
-    }
-  }, [isConnected, isSosPending, transcript]);
+    setIsMuted((prev) => {
+      const nextMuted = !prev;
+      if (nextMuted) {
+        clearNudgeTimer();
+      } else {
+        if (isConnected) {
+          startNudgeTimer();
+        }
+      }
+      return nextMuted;
+    });
+  }, [isConnected, clearNudgeTimer, startNudgeTimer]);
 
   return {
     isConnected,
@@ -367,12 +403,8 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     speakerLevel,
     isMuted,
     isThinking,
-    sosHint,
-    isSosPending,
     startSession,
     endSession,
     toggleMute,
-    requestSosHint,
-    clearSosHint: () => setSosHint(null),
   };
 }

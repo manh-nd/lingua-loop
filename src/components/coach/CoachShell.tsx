@@ -17,6 +17,7 @@ interface CoachShellProps {
   sidebarContent: ReactNode;
   mainContent: ReactNode;
   badge?: string;
+  focusMode?: boolean;
 }
 
 export function CoachShell({
@@ -29,6 +30,7 @@ export function CoachShell({
   sidebarContent,
   mainContent,
   badge = 'MVP v0',
+  focusMode = false,
 }: CoachShellProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
@@ -84,35 +86,43 @@ export function CoachShell({
         className="flex-1 w-full max-w-6xl mx-auto px-6 py-8 flex flex-col md:grid md:grid-cols-12 gap-8"
       >
         {/* Left Column: Form Controls */}
-        <section className="md:col-span-5 flex flex-col gap-6 md:sticky md:top-8 md:self-start pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h1 className="text-xl font-bold tracking-tight text-balance">
-                {sidebarTitle}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                {sidebarDescription}
-              </p>
+        {!focusMode && (
+          <section className="md:col-span-5 flex flex-col gap-6 md:sticky md:top-8 md:self-start pb-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-xl font-bold tracking-tight text-balance">
+                  {sidebarTitle}
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  {sidebarDescription}
+                </p>
+              </div>
+              {/* New Draft / Clear button */}
+              {showReset && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={onReset}
+                  className="text-[10px] shrink-0 font-bold border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                >
+                  <RotateCcw className="size-3 mr-1" />
+                  Làm mới
+                </Button>
+              )}
             </div>
-            {/* New Draft / Clear button */}
-            {showReset && (
-              <Button
-                type="button"
-                variant="outline"
-                size="xs"
-                onClick={onReset}
-                className="text-[10px] shrink-0 font-bold border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
-              >
-                <RotateCcw className="size-3 mr-1" />
-                Làm mới
-              </Button>
-            )}
-          </div>
-          {sidebarContent}
-        </section>
+            {sidebarContent}
+          </section>
+        )}
 
         {/* Right Column: Coach Response */}
-        <section className="md:col-span-7 flex flex-col gap-6">
+        <section
+          className={
+            focusMode
+              ? 'col-span-12 flex flex-col gap-6 max-w-3xl mx-auto w-full'
+              : 'md:col-span-7 flex flex-col gap-6'
+          }
+        >
           {mainContent}
         </section>
       </main>

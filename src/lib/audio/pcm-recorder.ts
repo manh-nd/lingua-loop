@@ -16,6 +16,13 @@ export class PcmAudioController {
   constructor() {}
 
   /**
+   * Returns true if there are currently scheduled audio nodes playing.
+   */
+  isPlaying(): boolean {
+    return this.activeSourceNodes.length > 0;
+  }
+
+  /**
    * Starts recording audio from the microphone, downsampling it to 16kHz 16-bit mono PCM.
    */
   async startRecording(onAudioChunk: (base64Chunk: string) => void) {

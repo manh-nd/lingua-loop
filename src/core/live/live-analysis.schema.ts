@@ -24,6 +24,7 @@ export const LiveAnalysisResultSchema = z.object({
   summaryVi: z.string().trim().min(1),
   mistakes: z.array(LiveMistakeSchema).default([]),
   alternatives: z.array(LiveAlternativeSchema).default([]),
+  practiceMonologue: z.string().trim().optional(),
 });
 
 export type LiveAnalysisResult = z.infer<typeof LiveAnalysisResultSchema>;

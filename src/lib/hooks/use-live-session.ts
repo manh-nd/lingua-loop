@@ -37,6 +37,44 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     isConnectedRef.current = isConnected;
   }, [isConnected]);
 
+  const wakeLockRef = useRef<any>(null);
+
+  const requestWakeLock = async () => {
+    try {
+      if (typeof window !== 'undefined' && 'wakeLock' in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        console.log('Screen Wake Lock acquired successfully');
+      }
+    } catch (err) {
+      console.warn('Failed to acquire Screen Wake Lock:', err);
+    }
+  };
+
+  const releaseWakeLock = () => {
+    try {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        console.log('Screen Wake Lock released successfully');
+      }
+    } catch (err) {
+      console.error('Failed to release Screen Wake Lock:', err);
+    }
+  };
+
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && isConnectedRef.current) {
+        await requestWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, []);
+
   // Track real-time transcripts separately so we can edit them dynamically
   const currentTurnTextRef = useRef<{ user: string; assistant: string }>({
     user: '',
@@ -80,6 +118,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
 
   const cleanupSession = () => {
     clearNudgeTimer();
+    releaseWakeLock();
     if (sessionTimeoutRef.current) {
       clearTimeout(sessionTimeoutRef.current);
       sessionTimeoutRef.current = null;
@@ -186,6 +225,9 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
             if (response.setupComplete) {
               // 5. Start recording audio now that setup is complete
               try {
+                // Request Wake Lock to prevent screen sleep
+                requestWakeLock();
+
                 await controller.startRecording((base64PCM) => {
                   if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
                     // Suppress sending mic data if the speaker is currently playing AI audio

@@ -25,7 +25,9 @@ export class PcmAudioController {
   /**
    * Starts recording audio from the microphone, downsampling it to 16kHz 16-bit mono PCM.
    */
-  async startRecording(onAudioChunk: (base64Chunk: string) => void) {
+  async startRecording(
+    onAudioChunk: (base64Chunk: string, rms: number) => void
+  ) {
     this.stopRecording();
 
     this.micStream = await navigator.mediaDevices.getUserMedia({
@@ -69,19 +71,19 @@ export class PcmAudioController {
       );
 
       // Measure Mic volume amplitude
+      let sum = 0;
+      for (let i = 0; i < resampledData.length; i++) {
+        const val = resampledData[i] / 32768.0;
+        sum += val * val;
+      }
+      const rms = Math.sqrt(sum / resampledData.length);
       if (this.onMicLevelCallback) {
-        let sum = 0;
-        for (let i = 0; i < resampledData.length; i++) {
-          const val = resampledData[i] / 32768.0;
-          sum += val * val;
-        }
-        const rms = Math.sqrt(sum / resampledData.length);
         this.onMicLevelCallback(rms);
       }
 
       // Convert to Base64
       const base64 = this.arrayBufferToBase64(resampledData.buffer);
-      onAudioChunk(base64);
+      onAudioChunk(base64, rms);
     };
 
     sourceNode.connect(this.scriptProcessor);

@@ -32,6 +32,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
   const nudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sessionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isConnectedRef = useRef(false);
+  const sessionStartTimeRef = useRef<number>(0);
 
   useEffect(() => {
     isConnectedRef.current = isConnected;
@@ -150,6 +151,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
       setTranscript([]);
       currentTurnTextRef.current = { user: '', assistant: '' };
       committedMessagesRef.current = [];
+      sessionStartTimeRef.current = Date.now();
 
       try {
         // 1. Fetch ephemeral token from backend
@@ -228,13 +230,24 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
                 // Request Wake Lock to prevent screen sleep
                 requestWakeLock();
 
-                await controller.startRecording((base64PCM) => {
+                await controller.startRecording((base64PCM, rms) => {
                   if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
-                    // Suppress sending mic data if the speaker is currently playing AI audio
-                    // to prevent echo feedback loop / self-interruption.
-                    if (controller.isPlaying()) {
+                    const elapsedMs = Date.now() - sessionStartTimeRef.current;
+
+                    // 1. Initial warm-up (first 3.5 seconds): block microphone transmission
+                    // to let WebRTC echo cancellation converge and AI greeting finish.
+                    if (elapsedMs < 3500) {
                       return;
                     }
+
+                    // 2. While AI is speaking: only send audio if the user is actually speaking
+                    // (volume exceeds the threshold), allowing normal user barge-in while blocking echo.
+                    if (controller.isPlaying()) {
+                      if (rms < 0.02) {
+                        return; // Ignore low-level echo/noise
+                      }
+                    }
+
                     const audioPayload = {
                       realtimeInput: {
                         audio: {

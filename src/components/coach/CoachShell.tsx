@@ -61,7 +61,7 @@ export function CoachShell({
             <div className="p-1 rounded bg-primary/10 border border-primary/20 flex items-center justify-center">
               {headerIcon}
             </div>
-            <span className="font-heading font-extrabold text-sm tracking-tight bg-gradient-to-r from-primary via-emerald-400 to-accent bg-clip-text text-transparent uppercase">
+            <span className="font-heading font-extrabold text-sm tracking-tight bg-gradient-to-r from-primary to-success bg-clip-text text-transparent uppercase">
               {headerTitle}
             </span>
           </div>

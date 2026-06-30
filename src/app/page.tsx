@@ -197,7 +197,7 @@ export default function Home() {
           <div className="p-1 rounded bg-primary/10 border border-primary/20">
             <Sparkle className="size-5 text-primary" />
           </div>
-          <span className="font-heading font-extrabold text-base tracking-tight bg-gradient-to-r from-primary via-emerald-400 to-accent bg-clip-text text-transparent">
+          <span className="font-heading font-extrabold text-base tracking-tight bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
             LINGUA LOOP
           </span>
         </div>
@@ -225,7 +225,7 @@ export default function Home() {
           </div>
           <h1 className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight text-balance leading-none">
             Chào mừng trở lại,{' '}
-            <span className="bg-gradient-to-r from-primary via-emerald-500 to-accent bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
               Chuyên gia.
             </span>
           </h1>

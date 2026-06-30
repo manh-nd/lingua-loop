@@ -20,6 +20,10 @@ _Avoid_: Long Message Coach, document editor
 A planned workflow for helping the user understand English text in context, including natural Vietnamese meaning, important phrases, implied tone, and possible misunderstandings.
 _Avoid_: Reading Context Coach, translation tool
 
+**Speaking Coach** (or **Live Coach**):
+A workflow for real-time voice-based speaking and listening practice using the Gemini Live API. It supports two categories: **Guided Practice** (structured exercises like Shadowing, Vocabulary Building, Read-Aloud, and Interactive Podcast) and **Conversation Practice** (workplace roleplay scenarios).
+_Avoid_: Voice chat, call bot, translation call
+
 **Mistake Candidate**:
 A concrete, reusable learning point extracted from user input or inferred from a translation need. A Mistake Candidate is not memory yet; it must be worth saving before it becomes part of future review.
 _Avoid_: Correction, grammar note

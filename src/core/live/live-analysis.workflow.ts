@@ -15,7 +15,7 @@ export async function runLiveAnalysisWorkflow(
   const jsonSchema = toJSONSchema(LiveAnalysisResultSchema);
 
   const raw = await deps.aiClient.generateJson({
-    system: buildLiveAnalysisSystemPrompt(),
+    system: buildLiveAnalysisSystemPrompt(parsedInput.mode),
     user: JSON.stringify(
       {
         scenarioTitle: parsedInput.scenarioTitle,
@@ -30,7 +30,49 @@ export async function runLiveAnalysisWorkflow(
   return LiveAnalysisResultSchema.parse(raw);
 }
 
-function buildLiveAnalysisSystemPrompt(): string {
+function buildLiveAnalysisSystemPrompt(mode: string): string {
+  let modeSpecificGuidelines = '';
+
+  if (mode === 'shadowing') {
+    modeSpecificGuidelines = `
+This is a Shadowing (Luyện nói đuổi) session.
+The core goal of this session was for the user to repeat the English sentences spoken by the AI as accurately as possible.
+Focus evaluation on:
+- Repetition accuracy: Compare the user's speech transcript word-for-word against the target sentences spoken by the assistant.
+- Identify words omitted, replaced, or mispronounced (indicated by phonetic or spelling anomalies in the STT transcription).
+- Highlight the target sentences that the user struggled to repeat correctly.
+`;
+  } else if (mode === 'vocab_building') {
+    modeSpecificGuidelines = `
+This is a Vocab Building (Tích lũy từ vựng) session.
+The core goal of this session was for the user to learn new words/phrases and construct sentences using them.
+Focus evaluation on:
+- Vocabulary usage: Did the user use the newly introduced words/phrases correctly and contextually in their custom sentences?
+- Sentence structure: Critique the grammar and phrasing of the sentences the user created.
+`;
+  } else if (mode === 'read_aloud') {
+    modeSpecificGuidelines = `
+This is a Read-Aloud (Luyện đọc to) session.
+The core goal of this session was for the user to read short paragraphs/passages aloud.
+Focus evaluation on:
+- Reading fidelity: Compare the user's reading transcript against the target paragraphs they were asked to read.
+- Identify mispronounced words, omissions, or fluency gaps.
+`;
+  } else if (mode === 'podcast_story') {
+    modeSpecificGuidelines = `
+This is an Interactive Podcast (Podcast tương tác) session.
+The core goal of this session was for the user to listen to story/podcast segments and respond to comprehension questions.
+Focus evaluation on:
+- Listening comprehension: How well did the user understand the details of the story segments and respond to the host's questions?
+- Relevance & fluency: Did the user answer the questions naturally and relevance-wise to the narrative?
+`;
+  } else {
+    modeSpecificGuidelines = `
+This is a Conversation (Hội thoại) practice session.
+Evaluate overall conversational speaking capability, grammar, naturalness of expression, and vocabulary range.
+`;
+  }
+
   return `
 You are an expert English Speaking & Communication Coach for Vietnamese professionals.
 Your task is to analyze the transcript of a real-time voice call between the user and the AI, evaluate the user's English speaking skills, and provide a constructive feedback report.
@@ -38,6 +80,9 @@ Your task is to analyze the transcript of a real-time voice call between the use
 Context provided:
 - scenarioTitle: The topic or roleplay kịch bản of the call (e.g., "Daily Standup Meeting", "Customer Negotiating", "Free Talk").
 - transcript: Array of messages of role "user" (the user's voice input transcribed) and "assistant" (the AI coach's voice responses).
+
+Mode guidelines:
+${modeSpecificGuidelines}
 
 Analysis Guidelines:
 CRITICAL: You must ONLY analyze the turns spoken by the "user" role. NEVER correct, analyze, or suggest alternatives for sentences spoken by the "assistant" role under any circumstances. The "assistant" turns represent the native-speaking model guiding the call, and their speech is already correct and intentional.

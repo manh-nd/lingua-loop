@@ -30,6 +30,7 @@ export const LiveAnalysisResultSchema = z.object({
 export type LiveAnalysisResult = z.infer<typeof LiveAnalysisResultSchema>;
 
 export const LiveAnalysisInputSchema = z.object({
+  mode: z.string().trim().min(1),
   scenarioTitle: z.string().trim().min(1),
   transcript: z
     .array(

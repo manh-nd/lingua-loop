@@ -6,6 +6,7 @@ import {
   playCallStartSound,
   playCallEndSound,
 } from '@/lib/audio/interface-sounds';
+import { LiveMode, LiveTopic, LiveScenario } from '@/core/live/live-modes';
 
 export type LiveMessage = {
   role: 'user' | 'assistant';
@@ -26,6 +27,12 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
   const [isMuted, setIsMuted] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
 
+  const [activeMode, setActiveMode] = useState<LiveMode | null>(null);
+  const [activeTopic, setActiveTopic] = useState<LiveTopic | null>(null);
+  const [activeScenario, setActiveScenario] = useState<LiveScenario | null>(
+    null
+  );
+
   const wsRef = useRef<WebSocket | null>(null);
   const audioControllerRef = useRef<PcmAudioController | null>(null);
   const isMutedRef = useRef(isMuted);
@@ -38,9 +45,9 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     isConnectedRef.current = isConnected;
   }, [isConnected]);
 
-  const wakeLockRef = useRef<any>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
-  const requestWakeLock = async () => {
+  const requestWakeLock = useCallback(async () => {
     try {
       if (typeof window !== 'undefined' && 'wakeLock' in navigator) {
         wakeLockRef.current = await navigator.wakeLock.request('screen');
@@ -49,9 +56,9 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     } catch (err) {
       console.warn('Failed to acquire Screen Wake Lock:', err);
     }
-  };
+  }, []);
 
-  const releaseWakeLock = () => {
+  const releaseWakeLock = useCallback(() => {
     try {
       if (wakeLockRef.current) {
         wakeLockRef.current.release();
@@ -61,7 +68,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     } catch (err) {
       console.error('Failed to release Screen Wake Lock:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handleVisibilityChange = async () => {
@@ -72,9 +79,12 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      releaseWakeLock();
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+        wakeLockRef.current = null;
+      }
     };
-  }, []);
+  }, [requestWakeLock]);
 
   // Track real-time transcripts separately so we can edit them dynamically
   const currentTurnTextRef = useRef<{ user: string; assistant: string }>({
@@ -110,14 +120,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     }, 7000);
   }, [clearNudgeTimer]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      cleanupSession();
-    };
-  }, []);
-
-  const cleanupSession = () => {
+  const cleanupSession = useCallback(() => {
     clearNudgeTimer();
     releaseWakeLock();
     if (sessionTimeoutRef.current) {
@@ -141,10 +144,59 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     setIsThinking(false);
     setMicLevel(0);
     setSpeakerLevel(0);
-  };
+    setActiveMode(null);
+    setActiveTopic(null);
+    setActiveScenario(null);
+  }, [clearNudgeTimer, releaseWakeLock]);
+
+  const updateTranscriptUi = useCallback(() => {
+    const userText = currentTurnTextRef.current.user.trim();
+    const assistantText = currentTurnTextRef.current.assistant.trim();
+
+    const currentMessages: LiveMessage[] = [];
+    if (userText) {
+      currentMessages.push({ role: 'user', text: userText });
+    }
+    if (assistantText) {
+      currentMessages.push({ role: 'assistant', text: assistantText });
+    }
+
+    setTranscript([...committedMessagesRef.current, ...currentMessages]);
+  }, []);
+
+  const commitCurrentTurn = useCallback(() => {
+    const userText = currentTurnTextRef.current.user.trim();
+    const assistantText = currentTurnTextRef.current.assistant.trim();
+
+    if (userText || assistantText) {
+      const turnMessages: LiveMessage[] = [];
+      if (userText) {
+        turnMessages.push({ role: 'user', text: userText });
+      }
+      if (assistantText) {
+        turnMessages.push({ role: 'assistant', text: assistantText });
+      }
+
+      committedMessagesRef.current = [
+        ...committedMessagesRef.current,
+        ...turnMessages,
+      ];
+      setTranscript(committedMessagesRef.current);
+      currentTurnTextRef.current = { user: '', assistant: '' };
+    }
+  }, []);
+
+  const endSession = useCallback(() => {
+    commitCurrentTurn();
+    cleanupSession();
+  }, [commitCurrentTurn, cleanupSession]);
 
   const startSession = useCallback(
-    async (scenarioTitle: string, systemPrompt: string) => {
+    async (config: {
+      mode: LiveMode;
+      topic?: LiveTopic;
+      scenario?: LiveScenario;
+    }) => {
       if (isConnecting || isConnected) return;
       setIsConnecting(true);
       setError(null);
@@ -152,6 +204,40 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
       currentTurnTextRef.current = { user: '', assistant: '' };
       committedMessagesRef.current = [];
       sessionStartTimeRef.current = Date.now();
+
+      const { mode, topic, scenario } = config;
+      setActiveMode(mode);
+      setActiveTopic(topic || null);
+      setActiveScenario(scenario || null);
+
+      // Build system prompt internally
+      let basePrompt = scenario ? scenario.systemPrompt : mode.systemPrompt;
+      if (topic) {
+        basePrompt = basePrompt
+          .replace(/\[TOPIC_NAME\]/g, topic.title)
+          .replace(/\[TOPIC\]/g, topic.title);
+      }
+
+      const globalGuardPrompt = `
+Additional Critical Rule:
+The speech-to-text system may sometimes incorrectly transcribe the user's Vietnamese/English speech into other languages like Korean, Japanese, Chinese, etc.
+If the transcribed user input contains characters or words from languages other than English or Vietnamese (such as Hangul/Korean, Kanji/Hanzi, Hiragana/Katakana):
+- Treat it strictly as a transcription/recognition error.
+- Do not respond to that foreign text.
+- Instead, say in Vietnamese: "Xin lỗi, tôi chưa nghe rõ câu vừa rồi. Bạn nói lại bằng tiếng Anh hoặc tiếng Việt được không?" and wait for their response.
+`.trim();
+
+      const voiceGender = ['Aoede', 'Kore'].includes(
+        options.voiceName || 'Aoede'
+      )
+        ? 'female'
+        : 'male';
+      const voiceAnchorPrompt = `
+Voice Anchor:
+You are speaking as ${options.voiceName || 'Aoede'}. You must always speak in a consistent, clear ${voiceGender} voice matching the character of ${options.voiceName || 'Aoede'}. Do not drift, change pitch, or switch to a different gender/voice under any circumstances.
+`.trim();
+
+      const systemPrompt = `${basePrompt}\n\n${globalGuardPrompt}\n\n${voiceAnchorPrompt}`;
 
       try {
         // 1. Fetch ephemeral token from backend
@@ -228,7 +314,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
               // 5. Start recording audio now that setup is complete
               try {
                 // Request Wake Lock to prevent screen sleep
-                requestWakeLock();
+                await requestWakeLock();
 
                 await controller.startRecording((base64PCM, rms) => {
                   if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
@@ -384,56 +470,27 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
           setIsConnected(false);
           setIsConnecting(false);
         };
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Failed to start Live session:', err);
-        setError(err.message || 'Lỗi khởi tạo phòng Live.');
+        setError(
+          err instanceof Error ? err.message : 'Lỗi khởi tạo phòng Live.'
+        );
         cleanupSession();
       }
     },
-    [isConnecting, isConnected, options.voiceName]
+    [
+      isConnecting,
+      isConnected,
+      options.voiceName,
+      requestWakeLock,
+      cleanupSession,
+      commitCurrentTurn,
+      clearNudgeTimer,
+      startNudgeTimer,
+      updateTranscriptUi,
+      endSession,
+    ]
   );
-
-  const updateTranscriptUi = () => {
-    const userText = currentTurnTextRef.current.user.trim();
-    const assistantText = currentTurnTextRef.current.assistant.trim();
-
-    const currentMessages: LiveMessage[] = [];
-    if (userText) {
-      currentMessages.push({ role: 'user', text: userText });
-    }
-    if (assistantText) {
-      currentMessages.push({ role: 'assistant', text: assistantText });
-    }
-
-    setTranscript([...committedMessagesRef.current, ...currentMessages]);
-  };
-
-  const commitCurrentTurn = () => {
-    const userText = currentTurnTextRef.current.user.trim();
-    const assistantText = currentTurnTextRef.current.assistant.trim();
-
-    if (userText || assistantText) {
-      const turnMessages: LiveMessage[] = [];
-      if (userText) {
-        turnMessages.push({ role: 'user', text: userText });
-      }
-      if (assistantText) {
-        turnMessages.push({ role: 'assistant', text: assistantText });
-      }
-
-      committedMessagesRef.current = [
-        ...committedMessagesRef.current,
-        ...turnMessages,
-      ];
-      setTranscript(committedMessagesRef.current);
-      currentTurnTextRef.current = { user: '', assistant: '' };
-    }
-  };
-
-  const endSession = useCallback(() => {
-    commitCurrentTurn();
-    cleanupSession();
-  }, []);
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
@@ -449,6 +506,13 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     });
   }, [isConnected, clearNudgeTimer, startNudgeTimer]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupSession();
+    };
+  }, [cleanupSession]);
+
   return {
     isConnected,
     isConnecting,
@@ -458,6 +522,9 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
     speakerLevel,
     isMuted,
     isThinking,
+    activeMode,
+    activeTopic,
+    activeScenario,
     startSession,
     endSession,
     toggleMute,

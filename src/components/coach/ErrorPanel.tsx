@@ -3,6 +3,7 @@
 import { TriangleAlert } from 'lucide-react';
 import { getFriendlyErrorMessage } from '@/lib/error';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ErrorPanelProps {
   error: unknown;
@@ -15,15 +16,17 @@ export function ErrorPanel({ error, className }: ErrorPanelProps) {
   const friendlyMessage = getFriendlyErrorMessage(error);
 
   return (
-    <div
+    <Alert
+      variant="destructive"
       className={cn(
-        'p-3.5 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-md flex gap-2.5 items-start animate-in fade-in slide-in-from-top-1 duration-200',
+        'animate-in fade-in slide-in-from-top-1 duration-200 border-destructive/20 bg-destructive/10 dark:bg-destructive/5 rounded-md p-3.5',
         className
       )}
-      role="alert"
     >
-      <TriangleAlert className="size-4 shrink-0 mt-0.5" />
-      <span className="leading-relaxed font-medium">{friendlyMessage}</span>
-    </div>
+      <TriangleAlert />
+      <AlertDescription className="leading-relaxed font-medium">
+        {friendlyMessage}
+      </AlertDescription>
+    </Alert>
   );
 }

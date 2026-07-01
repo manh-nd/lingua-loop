@@ -155,7 +155,7 @@ export function LiveReportView({
                     />
                   </div>
                 </div>
-                <div className="bg-white dark:bg-zinc-955 border border-border/40 rounded-xl p-3.5 text-xs text-foreground font-sans leading-relaxed select-text italic">
+                <div className="bg-white dark:bg-zinc-950 border border-border/40 rounded-xl p-3.5 text-xs text-foreground font-sans leading-relaxed select-text italic">
                   &ldquo;{report.practiceMonologue}&rdquo;
                 </div>
                 <span className="text-[10px] text-muted-foreground leading-normal font-medium">

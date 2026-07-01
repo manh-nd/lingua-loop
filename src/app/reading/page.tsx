@@ -344,7 +344,7 @@ export default function ReadingPage() {
                   </div>
 
                   {/* Document Slate Body */}
-                  <div className="bg-white dark:bg-zinc-950 border border-border p-5 rounded-xl shadow-xs text-xs leading-relaxed text-foreground select-all font-sans font-semibold transition-all duration-300 hover:border-primary/30">
+                  <div className="bg-card border border-border p-5 rounded-xl shadow-xs text-xs leading-relaxed text-foreground select-all font-sans font-semibold transition-all duration-300 hover:border-primary/30">
                     {result.naturalTranslation}
                   </div>
 
@@ -362,7 +362,7 @@ export default function ReadingPage() {
               </div>
 
               {/* 2. Tone Analysis */}
-              <Card className="border border-border bg-white/60 dark:bg-black/25 shadow-none rounded-xl p-5 flex flex-col gap-3">
+              <Card className="border border-border bg-card/40 shadow-none rounded-xl p-5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-[10.5px] uppercase font-bold tracking-wider text-foreground/85">
                     <BadgeAlert className="size-4 text-indigo-600 dark:text-indigo-400" />

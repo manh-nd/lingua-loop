@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useId, ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -22,25 +27,20 @@ export function CollapsibleSection({
   headerClassName,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const contentId = useId();
-  const buttonId = useId();
 
   return (
-    <div
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
       className={cn(
         'border border-border/80 rounded-md bg-card overflow-hidden transition-all duration-200',
         className
       )}
     >
       <h3>
-        <button
-          id={buttonId}
-          type="button"
-          aria-expanded={isOpen}
-          aria-controls={contentId}
-          onClick={() => setIsOpen(!isOpen)}
+        <CollapsibleTrigger
           className={cn(
-            'w-full flex items-center justify-between gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-muted/30 transition-colors text-left focus-visible:bg-muted/50 outline-hidden',
+            'w-full flex items-center justify-between gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:bg-muted/30 transition-colors text-left focus-visible:bg-muted/50 outline-hidden cursor-pointer select-none',
             headerClassName
           )}
         >
@@ -54,14 +54,11 @@ export function CollapsibleSection({
               isOpen && 'rotate-180'
             )}
           />
-        </button>
+        </CollapsibleTrigger>
       </h3>
-      <div
-        id={contentId}
-        role="region"
-        aria-labelledby={buttonId}
+      <CollapsibleContent
         className={cn(
-          'transition-all duration-300 ease-in-out',
+          'transition-all duration-300 ease-in-out overflow-hidden',
           isOpen
             ? 'grid grid-rows-[1fr] opacity-100'
             : 'grid grid-rows-[0fr] opacity-0'
@@ -72,7 +69,7 @@ export function CollapsibleSection({
             {children}
           </div>
         </div>
-      </div>
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

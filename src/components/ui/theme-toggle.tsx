@@ -110,7 +110,7 @@ export function ThemeToggle() {
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-38 rounded-xl border border-border/50 bg-white/70 dark:bg-black/65 backdrop-blur-md p-1 shadow-lg shadow-black/5 dark:shadow-black/25 z-50 animate-in fade-in slide-in-from-top-2 duration-150 flex flex-col gap-0.5">
+        <div className="absolute right-0 mt-1.5 w-38 rounded-xl border border-border/50 bg-card/70 backdrop-blur-md p-1 shadow-lg shadow-black/5 dark:shadow-black/25 z-50 animate-in fade-in slide-in-from-top-2 duration-150 flex flex-col gap-0.5">
           {themes.map((t) => {
             const Icon = t.icon;
             const isSelected = theme === t.key;

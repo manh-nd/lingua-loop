@@ -23,6 +23,13 @@ import {
   Activity,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { cn } from '@/lib/utils';
 
 type DemoTab = 'pr-review' | 'late-task' | 'follow-up';
 
@@ -299,11 +306,14 @@ export default function Home() {
         </section>
 
         {/* Visual Signature: Collapsible Simulator */}
-        <section className="w-full flex flex-col gap-3.5 p-4 rounded-2xl glass-card transition-all duration-300">
-          <button
+        <Collapsible
+          open={showDemo}
+          onOpenChange={setShowDemo}
+          className="w-full flex flex-col gap-3.5 p-4 rounded-2xl glass-card transition-all duration-300"
+        >
+          <CollapsibleTrigger
             type="button"
-            onClick={() => setShowDemo(!showDemo)}
-            className="w-full flex items-center justify-between text-left focus:outline-none group cursor-pointer"
+            className="w-full flex items-center justify-between text-left focus:outline-none group cursor-pointer select-none"
           >
             <div className="flex items-center gap-2">
               <Sparkle className="size-4 text-primary animate-pulse" />
@@ -314,30 +324,38 @@ export default function Home() {
             <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors font-semibold">
               {showDemo ? 'Thu gọn ▲' : 'Mở rộng ▼'}
             </span>
-          </button>
+          </CollapsibleTrigger>
 
-          {showDemo && (
-            <div className="flex flex-col gap-4 border-t border-border/20 pt-4.5 animate-slide-up">
+          <CollapsibleContent
+            className={cn(
+              'transition-all duration-350 ease-in-out overflow-hidden',
+              showDemo
+                ? 'grid grid-rows-[1fr] opacity-100'
+                : 'grid grid-rows-[0fr] opacity-0'
+            )}
+          >
+            <div className="overflow-hidden border-t border-border/20 pt-4.5 flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-1">
                 <p className="text-[11px] text-muted-foreground">
                   Chọn tình huống để chạy mô phỏng dịch thông minh:
                 </p>
-                <div className="flex flex-wrap gap-1.5">
+                <ToggleGroup
+                  value={[activeTab]}
+                  onValueChange={(val) => {
+                    if (val && val[0]) setActiveTab(val[0] as DemoTab);
+                  }}
+                  className="flex flex-wrap gap-1.5 p-0"
+                >
                   {(Object.keys(demoTabsData) as DemoTab[]).map((tabKey) => (
-                    <button
+                    <ToggleGroupItem
                       key={tabKey}
-                      type="button"
-                      onClick={() => setActiveTab(tabKey)}
-                      className={`px-3 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer ${
-                        activeTab === tabKey
-                          ? 'bg-primary text-white border-primary shadow-sm shadow-primary/20'
-                          : 'bg-background hover:bg-muted text-muted-foreground hover:text-foreground border-border/60'
-                      }`}
+                      value={tabKey}
+                      className="px-3 py-1 rounded-full text-[11px] font-semibold border transition-all cursor-pointer h-7 data-[state=on]:bg-primary data-[state=on]:text-white data-[state=on]:border-primary"
                     >
                       {demoTabsData[tabKey].label}
-                    </button>
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -380,7 +398,7 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="text-xs select-none leading-relaxed text-foreground p-3.5 bg-white/70 dark:bg-black/50 border border-border/40 rounded-lg shadow-inner flex-1 flex flex-col justify-center">
+                  <div className="text-xs select-none leading-relaxed text-foreground p-3.5 bg-card/70 border border-border/40 rounded-lg shadow-inner flex-1 flex flex-col justify-center">
                     <p className="font-sans font-medium text-pretty leading-relaxed text-sm">
                       {demoTabsData[activeTab].highlights}
                     </p>
@@ -396,8 +414,8 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          )}
-        </section>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* WORKSPACE SECTION 1: WRITING COACHES */}
         <section className="flex flex-col gap-4 w-full">
@@ -408,7 +426,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             {/* Card 1: Message Coach */}
-            <Card className="flex flex-col h-full border border-border/60 bg-white/40 dark:bg-black/30 backdrop-blur-md hover:border-primary/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-350 rounded-2xl">
+            <Card className="flex flex-col h-full border border-border/60 bg-card/45 backdrop-blur-md hover:border-primary/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-350 rounded-2xl">
               <CardHeader className="flex flex-col gap-2 pb-3">
                 <div className="p-3 rounded-xl bg-primary/10 w-fit border border-primary/20">
                   <MessageSquare className="size-6 text-primary" />
@@ -456,7 +474,7 @@ export default function Home() {
             </Card>
 
             {/* Card 2: Explanation Coach */}
-            <Card className="flex flex-col h-full border border-border/60 bg-white/40 dark:bg-black/30 backdrop-blur-md hover:border-primary/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-350 rounded-2xl">
+            <Card className="flex flex-col h-full border border-border/60 bg-card/45 backdrop-blur-md hover:border-primary/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 transition-all duration-350 rounded-2xl">
               <CardHeader className="flex flex-col gap-2 pb-3">
                 <div className="p-3 rounded-xl bg-primary/10 w-fit border border-primary/20">
                   <FileText className="size-6 text-primary" />

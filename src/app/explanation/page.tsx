@@ -27,6 +27,22 @@ import { ExplanationCoachResult } from '@/core/explanation/explanation.schema';
 import { FollowUpChatMessage } from '@/core/message/follow-up.schema';
 import { HighlightedText } from '@/components/coach/HighlightedText';
 import {
+  MessageGroup,
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageHeader,
+} from '@/components/ui/message';
+import {
+  MessageScrollerProvider,
+  MessageScroller,
+  MessageScrollerViewport,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerButton,
+} from '@/components/ui/message-scroller';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
+import {
   Sparkle,
   FileText,
   ArrowRight,
@@ -334,13 +350,13 @@ export default function ExplanationPage() {
               >
                 <ToggleGroupItem
                   value="write_from_vietnamese"
-                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                 >
                   Viết từ ý định
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="improve_english_draft"
-                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                 >
                   Sửa bản nháp tiếng Anh
                 </ToggleGroupItem>
@@ -399,31 +415,31 @@ export default function ExplanationPage() {
                     >
                       <ToggleGroupItem
                         value="friendly"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Thân thiện
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="polite"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Lịch sự
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="direct"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Trực tiếp
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="professional"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Trang trọng
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="casual"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Thường ngày
                       </ToggleGroupItem>
@@ -447,19 +463,19 @@ export default function ExplanationPage() {
                     >
                       <ToggleGroupItem
                         value="short"
-                        className="text-xs font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-xs font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Ngắn
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="medium"
-                        className="text-xs font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-xs font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Vừa
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="detailed"
-                        className="text-xs font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-xs font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Chi tiết
                       </ToggleGroupItem>
@@ -617,7 +633,7 @@ export default function ExplanationPage() {
                   </div>
 
                   {/* Document Slate Body */}
-                  <div className="bg-white dark:bg-zinc-900 border border-border/80 p-5 rounded-xl shadow-xs text-xs leading-relaxed text-foreground select-all min-h-48 max-h-[28rem] overflow-y-auto font-sans font-medium whitespace-pre-wrap transition-all duration-300 hover:border-primary/20">
+                  <div className="bg-card border border-border/80 p-5 rounded-xl shadow-xs text-xs leading-relaxed text-foreground select-all min-h-48 max-h-[28rem] overflow-y-auto font-sans font-medium whitespace-pre-wrap transition-all duration-300 hover:border-primary/20">
                     <HighlightedText
                       text={result.improvedText}
                       corrections={result.corrections}
@@ -629,7 +645,7 @@ export default function ExplanationPage() {
               {/* 2. Alternative Versions (Short / Detailed) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Short Version */}
-                <Card className="border border-border bg-white/20 dark:bg-black/10 hover:border-primary/35 hover:bg-white/40 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3">
+                <Card className="border border-border bg-card/20 hover:border-primary/35 hover:bg-card/45 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[9px] uppercase tracking-wider px-2 rounded-full font-bold bg-primary/10 text-primary border border-primary/20 h-5 inline-flex items-center justify-center">
                       Bản rút gọn (Short version)
@@ -646,7 +662,7 @@ export default function ExplanationPage() {
 
                 {/* Detailed Version */}
                 {result.detailedVersion && (
-                  <Card className="border border-border bg-white/20 dark:bg-black/10 hover:border-primary/35 hover:bg-white/40 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3">
+                  <Card className="border border-border bg-card/20 hover:border-primary/35 hover:bg-card/45 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[9px] uppercase tracking-wider px-2 rounded-full font-bold bg-primary/10 text-primary border border-primary/20 h-5 inline-flex items-center justify-center">
                         Bản chi tiết (Detailed version)
@@ -672,68 +688,90 @@ export default function ExplanationPage() {
               {/* 3. Follow-up Chat Thread Panel */}
               <div className="flex flex-col gap-4.5 border-t border-border/30 pt-5">
                 {(thread.length > 0 || isFollowUpPending || followUpError) && (
-                  <div className="flex flex-col gap-3.5 bg-slate-50/30 dark:bg-black/10 border border-border/60 rounded-2xl p-4.5">
+                  <div className="flex flex-col gap-3.5 bg-muted/30 border border-border/60 rounded-2xl p-4.5">
                     <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground select-none">
                       <MessageSquare className="size-3.5 text-primary animate-pulse" />
                       Trò chuyện cùng Coach về bản nháp này:
                     </div>
 
-                    <div className="flex flex-col gap-3 max-h-[24rem] overflow-y-auto pr-1">
-                      {thread.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className={cn(
-                            'flex gap-2.5 items-start max-w-[85%]',
-                            msg.role === 'user'
-                              ? 'self-end flex-row-reverse'
-                              : 'self-start'
-                          )}
-                        >
-                          {msg.role === 'assistant' ? (
-                            <div className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
-                              LC
-                            </div>
-                          ) : (
-                            <div className="size-7.5 rounded-lg bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
-                              U
-                            </div>
-                          )}
-                          <div
-                            className={cn(
-                              'p-3 rounded-2xl text-xs leading-relaxed font-sans font-medium select-text',
-                              msg.role === 'user'
-                                ? 'bg-primary text-primary-foreground rounded-tr-xs'
-                                : 'bg-white dark:bg-zinc-900 border border-border/60 text-foreground rounded-tl-xs shadow-3xs'
+                    <MessageScrollerProvider>
+                      <MessageScroller className="max-h-[24rem]">
+                        <MessageScrollerViewport className="pr-1">
+                          <MessageScrollerContent className="gap-3">
+                            {thread.map((msg, idx) => (
+                              <MessageScrollerItem
+                                key={idx}
+                                scrollAnchor={msg.role === 'user'}
+                              >
+                                <Message
+                                  align={msg.role === 'user' ? 'end' : 'start'}
+                                >
+                                  {msg.role === 'assistant' ? (
+                                    <MessageAvatar className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5 bg-transparent overflow-visible">
+                                      LC
+                                    </MessageAvatar>
+                                  ) : (
+                                    <MessageAvatar className="size-7.5 rounded-lg bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5 bg-transparent overflow-visible">
+                                      U
+                                    </MessageAvatar>
+                                  )}
+                                  <MessageContent>
+                                    <Bubble
+                                      variant={
+                                        msg.role === 'user'
+                                          ? 'default'
+                                          : 'outline'
+                                      }
+                                    >
+                                      <BubbleContent
+                                        className={cn(
+                                          'p-3 rounded-2xl text-xs leading-relaxed font-sans font-medium select-text',
+                                          msg.role === 'user'
+                                            ? 'rounded-tr-none'
+                                            : 'bg-card border border-border/60 text-foreground rounded-tl-none shadow-3xs'
+                                        )}
+                                      >
+                                        {msg.text}
+                                      </BubbleContent>
+                                    </Bubble>
+                                  </MessageContent>
+                                </Message>
+                              </MessageScrollerItem>
+                            ))}
+
+                            {isFollowUpPending && (
+                              <MessageScrollerItem scrollAnchor={false}>
+                                <Message align="start">
+                                  <MessageAvatar className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5 bg-transparent overflow-visible">
+                                    LC
+                                  </MessageAvatar>
+                                  <MessageContent>
+                                    <Bubble variant="outline">
+                                      <BubbleContent className="bg-card border border-border/60 p-3 rounded-2xl rounded-tl-none text-xs font-sans font-medium flex items-center gap-2 select-none shadow-3xs">
+                                        <Loader2 className="size-3.5 animate-spin text-primary" />
+                                        <span>Đang trả lời...</span>
+                                      </BubbleContent>
+                                    </Bubble>
+                                  </MessageContent>
+                                </Message>
+                              </MessageScrollerItem>
                             )}
-                          >
-                            {msg.text}
-                          </div>
-                        </div>
-                      ))}
 
-                      {isFollowUpPending && (
-                        <div className="flex gap-2.5 items-start max-w-[85%] self-start animate-pulse">
-                          <div className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
-                            LC
-                          </div>
-                          <div className="bg-white dark:bg-zinc-900 border border-border/60 p-3 rounded-2xl rounded-tl-xs text-xs font-sans font-medium flex items-center gap-2 select-none shadow-3xs">
-                            <Loader2 className="size-3.5 animate-spin text-primary" />
-                            <span>Đang trả lời...</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {followUpError && (
-                        <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/10 text-destructive text-[11px] font-sans">
-                          ⚠️ Lỗi: {followUpError}
-                        </div>
-                      )}
-                    </div>
+                            {followUpError && (
+                              <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/10 text-destructive text-[11px] font-sans">
+                                ⚠️ Lỗi: {followUpError}
+                              </div>
+                            )}
+                          </MessageScrollerContent>
+                        </MessageScrollerViewport>
+                        <MessageScrollerButton />
+                      </MessageScroller>
+                    </MessageScrollerProvider>
                   </div>
                 )}
 
                 {/* Follow-up Question Input & Preset Chips */}
-                <div className="flex flex-col gap-3 bg-slate-50/50 dark:bg-black/20 border border-border/75 rounded-2xl p-4.5">
+                <div className="flex flex-col gap-3 bg-muted/40 border border-border/75 rounded-2xl p-4.5">
                   <div className="flex flex-wrap gap-1.5 select-none">
                     <Button
                       type="button"

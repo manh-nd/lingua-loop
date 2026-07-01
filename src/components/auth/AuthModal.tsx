@@ -20,6 +20,7 @@ import {
   FieldSeparator,
 } from '@/components/ui/field';
 import { authClient } from '@/lib/auth-client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -104,9 +105,14 @@ export function AuthModal({ isOpen, onOpenChange, onSuccess }: AuthModalProps) {
         </AlertDialogHeader>
 
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-md p-3 mb-4">
-            {error}
-          </div>
+          <Alert
+            variant="destructive"
+            className="bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-md p-3 mb-4"
+          >
+            <AlertDescription className="font-medium text-destructive leading-normal">
+              {error}
+            </AlertDescription>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">

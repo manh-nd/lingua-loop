@@ -65,7 +65,7 @@ export function LiveWaveform({
       {/* Inner Sphere */}
       <div
         className={cn(
-          'relative size-24 rounded-full flex items-center justify-center shadow-lg border transition-all duration-200 bg-white dark:bg-zinc-900',
+          'relative size-24 rounded-full flex items-center justify-center shadow-lg border transition-all duration-200 bg-card',
           isConnected
             ? isMuted
               ? 'border-red-500/30 text-red-500'

@@ -173,7 +173,7 @@ function ReviewContent() {
       sidebarContent={
         <div className="flex flex-col gap-4">
           {cards.length > 0 && !isFinished && (
-            <Card className="border border-border/85 bg-white/20 dark:bg-black/10 shadow-none rounded-xl p-4.5">
+            <Card className="border border-border/85 bg-card/20 shadow-none rounded-xl p-4.5">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                 Tiến trình phiên
               </h2>
@@ -280,7 +280,7 @@ function ReviewContent() {
                   </div>
 
                   {/* Back Side */}
-                  <div className="absolute inset-0 w-full h-full p-6 flex flex-col justify-between backface-hidden rotate-y-180 bg-slate-50 dark:bg-zinc-900 border rounded-2xl">
+                  <div className="absolute inset-0 w-full h-full p-6 flex flex-col justify-between backface-hidden rotate-y-180 bg-card border rounded-2xl">
                     <div className="flex justify-between items-center border-b border-border/50 pb-2.5">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
                         Câu Chuẩn Native-like

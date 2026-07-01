@@ -95,7 +95,7 @@ export function ReusablePhraseList({
           <div
             key={idx}
             className={cn(
-              'flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 transition-all duration-200 hover:bg-slate-50/40 dark:hover:bg-black/10 select-text',
+              'flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 transition-all duration-200 hover:bg-muted/40 select-text',
               isSaved && 'bg-emerald-500/[0.01]'
             )}
           >

@@ -18,6 +18,22 @@ import { MessageCoachResult } from '@/core/message/message.schema';
 import { FollowUpChatMessage } from '@/core/message/follow-up.schema';
 import { HighlightedText } from '@/components/coach/HighlightedText';
 import {
+  MessageGroup,
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageHeader,
+} from '@/components/ui/message';
+import {
+  MessageScrollerProvider,
+  MessageScroller,
+  MessageScrollerViewport,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerButton,
+} from '@/components/ui/message-scroller';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
+import {
   Sparkle,
   MessageSquare,
   Lightbulb,
@@ -283,13 +299,13 @@ export default function MessagePage() {
               >
                 <ToggleGroupItem
                   value="write_from_vietnamese"
-                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                 >
                   Viết từ ý định
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="improve_english_draft"
-                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                  className="text-xs font-semibold py-1.5 px-3 rounded-lg transition-all duration-200 flex-1 justify-center data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                 >
                   Sửa bản nháp tiếng Anh
                 </ToggleGroupItem>
@@ -317,31 +333,31 @@ export default function MessagePage() {
                     >
                       <ToggleGroupItem
                         value="friendly"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Thân thiện
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="polite"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Lịch sự
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="direct"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Trực tiếp
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="professional"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Trang trọng
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="casual"
-                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-white dark:data-[pressed]:bg-zinc-800 data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
+                        className="text-[10px] font-semibold py-1.5 flex-1 justify-center rounded-lg transition-all duration-200 data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-xs text-muted-foreground hover:bg-muted/30"
                       >
                         Thường ngày
                       </ToggleGroupItem>
@@ -499,17 +515,17 @@ export default function MessagePage() {
                   </div>
 
                   {/* Message Bubble Block */}
-                  <div className="flex gap-3 items-start py-1">
+                  <Message align="start">
                     {/* Bot Avatar */}
-                    <div className="relative shrink-0">
+                    <MessageAvatar className="relative shrink-0 overflow-visible self-start bg-transparent">
                       <div className="size-8.5 rounded-lg bg-gradient-to-tr from-primary to-indigo-600 text-white font-black text-xs flex items-center justify-center select-none shadow-sm">
                         LC
                       </div>
                       {/* Active Status Indicator dot */}
                       <span className="absolute bottom-0 right-0 block size-2 rounded-full bg-emerald-500 ring-1.5 ring-white dark:ring-zinc-900" />
-                    </div>
-                    <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 select-none">
+                    </MessageAvatar>
+                    <MessageContent>
+                      <MessageHeader className="flex items-baseline gap-2 select-none px-0">
                         <span className="text-xs font-bold text-foreground hover:underline cursor-pointer">
                           Lingua Coach
                         </span>
@@ -522,17 +538,19 @@ export default function MessagePage() {
                         <span className="text-[8px] bg-primary/10 text-primary border border-primary/15 font-bold uppercase rounded px-1 scale-90 origin-left">
                           Trợ lý
                         </span>
-                      </div>
+                      </MessageHeader>
 
                       {/* Chat Bubble Body */}
-                      <div className="bg-white dark:bg-zinc-900 border border-border/80 p-4 rounded-2xl rounded-tl-xs shadow-xs text-xs font-medium leading-relaxed text-foreground select-all relative group transition-all duration-300 hover:border-primary/20">
-                        <HighlightedText
-                          text={result.recommendedMessage}
-                          corrections={result.corrections}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                      <Bubble variant="outline">
+                        <BubbleContent className="bg-card border border-border/80 p-4 rounded-2xl rounded-tl-none shadow-xs text-xs font-medium leading-relaxed text-foreground select-all relative group transition-all duration-300 hover:border-primary/20">
+                          <HighlightedText
+                            text={result.recommendedMessage}
+                            corrections={result.corrections}
+                          />
+                        </BubbleContent>
+                      </Bubble>
+                    </MessageContent>
+                  </Message>
 
                   {/* Coach Advice section inside bubble */}
                   <div className="bg-amber-500/[0.03] border border-amber-500/10 rounded-xl p-3.5 flex gap-2.5 items-start text-[11px] text-muted-foreground/95 select-text mt-1">
@@ -558,7 +576,7 @@ export default function MessagePage() {
                     {result.alternatives.map((alt, index) => (
                       <Card
                         key={index}
-                        className="border border-border bg-white/20 dark:bg-black/10 hover:border-primary/35 hover:bg-white/40 dark:hover:bg-black/20 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3"
+                        className="border border-border bg-card/20 hover:border-primary/35 hover:bg-card/45 hover:shadow-xs transition-all duration-300 shadow-none rounded-xl p-4 flex flex-col gap-3"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-[9px] uppercase tracking-wider px-2 rounded-full font-bold bg-primary/10 text-primary border border-primary/20 h-5 inline-flex items-center justify-center">
@@ -585,68 +603,90 @@ export default function MessagePage() {
               {/* 3. Follow-up Chat Thread Panel */}
               <div className="flex flex-col gap-4.5 border-t border-border/30 pt-5">
                 {(thread.length > 0 || isFollowUpPending || followUpError) && (
-                  <div className="flex flex-col gap-3.5 bg-slate-50/30 dark:bg-black/10 border border-border/60 rounded-2xl p-4.5">
+                  <div className="flex flex-col gap-3.5 bg-muted/30 border border-border/60 rounded-2xl p-4.5">
                     <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-muted-foreground select-none">
                       <MessageSquare className="size-3.5 text-primary animate-pulse" />
                       Trò chuyện cùng Coach về tin nhắn này:
                     </div>
 
-                    <div className="flex flex-col gap-3 max-h-[24rem] overflow-y-auto pr-1">
-                      {thread.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className={cn(
-                            'flex gap-2.5 items-start max-w-[85%]',
-                            msg.role === 'user'
-                              ? 'self-end flex-row-reverse'
-                              : 'self-start'
-                          )}
-                        >
-                          {msg.role === 'assistant' ? (
-                            <div className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
-                              LC
-                            </div>
-                          ) : (
-                            <div className="size-7.5 rounded-lg bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
-                              U
-                            </div>
-                          )}
-                          <div
-                            className={cn(
-                              'p-3 rounded-2xl text-xs leading-relaxed font-sans font-medium select-text',
-                              msg.role === 'user'
-                                ? 'bg-primary text-primary-foreground rounded-tr-xs'
-                                : 'bg-white dark:bg-zinc-900 border border-border/60 text-foreground rounded-tl-xs shadow-3xs'
+                    <MessageScrollerProvider>
+                      <MessageScroller className="max-h-[24rem]">
+                        <MessageScrollerViewport className="pr-1">
+                          <MessageScrollerContent className="gap-3">
+                            {thread.map((msg, idx) => (
+                              <MessageScrollerItem
+                                key={idx}
+                                scrollAnchor={msg.role === 'user'}
+                              >
+                                <Message
+                                  align={msg.role === 'user' ? 'end' : 'start'}
+                                >
+                                  {msg.role === 'assistant' ? (
+                                    <MessageAvatar className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5 bg-transparent overflow-visible">
+                                      LC
+                                    </MessageAvatar>
+                                  ) : (
+                                    <MessageAvatar className="size-7.5 rounded-lg bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5 bg-transparent overflow-visible">
+                                      U
+                                    </MessageAvatar>
+                                  )}
+                                  <MessageContent>
+                                    <Bubble
+                                      variant={
+                                        msg.role === 'user'
+                                          ? 'default'
+                                          : 'outline'
+                                      }
+                                    >
+                                      <BubbleContent
+                                        className={cn(
+                                          'p-3 rounded-2xl text-xs leading-relaxed font-sans font-medium select-text',
+                                          msg.role === 'user'
+                                            ? 'rounded-tr-none'
+                                            : 'bg-card border border-border/60 text-foreground rounded-tl-none shadow-3xs'
+                                        )}
+                                      >
+                                        {msg.text}
+                                      </BubbleContent>
+                                    </Bubble>
+                                  </MessageContent>
+                                </Message>
+                              </MessageScrollerItem>
+                            ))}
+
+                            {isFollowUpPending && (
+                              <MessageScrollerItem scrollAnchor={false}>
+                                <Message align="start">
+                                  <MessageAvatar className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5 bg-transparent overflow-visible">
+                                    LC
+                                  </MessageAvatar>
+                                  <MessageContent>
+                                    <Bubble variant="outline">
+                                      <BubbleContent className="bg-card border border-border/60 p-3 rounded-2xl rounded-tl-none text-xs font-sans font-medium flex items-center gap-2 select-none shadow-3xs">
+                                        <Loader2 className="size-3.5 animate-spin text-primary" />
+                                        <span>Đang trả lời...</span>
+                                      </BubbleContent>
+                                    </Bubble>
+                                  </MessageContent>
+                                </Message>
+                              </MessageScrollerItem>
                             )}
-                          >
-                            {msg.text}
-                          </div>
-                        </div>
-                      ))}
 
-                      {isFollowUpPending && (
-                        <div className="flex gap-2.5 items-start max-w-[85%] self-start animate-pulse">
-                          <div className="size-7.5 rounded-lg bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center select-none shadow-xs shrink-0 mt-0.5">
-                            LC
-                          </div>
-                          <div className="bg-white dark:bg-zinc-900 border border-border/60 p-3 rounded-2xl rounded-tl-xs text-xs font-sans font-medium flex items-center gap-2 select-none shadow-3xs">
-                            <Loader2 className="size-3.5 animate-spin text-primary" />
-                            <span>Đang trả lời...</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {followUpError && (
-                        <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/10 text-destructive text-[11px] font-sans">
-                          ⚠️ Lỗi: {followUpError}
-                        </div>
-                      )}
-                    </div>
+                            {followUpError && (
+                              <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/10 text-destructive text-[11px] font-sans">
+                                ⚠️ Lỗi: {followUpError}
+                              </div>
+                            )}
+                          </MessageScrollerContent>
+                        </MessageScrollerViewport>
+                        <MessageScrollerButton />
+                      </MessageScroller>
+                    </MessageScrollerProvider>
                   </div>
                 )}
 
                 {/* Follow-up Question Input & Preset Chips */}
-                <div className="flex flex-col gap-3 bg-slate-50/50 dark:bg-black/20 border border-border/75 rounded-2xl p-4.5">
+                <div className="flex flex-col gap-3 bg-muted/40 border border-border/75 rounded-2xl p-4.5">
                   <div className="flex flex-wrap gap-1.5 select-none">
                     <Button
                       type="button"
@@ -730,7 +770,7 @@ export default function MessagePage() {
                 >
                   <div className="flex flex-col gap-4 mt-4">
                     {/* Detailed Explanation */}
-                    <div className="p-4 bg-muted/30 dark:bg-black/10 rounded-xl border border-border/80 flex gap-2.5 items-start">
+                    <div className="p-4 bg-muted/20 rounded-xl border border-border/80 flex gap-2.5 items-start">
                       <Lightbulb className="size-4 text-amber-500 shrink-0 mt-0.5" />
                       <div className="leading-relaxed text-xs text-foreground/90 font-medium">
                         <span className="font-bold text-foreground block mb-0.5">

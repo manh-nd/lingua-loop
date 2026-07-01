@@ -1,0 +1,45 @@
+# =================================================================
+# LOCAL DEV compose file — PostgreSQL + pgAdmin for local development
+# =================================================================
+# Usage: docker compose -f compose.local.yml up -d
+#
+# Services:
+#   - postgres  → localhost:5433 (avoids clash with local :5432)
+#   - pgadmin   → http://localhost:5050
+#
+# Credentials (local only, not for production):
+#   Postgres:  user=postgres  password=lingualooppassword  db=lingualoop
+#   pgAdmin:   email=admin@lingualoop.com  password=adminpassword
+#
+# Then add to .env.local:
+#   DATABASE_URL=postgresql://postgres:lingualooppassword@localhost:5433/lingualoop
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lingualoop-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: lingualooppassword
+      POSTGRES_DB: lingualoop
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: lingualoop-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@lingualoop.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local

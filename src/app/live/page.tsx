@@ -35,6 +35,7 @@ export default function LiveCoachPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [savedItems, setSavedItems] = useState<Record<string, boolean>>({});
+  const [callStartTime, setCallStartTime] = useState<number | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +83,7 @@ export default function LiveCoachPage() {
     setShowReport(false);
     setReport(null);
     setSavedItems({});
+    setCallStartTime(Date.now());
 
     startSession({
       mode: selectedMode,
@@ -106,6 +108,10 @@ export default function LiveCoachPage() {
       return;
     }
 
+    const durationSeconds = callStartTime
+      ? Math.round((Date.now() - callStartTime) / 1000)
+      : 0;
+
     // 2. Trigger Gemini Analysis Route
     setIsAnalyzing(true);
     setShowReport(true);
@@ -122,6 +128,8 @@ export default function LiveCoachPage() {
         body: JSON.stringify({
           mode: modeForReport.id,
           scenarioTitle,
+          scenarioId: scenarioForReport?.id || null,
+          durationSeconds,
           transcript,
         }),
       });

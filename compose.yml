@@ -1,3 +1,12 @@
+# =================================================================
+# DEPLOYMENT compose file — Production server via Nginx Proxy Manager
+# =================================================================
+# Usage: docker compose up -d --build
+#
+# Network Architecture (Security Best Practice):
+#   - web: Connected to npm_network (for reverse proxy) and app_network (internal).
+#   - postgres: Connected ONLY to app_network (fully isolated from external access).
+
 services:
   web:
     build:
@@ -7,9 +16,33 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    depends_on:
+      - postgres
     networks:
       - npm_network
+      - app_network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: lingua-loop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lingualooppassword}
+      POSTGRES_DB: ${POSTGRES_DB:-lingualoop}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app_network
+    # In production, we do not expose Postgres ports to the public host.
+    # It is securely accessed internally by the "web" container via the hostname: "postgres".
+
+volumes:
+  pgdata:
+    driver: local
 
 networks:
   npm_network:
     external: true
+  app_network:
+    driver: bridge

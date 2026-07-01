@@ -7,6 +7,8 @@ import {
   playCallEndSound,
 } from '@/lib/audio/interface-sounds';
 import { LiveMode, LiveTopic, LiveScenario } from '@/core/live/live-modes';
+import { hasForeignScript } from '@/core/live/live-utils';
+import { buildLiveSystemPrompt } from '@/core/live/live-prompt-builder';
 
 export type LiveMessage = {
   role: 'user' | 'assistant';
@@ -112,7 +114,7 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         const nudgePayload = {
           realtimeInput: {
-            text: '[System: Người dùng đã im lặng hơn 7 giây kể từ câu trả lời của bạn. Hãy chủ động gợi ý tiếp câu chuyện hoặc hỏi xem họ có cần giúp đỡ gì không bằng một câu nói ngắn gọn.]',
+            text: '[System: Người dùng đã im lặng hơn 7 giây. Tùy vào vai trò của bạn, hãy: dạy 1 từ vựng hoặc idiom liên quan đến chủ đề đang nói, hoặc gợi ý tiếp câu chuyện, hoặc hỏi user có muốn thử nói lại câu nào không. Giữ ngắn gọn và tự nhiên.]',
           },
         };
         wsRef.current.send(JSON.stringify(nudgePayload));
@@ -210,44 +212,66 @@ export function useLiveSession(options: UseLiveSessionOptions = {}) {
       setActiveTopic(topic || null);
       setActiveScenario(scenario || null);
 
-      // Build system prompt internally
-      let basePrompt = scenario ? scenario.systemPrompt : mode.systemPrompt;
-      if (topic) {
-        basePrompt = basePrompt
-          .replace(/\[TOPIC_NAME\]/g, topic.title)
-          .replace(/\[TOPIC\]/g, topic.title);
-      }
-
-      const globalGuardPrompt = `
-Additional Critical Rule:
-The speech-to-text system may sometimes incorrectly transcribe the user's Vietnamese/English speech into other languages like Korean, Japanese, Chinese, etc.
-If the transcribed user input contains characters or words from languages other than English or Vietnamese (such as Hangul/Korean, Kanji/Hanzi, Hiragana/Katakana):
-- Treat it strictly as a transcription/recognition error.
-- Do not respond to that foreign text.
-- Instead, say in Vietnamese: "Xin lỗi, tôi chưa nghe rõ câu vừa rồi. Bạn nói lại bằng tiếng Anh hoặc tiếng Việt được không?" and wait for their response.
-`.trim();
-
-      const voiceGender = ['Aoede', 'Kore'].includes(
-        options.voiceName || 'Aoede'
-      )
-        ? 'female'
-        : 'male';
-      const voiceAnchorPrompt = `
-Voice Anchor:
-You are speaking as ${options.voiceName || 'Aoede'}. You must always speak in a consistent, clear ${voiceGender} voice matching the character of ${options.voiceName || 'Aoede'}. Do not drift, change pitch, or switch to a different gender/voice under any circumstances.
-`.trim();
-
-      const systemPrompt = `${basePrompt}\n\n${globalGuardPrompt}\n\n${voiceAnchorPrompt}`;
+      // Build system prompt using the prompt builder utility
+      let systemPrompt = buildLiveSystemPrompt({
+        mode,
+        topic: topic || undefined,
+        scenario: scenario || undefined,
+        voiceName: options.voiceName || 'Aoede',
+      });
 
       try {
-        // 1. Fetch ephemeral token from backend
-        const tokenRes = await fetch('/api/live/token');
+        // Fetch ephemeral token and learning profile concurrently
+        const [tokenRes, profileRes] = await Promise.all([
+          fetch('/api/live/token'),
+          fetch('/api/live/learning-profile').catch(() => null),
+        ]);
+
         if (!tokenRes.ok) {
           throw new Error('Failed to fetch authentication token.');
         }
         const tokenData = await tokenRes.json();
         if (tokenData.error || !tokenData.token) {
           throw new Error(tokenData.error || 'No token returned from server.');
+        }
+
+        // Parse learning profile if valid
+        if (profileRes && profileRes.ok) {
+          try {
+            const profileData = await profileRes.json();
+            let learningProfilePrompt = '';
+            if (
+              (profileData.commonMistakes &&
+                profileData.commonMistakes.length > 0) ||
+              (profileData.activeVocab && profileData.activeVocab.length > 0)
+            ) {
+              learningProfilePrompt =
+                '\n\n## User Learning Profile (Cá nhân hóa)\n';
+              if (
+                profileData.commonMistakes &&
+                profileData.commonMistakes.length > 0
+              ) {
+                learningProfilePrompt +=
+                  'Lỗi sai phổ biến của người dùng này (hãy chú ý bắt lỗi và sửa nếu họ lặp lại):\n';
+                profileData.commonMistakes.forEach((item: any) => {
+                  learningProfilePrompt += `- Tránh nói: "${item.originalText}" -> Hãy nói đúng: "${item.correctedText}"\n`;
+                });
+              }
+              if (
+                profileData.activeVocab &&
+                profileData.activeVocab.length > 0
+              ) {
+                learningProfilePrompt +=
+                  '\nTừ vựng/cách diễn đạt native họ đang học (hãy tạo cơ hội hoặc khuyến khích họ dùng):\n';
+                profileData.activeVocab.forEach((item: any) => {
+                  learningProfilePrompt += `- Cụm từ: "${item.correctedText}" (nghĩa: "${item.originalText}")\n`;
+                });
+              }
+              systemPrompt += learningProfilePrompt;
+            }
+          } catch (profileErr) {
+            console.error('Failed to parse learning profile:', profileErr);
+          }
         }
 
         // 2. Initialize Audio Controller
@@ -285,10 +309,11 @@ You are speaking as ${options.voiceName || 'Aoede'}. You must always speak in a 
                 parts: [{ text: systemPrompt }],
               },
               inputAudioTranscription: {},
+              outputAudioTranscription: {},
               realtimeInputConfig: {
                 automaticActivityDetection: {
                   disabled: false,
-                  silenceDurationMs: 1500, // Wait 1.5 seconds of silence before thinking user finished speaking
+                  silenceDurationMs: 2500, // Wait 2.5 seconds of silence before thinking user finished speaking
                 },
               },
             },
@@ -329,7 +354,7 @@ You are speaking as ${options.voiceName || 'Aoede'}. You must always speak in a 
                     // 2. While AI is speaking: only send audio if the user is actually speaking
                     // (volume exceeds the threshold), allowing normal user barge-in while blocking echo.
                     if (controller.isPlaying()) {
-                      if (rms < 0.02) {
+                      if (rms < 0.03) {
                         return; // Ignore low-level echo/noise
                       }
                     }
@@ -422,13 +447,10 @@ You are speaking as ${options.voiceName || 'Aoede'}. You must always speak in a 
               clearNudgeTimer();
               const transcriptText = serverContent.inputTranscription.text;
 
-              // Regex detects East Asian scripts: Korean (Hangul), Japanese (Hiragana/Katakana), Chinese (Hanzi/Kanji)
-              const hasForeignScript =
-                /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/.test(
-                  transcriptText
-                );
+              // Check if input contains foreign non-Latin scripts (Arabic, Chinese, Japanese, Korean, Thai, Hindi, Cyrillic, etc.)
+              const hasForeign = hasForeignScript(transcriptText);
 
-              if (hasForeignScript) {
+              if (hasForeign) {
                 currentTurnTextRef.current.user = '[Lỗi nhận diện âm thanh]';
               } else if (
                 currentTurnTextRef.current.user !== '[Lỗi nhận diện âm thanh]'

@@ -10,7 +10,6 @@ import {
   LiveReportView,
   AnalysisReport,
 } from '@/components/live/LiveReportView';
-import { addLocalMemoryItem } from '@/lib/memory/local-memory-store';
 import {
   LIVE_MODES,
   LiveMode,

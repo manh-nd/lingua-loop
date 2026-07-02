@@ -3,10 +3,6 @@
 import { useState, useTransition, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  addLocalMemoryItem,
-  getLocalMemoryItems,
-} from '@/lib/memory/local-memory-store';
 import Link from 'next/link';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -570,71 +566,14 @@ function ReadingCandidateCard({
 }: {
   candidate: NonNullable<ReadingCoachResult['readingMemoryCandidates']>[number];
 }) {
-  const [isSaved, setIsSaved] = useState(false);
-  const [savedItemId, setSavedItemId] = useState<string | null>(null);
   const [isIgnored, setIsIgnored] = useState(false);
-
-  // Check if it's already in localStorage on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const savedItems = getLocalMemoryItems();
-      const match = savedItems.find(
-        (s) =>
-          s.patternKey === candidate.patternKey &&
-          s.memoryType === candidate.memoryType &&
-          (candidate.memoryType === 'reading_trap'
-            ? s.trapText === candidate.trapText
-            : s.phrase === candidate.phrase)
-      );
-      if (match) {
-        setIsSaved(true);
-        setSavedItemId(match.id);
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [candidate]);
-
-  const handleSave = () => {
-    const saved = addLocalMemoryItem({
-      memoryType: candidate.memoryType,
-      sourceWorkflow: 'reading',
-      patternKey: candidate.patternKey,
-      category: candidate.category || 'naturalness',
-      explanationVi: candidate.explanationVi,
-      culturalContextVi: candidate.culturalContextVi,
-      wrongText:
-        candidate.memoryType === 'reading_trap'
-          ? candidate.trapText
-          : undefined,
-      phrase: candidate.phrase,
-      situationVi: candidate.situationVi,
-      trapText: candidate.trapText,
-      wrongInterpretationVi: candidate.wrongInterpretationVi,
-      correctInterpretationVi: candidate.correctInterpretationVi,
-      status: 'active',
-    });
-    setSavedItemId(saved.id);
-    setIsSaved(true);
-  };
 
   if (isIgnored) return null;
 
   return (
-    <Card
-      className={cn(
-        'glass-card overflow-hidden transition-all duration-300 py-0 rounded-xl interactive-hover',
-        isSaved && 'border-emerald-500/35 bg-emerald-500/[0.02]'
-      )}
-    >
+    <Card className="glass-card overflow-hidden transition-all duration-300 py-0 rounded-xl interactive-hover">
       {/* Header Banner */}
-      <div
-        className={cn(
-          'py-2 px-3.5 border-b flex flex-row items-center justify-between gap-3 text-[10px]',
-          isSaved
-            ? 'bg-emerald-500/5 border-emerald-500/10'
-            : 'bg-muted/15 border-border'
-        )}
-      >
+      <div className="py-2 px-3.5 border-b flex flex-row items-center justify-between gap-3 text-[10px] bg-muted/15 border-border">
         <div className="flex items-center gap-1.5">
           <span className="font-bold bg-primary/10 dark:bg-primary/20 text-primary px-1.5 py-0.5 rounded border border-primary/20 text-[9px] tracking-wide">
             {candidate.patternNameVi}
@@ -651,14 +590,6 @@ function ReadingCandidateCard({
               ? 'Bẫy đọc hiểu'
               : 'Cụm từ hay'}
           </span>
-        </div>
-
-        <div>
-          {isSaved && (
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase text-[9px] flex items-center gap-0.5 select-none">
-              ✓ Đã lưu Sổ tay
-            </span>
-          )}
         </div>
       </div>
 
@@ -719,44 +650,26 @@ function ReadingCandidateCard({
 
         {/* Buttons */}
         <div className="flex justify-end gap-2 border-t border-border/10 pt-2 mt-0.5 select-none">
-          {isSaved ? (
-            <div className="flex gap-2">
-              <Link
-                href="/memory"
-                className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/5 py-1.5 px-2.5 rounded border border-emerald-500/20"
-              >
-                Xem trong Sổ tay
-              </Link>
-              <Link
-                href={`/review?id=${savedItemId}`}
-                className="inline-flex items-center gap-1 text-[10px] font-bold bg-primary hover:bg-primary/95 text-primary-foreground py-1.5 px-3.5 rounded shadow-xs"
-              >
-                <Brain className="size-3 mr-1" />
-                Luyện ngay
-              </Link>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                type="button"
-                size="xs"
-                onClick={() => setIsIgnored(true)}
-                className="text-[10px] h-7 px-2.5 font-semibold text-muted-foreground border-border hover:bg-muted"
-              >
-                Bỏ qua
-              </Button>
-              <Button
-                type="button"
-                size="xs"
-                disabled
-                title="Tính năng Lưu Sổ tay cho Reading Coach đang được chuyển đổi sang cơ sở dữ liệu."
-                className="text-[10px] h-7 px-3.5 font-bold bg-muted text-muted-foreground cursor-not-allowed shadow-2xs"
-              >
-                Lưu vào Sổ tay
-              </Button>
-            </div>
-          )}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              type="button"
+              size="xs"
+              onClick={() => setIsIgnored(true)}
+              className="text-[10px] h-7 px-2.5 font-semibold text-muted-foreground border-border hover:bg-muted"
+            >
+              Bỏ qua
+            </Button>
+            <Button
+              type="button"
+              size="xs"
+              disabled
+              title="Tính năng Lưu Sổ tay cho Reading Coach đang được chuyển đổi sang cơ sở dữ liệu."
+              className="text-[10px] h-7 px-3.5 font-bold bg-muted text-muted-foreground cursor-not-allowed shadow-2xs"
+            >
+              Lưu vào Sổ tay
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

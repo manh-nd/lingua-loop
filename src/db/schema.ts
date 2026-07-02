@@ -90,7 +90,7 @@ export const correctionSessions = pgTable('correction_sessions', {
     .references(() => user.id, { onDelete: 'cascade' }),
   originalText: text('original_text').notNull(),
   improvedText: text('improved_text').notNull(),
-  changes: jsonb('changes').notNull(), // List of changes: { original: string, improved: string, reasonVi: string, category: string }[]
+  changes: jsonb('changes').notNull(), // List of changes: { original: string, improved: string, reason: string, category: string }[]
   preset: text('preset').notNull(), // 'quick_message' | 'email' | 'pr_jira_comment' | 'documentation' | 'explanation_spec'
   context: jsonb('context').notNull(), // Tone, audience, custom instructions, etc.
   parentSessionId: text('parent_session_id'), // App-managed self reference for refinement histories
@@ -105,8 +105,8 @@ export const memoryCandidates = pgTable('memory_candidates', {
   type: text('type').notNull(), // 'mistake' | 'reusable_phrase' | 'vocabulary' | 'tone_pattern'
   status: text('status').notNull().default('pending'), // 'pending' | 'saved' | 'ignored'
   sourceSessionId: text('source_session_id'), // App-managed reference to correctionSessions.id
-  title: text('title').notNull(), // Friendly title (patternNameVi)
-  explanation: text('explanation').notNull(), // Coaching explanation (explanationVi)
+  title: text('title').notNull(), // Friendly title
+  explanation: text('explanation').notNull(), // Coaching explanation
   sourceText: text('source_text'), // Sub-optimal text if applicable (wrongText/phrase/trapText)
   suggestedText: text('suggested_text'), // Target correct text if applicable (correctText/interpretation)
   confidence: real('confidence'), // AI confidence score

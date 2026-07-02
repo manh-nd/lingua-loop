@@ -58,7 +58,7 @@ describe('runWorkspaceCorrection', () => {
   });
 
   it('gracefully degrades and filters out malformed memory candidates while keeping core result', async () => {
-    // Return one valid candidate and one malformed candidate (missing required field explanationVi)
+    // Return one valid candidate and one malformed candidate (missing required field explanation)
     const mockResponseWithMalformedCandidate = {
       improvedText: 'Could you please take a look at this PR?',
       changes: [

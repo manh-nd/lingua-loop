@@ -12,7 +12,7 @@ import {
   FieldDescription,
   FieldGroup,
 } from '@/components/ui/field';
-import { submitReadingCoach } from './actions';
+import { submitReadingCoach, saveReadingCandidateAction } from './actions';
 import { ReadingCoachResult } from '@/core/reading/reading.schema';
 import {
   Sparkle,
@@ -26,6 +26,7 @@ import {
   XCircle,
   CheckCircle2,
   Brain,
+  Check,
 } from 'lucide-react';
 import { CopyButton } from '@/components/coach/CopyButton';
 import { TTSButton } from '@/components/coach/TTSButton';
@@ -567,8 +568,23 @@ function ReadingCandidateCard({
   candidate: NonNullable<ReadingCoachResult['readingMemoryCandidates']>[number];
 }) {
   const [isIgnored, setIsIgnored] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   if (isIgnored) return null;
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await saveReadingCandidateAction(candidate);
+      setIsSaved(true);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Lỗi lưu Sổ tay.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <Card className="glass-card overflow-hidden transition-all duration-300 py-0 rounded-xl interactive-hover">
@@ -656,19 +672,27 @@ function ReadingCandidateCard({
               type="button"
               size="xs"
               onClick={() => setIsIgnored(true)}
+              disabled={isSaving}
               className="text-[10px] h-7 px-2.5 font-semibold text-muted-foreground border-border hover:bg-muted"
             >
               Bỏ qua
             </Button>
-            <Button
-              type="button"
-              size="xs"
-              disabled
-              title="Tính năng Lưu Sổ tay cho Reading Coach đang được chuyển đổi sang cơ sở dữ liệu."
-              className="text-[10px] h-7 px-3.5 font-bold bg-muted text-muted-foreground cursor-not-allowed shadow-2xs"
-            >
-              Lưu vào Sổ tay
-            </Button>
+            {isSaved ? (
+              <span className="text-[10px] h-7 px-2.5 font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 border border-emerald-500/20 bg-emerald-500/5 rounded">
+                Đã lưu Sổ tay
+                <Check className="size-3" />
+              </span>
+            ) : (
+              <Button
+                type="button"
+                size="xs"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="text-[10px] h-7 px-3.5 font-bold bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1 cursor-pointer"
+              >
+                {isSaving ? 'Đang lưu...' : 'Lưu vào Sổ tay'}
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>

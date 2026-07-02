@@ -17,6 +17,7 @@ import {
   LiveScenario,
 } from '@/core/live/live-modes';
 import { Activity, AlertCircle } from 'lucide-react';
+import { saveLiveCandidateAction } from './actions';
 
 export default function LiveCoachPage() {
   const [selectedMode, setSelectedMode] = useState<LiveMode>(
@@ -146,17 +147,35 @@ export default function LiveCoachPage() {
     }
   };
 
-  // Save mistake / alternative to local memory store (disabled for database migration)
-  const handleSaveToMemory = (
+  // Save mistake / alternative to database memory Candidates
+  const handleSaveToMemory = async (
     key: string,
     type: 'mistake' | 'alternative',
     original: string,
     correctedOrAlt: string,
     explanation: string
   ) => {
-    alert(
-      'Tính năng lưu Sổ tay cho Live AI đang được nâng cấp lên cơ sở dữ liệu và tạm thời bị khóa.'
-    );
+    try {
+      const dbType = type === 'mistake' ? 'mistake' : 'reusable_phrase';
+      const title = type === 'mistake' ? 'Lỗi nói Live' : 'Diễn đạt nói hay';
+
+      // For mistake: original = wrongText, correctedOrAlt = correctText
+      // For reusable_phrase: original = what user said, correctedOrAlt = better alternative phrase
+      const sourceText = type === 'mistake' ? original : correctedOrAlt;
+      const suggestedText = type === 'mistake' ? correctedOrAlt : null;
+
+      await saveLiveCandidateAction(
+        dbType,
+        title,
+        explanation,
+        sourceText,
+        suggestedText
+      );
+      setSavedItems((prev) => ({ ...prev, [key]: true }));
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Lỗi khi lưu vào Sổ tay.');
+    }
   };
 
   const getModeTitleForReport = () => {

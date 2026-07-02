@@ -147,7 +147,7 @@ export default function LiveCoachPage() {
     }
   };
 
-  // Save mistake / alternative to local memory store
+  // Save mistake / alternative to local memory store (disabled for database migration)
   const handleSaveToMemory = (
     key: string,
     type: 'mistake' | 'alternative',
@@ -155,36 +155,9 @@ export default function LiveCoachPage() {
     correctedOrAlt: string,
     explanation: string
   ) => {
-    const memoryType =
-      type === 'mistake' ? 'writing_mistake' : 'reusable_phrase';
-
-    const modeForReport = activeMode || selectedMode;
-    const topicForReport = activeTopic || selectedTopic;
-    const scenarioForReport = activeScenario || selectedScenario;
-
-    const situationVi =
-      modeForReport.category === 'guided'
-        ? `Luyện tập ${modeForReport.title} - Chủ đề: ${topicForReport?.title || 'Tự do'}`
-        : `Luyện nói kịch bản: ${scenarioForReport?.title || modeForReport.title}`;
-
-    addLocalMemoryItem({
-      memoryType,
-      sourceWorkflow: 'reading', // classified under speaking practice in local store
-      patternKey: `live_${type}_${Date.now()}`.toLowerCase(),
-      category: type === 'mistake' ? 'grammar' : 'naturalness',
-      wrongText: memoryType === 'writing_mistake' ? original : undefined,
-      correctText:
-        memoryType === 'writing_mistake' ? correctedOrAlt : undefined,
-      phrase: memoryType === 'reusable_phrase' ? original : undefined,
-      explanationVi:
-        type === 'mistake'
-          ? `Đề xuất sửa: "${correctedOrAlt}". Giải thích: ${explanation}`
-          : `Giải thích sắc thái: ${explanation}`,
-      situationVi,
-      status: 'active',
-    });
-
-    setSavedItems((prev) => ({ ...prev, [key]: true }));
+    alert(
+      'Tính năng lưu Sổ tay cho Live AI đang được nâng cấp lên cơ sở dữ liệu và tạm thời bị khóa.'
+    );
   };
 
   const getModeTitleForReport = () => {

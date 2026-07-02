@@ -749,8 +749,9 @@ function ReadingCandidateCard({
               <Button
                 type="button"
                 size="xs"
-                onClick={handleSave}
-                className="text-[10px] h-7 px-3.5 font-bold bg-primary hover:bg-primary/95 text-primary-foreground shadow-2xs"
+                disabled
+                title="Tính năng Lưu Sổ tay cho Reading Coach đang được chuyển đổi sang cơ sở dữ liệu."
+                className="text-[10px] h-7 px-3.5 font-bold bg-muted text-muted-foreground cursor-not-allowed shadow-2xs"
               >
                 Lưu vào Sổ tay
               </Button>

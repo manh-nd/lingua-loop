@@ -288,7 +288,7 @@ export default function Home() {
             </div>
             <div className="flex items-center">
               {stats.dueCards > 0 ? (
-                <Link href="/review">
+                <Link href="/practice">
                   <Button
                     size="xs"
                     className="h-7.5 px-3 font-bold text-[9px] uppercase bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer shadow-md shadow-indigo-500/10 interactive-hover"
@@ -618,7 +618,7 @@ export default function Home() {
 
             {/* Bento Card 4: Spaced Review */}
             <Link
-              href="/review"
+              href="/practice"
               className="glass-card p-5 rounded-xl flex flex-col gap-3 hover:border-primary/45 hover:shadow-md transition-all duration-300 group cursor-pointer interactive-hover"
             >
               <div className="flex items-center gap-2 border-b border-border/20 pb-2 justify-between">

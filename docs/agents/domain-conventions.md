@@ -6,7 +6,8 @@ Conventions for domain modeling, architectural consistency, and language constra
 
 When exploring the codebase or preparing a task, consult these files for context:
 
-- **`CONTEXT.md`** at the repo root: Defines the core language and staged product scope.
+- **`CONTEXT.md`** at the repo root: Defines the core domain language.
+- **`docs/product.md`**: Defines the current product direction and roadmap phases.
 - **`docs/adr/`**: Contains Architectural Decision Records (ADRs) under `docs/adr/*.md` that touch your area of work.
 
 ### Repository Structure
@@ -22,7 +23,7 @@ This repository uses a single-context domain layout:
 
 ## Glossary Vocabulary
 
-Always use the domain terminology defined in `CONTEXT.md`. Avoid synonyms that are explicitly marked to be avoided (e.g., use `Message Coach` instead of `chat coach`).
+Always use the domain terminology defined in `CONTEXT.md`. Avoid synonyms that are explicitly marked to be avoided (e.g., use `Correction Workspace` instead of standalone `Message Coach` or `Explanation Coach` when describing the current product direction).
 
 If a concept is not yet defined in the glossary, design updates using the `/domain-modeling` skill to resolve and record new terms.
 

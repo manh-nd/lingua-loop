@@ -1,10 +1,14 @@
-Current phase: Review v0 stabilization.
+# Current Status
+
+Current phase: Active Correction Foundation planning.
 
 Implemented:
 
 - Message Coach core workflow
 - Explanation Coach core workflow
 - Reading Coach core workflow
+- Live Coach guided and conversation practice
+- Google Auth and database schema foundations
 - Gemini AI client with API key rotation
 - Server actions for Message, Explanation, and Reading
 - UI routes for /message, /explanation, and /reading
@@ -19,20 +23,27 @@ Implemented:
 
 Current focus:
 
-- Validate Review v0 and improve feedback quality.
+- Replace the old staged MVP direction with the Active Correction Loop product model.
+- Move product source of truth to `docs/product.md`.
+- Replace localStorage learning data with database-backed CorrectionSessions, MemoryCandidates, and MemoryItems.
+- Build `/workspace` as the primary Correction Workspace.
+- Replace `/review` with writing-first `/practice`.
 
 Non-goals:
 
-- Auth
-- Database
-- Dashboard
-- Rich editor/Tiptap
+- WYSIWYG/Tiptap in Phase 1
+- Embedding retrieval in Phase 1
+- Advanced analytics dashboard in Phase 1
+- Browser extension
+- Team/collaboration features
 - User-managed API keys
-- Full spaced repetition scheduler
+- Full spaced repetition scheduler as the Phase 1 focus
 
 Recommended next tasks:
 
-1. Add Review v0.
-2. Keep Review local-only.
-3. Show feedback before moving to the next review item.
-4. Do not implement full spaced repetition yet.
+1. Implement the dashboard app shell and new route map.
+2. Implement DB-backed MemoryCandidate and MemoryItem APIs.
+3. Build Correction Workspace with presets, What Changed & Why, and suggested memories.
+4. Add Correction History.
+5. Add basic Memory-aware correction.
+6. Replace Review with writing-first Practice.

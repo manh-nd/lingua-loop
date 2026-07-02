@@ -1,53 +1,69 @@
 # Lingua Loop
 
-Lingua Loop is an English learning and writing assistant for Vietnamese professionals. Its domain centers on workplace English coaching, reusable personal mistakes, and staged learning workflows, built on the core philosophy of **"học theo vòng lặp, không quên lỗi cũ"** (learning in loops, never forget/repeat old mistakes).
+Lingua Loop is an English improvement system for Vietnamese professionals. Its domain centers on the Active Correction Loop: real workplace writing and speaking moments are corrected, explained, saved as personal memory, and practiced later in new contexts.
 
 ## Language
 
-**Lingua Loop**:
-The core philosophy of the product: learning in loops (học theo vòng lặp), never repeating or forgetting old mistakes (không quên lỗi cũ). Every workflow is designed to feed into this learning loop.
-_Avoid_: Linear writing coach, simple translator
+**Active Correction Loop**:
+The central product model. The user writes, speaks, or reads workplace English; AI corrects or explains it; AI proposes MemoryCandidates; the user saves selected candidates as MemoryItems; saved MemoryItems influence future correction and Practice.
+_Avoid_: Linear writing assistant, one-off grammar checker, flashcard loop
 
-**Message Coach**:
-A workflow for turning short workplace intentions or rough drafts into natural English messages. It is optimized for practical tone, short output, Vietnamese explanations, and concrete reusable mistakes.
-_Avoid_: Short writing assistant, chat coach
+**Correction Workspace**:
+The primary writing surface for improving workplace English. It handles quick messages, emails, PR/Jira comments, documentation, and explanation/spec writing through presets. It replaces Message Coach and Explanation Coach as standalone product workflows.
+_Avoid_: Message Coach as a separate product, Explanation Coach as a separate product, generic editor
 
-**Explanation Coach**:
-A workflow for turning longer workplace writing into clearer English explanations, issue descriptions, PR descriptions, technical decisions, or requirement notes. It is separate from Message Coach because it optimizes for structure, meaning preservation, and professional clarity.
-_Avoid_: Long Message Coach, document editor
+**CorrectionSession**:
+A saved workspace correction event. It records the original text, improved text, context controls, preset, generated MemoryCandidates, and timestamps so the user can reopen history, copy the improved version, refine from an old session, and review pending suggestions.
+_Avoid_: Draft, document history, chat history
 
-**Reading Coach**:
-A planned workflow for helping the user understand English text in context, including natural Vietnamese meaning, important phrases, implied tone, and possible misunderstandings.
-_Avoid_: Reading Context Coach, translation tool
+**MemoryCandidate**:
+An AI-proposed learning point that has not yet become saved memory. A MemoryCandidate can be pending, saved, or ignored. It should usually come from the diff between original and improved text.
+_Avoid_: Mistake Candidate, correction, grammar note
 
-**Speaking Coach** (or **Live Coach**):
-A workflow for real-time voice-based speaking and listening practice using the Gemini Live API. It supports two categories: **Guided Practice** (structured exercises like Shadowing, Vocabulary Building, Read-Aloud, and Interactive Podcast) and **Conversation Practice** (workplace roleplay scenarios).
-_Avoid_: Voice chat, call bot, translation call
-
-**Mistake Candidate**:
-A concrete, reusable learning point extracted from user input or inferred from a translation need. A Mistake Candidate is not memory yet; it must be worth saving before it becomes part of future review.
-_Avoid_: Correction, grammar note
+**MemoryItem**:
+A user-approved saved learning point. MemoryItems are used for future correction, Practice, and personalization. Core types are Mistake, Reusable Phrase, Vocabulary, and Tone Pattern.
+_Avoid_: Learning item, saved correction, flashcard
 
 **Memory**:
-The user's curated set of items saved from coaches for personal review to complete the learning loop. It supports three types: `writing_mistake` (incorrect draft vs. natural correction), `reading_trap` (misinterpreted word/phrase vs. actual implied meaning), and `reusable_phrase` (highly reusable workplace phrasing).
-_Avoid_: Saved corrections, history
+The user's personal collection of saved MemoryItems and pending MemoryCandidates. Memory is the product's durable learning data and must be database-backed for cross-device use.
+_Avoid_: localStorage memory, backup JSON as source of truth
 
-**Review**:
-A learning workflow where the user practices due Memory items (based on spaced repetition) to reinforce memory and prevent repeating mistakes. Exercises differ by memory type (sentence correction, multiple choice interpretation, intention typing).
-_Avoid_: Quiz, flashcard dashboard
+**Mistake**:
+A MemoryItem type for a recurring or reusable error pattern, usually represented with an original example, corrected example, and explanation.
+_Avoid_: generic grammar rule
 
-**MVP v0**:
-The immediate implementation stage focused on making Message Coach and Explanation Coach usable in daily work without requiring persistence, Memory, or Review.
-_Avoid_: Full MVP, complete product
+**Reusable Phrase**:
+A MemoryItem type for workplace phrasing the user can reuse in future writing or speaking.
+_Avoid_: idiom list, phrasebook entry detached from context
 
-**MVP v1**:
-The post-v0 stage that adds Reading Coach, Memory candidate review, manual save to Memory, and a basic Review flow after the writing workflows prove useful.
-_Avoid_: Initial MVP, later someday
+**Vocabulary**:
+A MemoryItem type for a word, phrase, or collocation worth learning in a workplace context.
+_Avoid_: dictionary entry without a personal example
 
-**Later**:
-The stage for product capabilities that should not shape the current implementation, such as authentication, a database, spaced repetition scheduling, dashboards, and rich editing.
-_Avoid_: Backlog, MVP scope
+**Tone Pattern**:
+A MemoryItem type for a reusable tone transformation, such as direct to polite, vague to clear, casual to professional, or too strong to softer.
+_Avoid_: sentiment label, style preference only
+
+**Practice**:
+The active learning workflow for due MemoryItems. The default mode is writing-first practice, not flashcards or multiple choice. Practice asks the user to produce English in a new workplace context.
+_Avoid_: Review as the primary term, quiz, flashcard dashboard
+
+**Live Coach**:
+The primary speaking and listening surface. It supports guided and conversation practice, and should evolve into a Memory-aware Speaking Coach that uses saved MemoryItems and creates post-call MemoryCandidates.
+_Avoid_: voice chat, call bot, standalone speaking product detached from Memory
+
+**Reading Coach**:
+A secondary learning surface for understanding English written by others and collecting useful Vocabulary, Reusable Phrase, and Tone Pattern candidates. It should not create Mistake candidates unless the user marks the source as their own draft.
+_Avoid_: translation tool, document intelligence platform
+
+**Suggested memories**:
+User-facing UI copy for pending MemoryCandidates.
+_Avoid_: MemoryCandidate in visible end-user copy unless debugging
+
+**Saved memories**:
+User-facing UI copy for saved MemoryItems.
+_Avoid_: MemoryItem in visible end-user copy unless debugging
 
 ## UX & Copywriting Conventions
 
-For UI design and copywriting guidelines (such as hiding technical codes, formatting variable placeholders, and choosing conversational labels), refer to [ADR-0003](file:///Users/manhnd/lingua-loop/docs/adr/0003-ai-native-ux-and-friendly-copywriting.md).
+For UI design and copywriting guidelines, refer to [ADR-0003](./docs/adr/0003-ai-native-ux-and-friendly-copywriting.md).

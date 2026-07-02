@@ -8,7 +8,16 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Lingua Loop
 
-Lingua Loop is an English learning and writing assistant for Vietnamese professionals.
+Lingua Loop is an English improvement system for Vietnamese professionals, built around the Active Correction Loop.
+
+## Product Documentation
+
+Product direction lives under `docs/`:
+
+- [Product Direction](./docs/product.md)
+- [Backlog](./docs/backlog.md)
+- [Vietnamese Product Companion](./docs/vi/product.md)
+- [Domain Glossary](./CONTEXT.md)
 
 ## Project Environment
 

@@ -38,7 +38,7 @@ Open the `.env` file and configure the variables:
 
 ## 3. Docker Compose Architecture
 
-The production [compose.yml](file:///Users/manhnd/lingua-loop/compose.yml) configures two services: the Next.js web application (`web`) and an isolated PostgreSQL database (`postgres`).
+The production [compose.yml](../compose.yml) configures two services: the Next.js web application (`web`) and an isolated PostgreSQL database (`postgres`).
 
 For security, the database does not expose any ports to the host or internet. It resides solely in the internal `app_network` and is accessed securely by the `web` container using the host alias `postgres`.
 

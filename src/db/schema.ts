@@ -81,22 +81,62 @@ export const liveSessions = pgTable('live_sessions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-export const learningItems = pgTable('learning_items', {
+// --- Correction Workspace & Memory Tables ---
+
+export const correctionSessions = pgTable('correction_sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  type: text('type').notNull(), // 'vocabulary' | 'grammar' | 'pronunciation'
-  originalText: text('original_text').notNull(), // user mistake or vietnamese definition
-  correctedText: text('corrected_text').notNull(), // upgraded native phrasing
-  explanationVi: text('explanation_vi'),
-  liveSessionId: text('live_session_id').references(() => liveSessions.id, {
-    onDelete: 'set null',
-  }),
-  // SM-2 fields
+  originalText: text('original_text').notNull(),
+  improvedText: text('improved_text').notNull(),
+  changes: jsonb('changes').notNull(), // List of changes: { original: string, improved: string, reasonVi: string, category: string }[]
+  preset: text('preset').notNull(), // 'quick_message' | 'email' | 'pr_jira_comment' | 'documentation' | 'explanation_spec'
+  context: jsonb('context').notNull(), // Tone, audience, custom instructions, etc.
+  parentSessionId: text('parent_session_id'), // App-managed self reference for refinement histories
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const memoryCandidates = pgTable('memory_candidates', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // 'mistake' | 'reusable_phrase' | 'vocabulary' | 'tone_pattern'
+  status: text('status').notNull().default('pending'), // 'pending' | 'saved' | 'ignored'
+  sourceSessionId: text('source_session_id'), // App-managed reference to correctionSessions.id
+  title: text('title').notNull(), // Friendly title (patternNameVi)
+  explanation: text('explanation').notNull(), // Coaching explanation (explanationVi)
+  sourceText: text('source_text'), // Sub-optimal text if applicable (wrongText/phrase/trapText)
+  suggestedText: text('suggested_text'), // Target correct text if applicable (correctText/interpretation)
+  confidence: real('confidence'), // AI confidence score
+  payload: jsonb('payload').notNull(), // Any additional metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const memoryItems = pgTable('memory_items', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // 'mistake' | 'reusable_phrase' | 'vocabulary' | 'tone_pattern'
+  status: text('status').notNull().default('active'), // 'active' | 'archived'
+  sourceCandidateId: text('source_candidate_id'), // App-managed reference to memoryCandidates.id
+  sourceSessionId: text('source_session_id'), // App-managed reference to correctionSessions.id
+  title: text('title').notNull(), // Friendly title
+  explanation: text('explanation').notNull(), // Explanation
+  sourceText: text('source_text'), // wrong text
+  suggestedText: text('suggested_text'), // correct text
+  payload: jsonb('payload').notNull(), // Snapshotted payload
+  // SRS properties
   interval: integer('interval').notNull().default(1),
   easeFactor: real('ease_factor').notNull().default(2.5),
-  repetitions: integer('repetitions').notNull().default(0),
-  nextReviewAt: timestamp('next_review_at').notNull().defaultNow(),
+  reviewCount: integer('review_count').notNull().default(0),
+  correctStreak: integer('correct_streak').notNull().default(0),
+  wrongStreak: integer('wrong_streak').notNull().default(0),
+  lastPracticedAt: timestamp('last_practiced_at'),
+  nextPracticeAt: timestamp('next_practice_at').notNull().defaultNow(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

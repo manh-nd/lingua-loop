@@ -23,6 +23,8 @@ import {
   Activity,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useSession } from '@/lib/auth-client';
+import { fetchDashboardStats } from '@/app/workspace/actions';
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -119,6 +121,7 @@ const demoTabsData: Record<DemoTab, DemoData> = {
 };
 
 export default function Home() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<DemoTab>('pr-review');
   const [streamedInput, setStreamedInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -129,29 +132,27 @@ export default function Home() {
     dueCards: 0,
   });
 
-  // Load actual statistics from localStorage on mount
+  // Load actual statistics from database or local fallback
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const data = localStorage.getItem('lingua-loop-memory');
-      const savedItems = data ? JSON.parse(data) : [];
-      const activeItems = savedItems.filter(
-        (item: any) => item.status === 'active'
-      );
-      const now = new Date();
-      const due = activeItems.filter((item: any) => {
-        if (!item.nextReviewAt) return true;
-        return new Date(item.nextReviewAt) <= now;
-      });
-      setStats({
-        streak: 5, // Mock streak count
-        totalMistakes: activeItems.length,
-        dueCards: due.length,
-      });
-    } catch (e) {
-      console.error('Failed to load stats', e);
+    async function loadStats() {
+      if (session) {
+        try {
+          const fetchedStats = await fetchDashboardStats();
+          setStats(fetchedStats);
+        } catch (e) {
+          console.error('Failed to load DB stats', e);
+        }
+      } else {
+        // Safe default or fallback for unauthenticated user
+        setStats({
+          streak: 5,
+          totalMistakes: 0,
+          dueCards: 0,
+        });
+      }
     }
-  }, []);
+    loadStats();
+  }, [session]);
 
   // Stream text effect on tab change
   useEffect(() => {
@@ -463,7 +464,7 @@ export default function Home() {
               <CardFooter className="pt-2">
                 <Button
                   id="btn-message-coach"
-                  render={<Link href="/message" />}
+                  render={<Link href="/workspace?preset=quick_message" />}
                   nativeButton={false}
                   className="w-full bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/95 hover:to-emerald-600/95 text-white font-semibold shadow-md shadow-emerald-500/10 hover:shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-[0.98] py-4.5 rounded-lg cursor-pointer"
                 >
@@ -513,7 +514,7 @@ export default function Home() {
               <CardFooter className="pt-2">
                 <Button
                   id="btn-explanation-coach"
-                  render={<Link href="/explanation" />}
+                  render={<Link href="/workspace?preset=explanation_spec" />}
                   nativeButton={false}
                   className="w-full bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/95 hover:to-emerald-600/95 text-white font-semibold shadow-md shadow-emerald-500/10 hover:shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-[0.98] py-4.5 rounded-lg cursor-pointer"
                 >

@@ -5,7 +5,7 @@ import { presentAiError } from '@/core/ai/ai-error-presenter';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { db } from '@/db/db';
-import { liveSessions, learningItems } from '@/db/schema';
+import { liveSessions, memoryItems } from '@/db/schema';
 import crypto from 'crypto';
 
 export async function POST(req: Request) {
@@ -59,15 +59,25 @@ export async function POST(req: Request) {
             itemsToInsert.push({
               id: crypto.randomUUID(),
               userId,
-              type: 'grammar',
-              originalText: mistake.originalText,
-              correctedText: mistake.correctedText,
-              explanationVi: mistake.explanationVi,
-              liveSessionId: sessionId,
+              type: 'mistake',
+              status: 'active',
+              sourceSessionId: sessionId,
+              title: 'Lỗi nói/ngữ pháp tự động',
+              explanation: mistake.explanationVi || 'Sửa lỗi nói trực tiếp',
+              sourceText: mistake.originalText,
+              suggestedText: mistake.correctedText,
+              payload: {
+                wrongText: mistake.originalText,
+                correctText: mistake.correctedText,
+                explanationVi: mistake.explanationVi,
+                category: 'grammar',
+              },
               interval: 1,
               easeFactor: 2.5,
-              repetitions: 0,
-              nextReviewAt: new Date(), // Due immediately for review
+              reviewCount: 0,
+              correctStreak: 0,
+              wrongStreak: 0,
+              nextPracticeAt: new Date(), // Due immediately for review
             });
           }
         }
@@ -79,20 +89,30 @@ export async function POST(req: Request) {
               id: crypto.randomUUID(),
               userId,
               type: 'vocabulary',
-              originalText: alt.originalText,
-              correctedText: alt.betterAlternative,
-              explanationVi: alt.explanationVi,
-              liveSessionId: sessionId,
+              status: 'active',
+              sourceSessionId: sessionId,
+              title: 'Nâng cấp từ vựng hội thoại',
+              explanation: alt.explanationVi || 'Dùng cách nói tự nhiên hơn',
+              sourceText: alt.originalText,
+              suggestedText: alt.betterAlternative,
+              payload: {
+                wrongText: alt.originalText,
+                correctText: alt.betterAlternative,
+                explanationVi: alt.explanationVi,
+                category: 'word_choice',
+              },
               interval: 1,
               easeFactor: 2.5,
-              repetitions: 0,
-              nextReviewAt: new Date(), // Due immediately for review
+              reviewCount: 0,
+              correctStreak: 0,
+              wrongStreak: 0,
+              nextPracticeAt: new Date(), // Due immediately for review
             });
           }
         }
 
         if (itemsToInsert.length > 0) {
-          await db.insert(learningItems).values(itemsToInsert);
+          await db.insert(memoryItems).values(itemsToInsert);
         }
       }
     } catch (dbError) {

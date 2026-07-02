@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { db } from '@/db/db';
-import { learningItems } from '@/db/schema';
+import { memoryItems } from '@/db/schema';
 import { and, eq, lte } from 'drizzle-orm';
 
 export async function GET() {
@@ -15,17 +15,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch cards where nextReviewAt <= now
+    // Fetch cards where nextPracticeAt <= now
     const cards = await db
       .select()
-      .from(learningItems)
+      .from(memoryItems)
       .where(
         and(
-          eq(learningItems.userId, session.user.id),
-          lte(learningItems.nextReviewAt, new Date())
+          eq(memoryItems.userId, session.user.id),
+          lte(memoryItems.nextPracticeAt, new Date())
         )
       )
-      .orderBy(learningItems.nextReviewAt);
+      .orderBy(memoryItems.nextPracticeAt);
 
     return NextResponse.json({ cards });
   } catch (error) {

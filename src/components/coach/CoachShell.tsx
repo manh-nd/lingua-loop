@@ -68,6 +68,12 @@ export function CoachShell({
         </div>
         <div className="flex items-center gap-4">
           <Link
+            href="/workspace"
+            className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
+          >
+            Workspace
+          </Link>
+          <Link
             href="/memory"
             className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
           >

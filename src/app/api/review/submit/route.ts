@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { db } from '@/db/db';
-import { learningItems } from '@/db/schema';
+import { memoryItems } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { calculateSM2 } from '@/lib/memory/sm2';
 
@@ -28,12 +28,9 @@ export async function POST(req: Request) {
     // 1. Fetch current item state
     const [item] = await db
       .select()
-      .from(learningItems)
+      .from(memoryItems)
       .where(
-        and(
-          eq(learningItems.id, itemId),
-          eq(learningItems.userId, session.user.id)
-        )
+        and(eq(memoryItems.id, itemId), eq(memoryItems.userId, session.user.id))
       )
       .limit(1);
 
@@ -49,37 +46,45 @@ export async function POST(req: Request) {
       {
         interval: item.interval,
         easeFactor: item.easeFactor,
-        repetitions: item.repetitions,
+        repetitions: item.reviewCount,
       },
       rating as 1 | 2 | 3 | 4
     );
 
-    // 3. Compute nextReviewAt
-    let nextReviewAt: Date;
+    // 3. Compute nextPracticeAt
+    let nextPracticeAt: Date;
     if (rating === 1) {
       // Again: Review again in 10 minutes in the same session
-      nextReviewAt = new Date(Date.now() + 10 * 60 * 1000);
+      nextPracticeAt = new Date(Date.now() + 10 * 60 * 1000);
     } else {
       // Hard/Good/Easy: Review in next intervals (in days)
-      nextReviewAt = new Date(
+      nextPracticeAt = new Date(
         Date.now() + nextState.interval * 24 * 60 * 60 * 1000
       );
     }
 
+    // Calculate streaks
+    const isCorrect = rating > 1;
+    const correctStreak = isCorrect ? item.correctStreak + 1 : 0;
+    const wrongStreak = isCorrect ? 0 : item.wrongStreak + 1;
+
     // 4. Update Database
     await db
-      .update(learningItems)
+      .update(memoryItems)
       .set({
         interval: nextState.interval,
         easeFactor: nextState.easeFactor,
-        repetitions: nextState.repetitions,
-        nextReviewAt,
+        reviewCount: nextState.repetitions,
+        correctStreak,
+        wrongStreak,
+        nextPracticeAt,
+        lastPracticedAt: new Date(),
       })
-      .where(eq(learningItems.id, itemId));
+      .where(eq(memoryItems.id, itemId));
 
     return NextResponse.json({
       success: true,
-      nextReviewAt,
+      nextReviewAt: nextPracticeAt,
       ...nextState,
     });
   } catch (error) {

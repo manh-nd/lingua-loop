@@ -8,6 +8,10 @@ import { and, eq } from 'drizzle-orm';
 import { createGeminiAiClient } from '@/core/ai/gemini-ai-client';
 import { runWorkspaceCorrection } from '@/core/workspace/workspace.workflow';
 import {
+  matchMemoryItems,
+  WorkspaceMemoryItem,
+} from '@/core/workspace/workspace.matcher';
+import {
   WorkspaceInput,
   WorkspaceChange,
   WorkspaceCandidate,
@@ -92,11 +96,50 @@ export async function submitWorkspaceCorrection(
 
   const userId = session.user.id;
 
-  // 1. Run Gemini correction
+  // 1. Fetch active memory items for the user and run matching heuristic
+  let matchedItems: WorkspaceMemoryItem[] = [];
+  try {
+    const activeDbItems = await db
+      .select()
+      .from(memoryItems)
+      .where(
+        and(eq(memoryItems.userId, userId), eq(memoryItems.status, 'active'))
+      );
+
+    const mappedItems: WorkspaceMemoryItem[] = activeDbItems.map((row) => ({
+      id: row.id,
+      type: row.type as any,
+      title: row.title,
+      explanation: row.explanation,
+      wrongText:
+        row.type === 'mistake' || row.type === 'tone_pattern'
+          ? row.sourceText
+          : null,
+      correctText:
+        row.type === 'mistake' || row.type === 'tone_pattern'
+          ? row.suggestedText
+          : null,
+      phrase:
+        row.type === 'reusable_phrase' || row.type === 'vocabulary'
+          ? row.sourceText
+          : null,
+      category: (row.payload as any)?.category || 'naturalness',
+    }));
+
+    matchedItems = matchMemoryItems(input.text, mappedItems);
+  } catch (err) {
+    console.error('Failed to retrieve or match memory items:', err);
+    // Gracefully fallback to empty memory items so the correction can still proceed
+  }
+
+  // 2. Run Gemini correction
   let result;
   try {
     const aiClient = createGeminiAiClient({ maxWaitMs: 5000 });
-    result = await runWorkspaceCorrection(input, { aiClient });
+    result = await runWorkspaceCorrection(input, {
+      aiClient,
+      memoryItems: matchedItems,
+    });
   } catch (error) {
     throw new Error(presentAiError(error));
   }

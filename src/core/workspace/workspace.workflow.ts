@@ -10,15 +10,27 @@ import {
 import { AiClient } from '@/core/ai/ai-client';
 import { z } from 'zod';
 
+export interface WorkspaceMemoryItem {
+  id: string;
+  type: 'mistake' | 'reusable_phrase' | 'vocabulary' | 'tone_pattern';
+  title: string;
+  explanation: string;
+  wrongText?: string | null;
+  correctText?: string | null;
+  phrase?: string | null;
+  situation?: string | null;
+  category: string;
+}
+
 export async function runWorkspaceCorrection(
   input: WorkspaceInput,
-  deps: { aiClient: AiClient }
+  deps: { aiClient: AiClient; memoryItems?: WorkspaceMemoryItem[] }
 ): Promise<WorkspaceResult> {
   const parsedInput = WorkspaceInputSchema.parse(input);
   const jsonSchema = toJSONSchema(WorkspaceResultSchema);
 
   const raw = await deps.aiClient.generateJson({
-    system: buildWorkspaceSystemPrompt(),
+    system: buildWorkspaceSystemPrompt(deps.memoryItems),
     user: JSON.stringify(parsedInput, null, 2),
     schema: jsonSchema,
   });
@@ -78,13 +90,44 @@ export async function runWorkspaceCorrection(
   };
 }
 
-function buildWorkspaceSystemPrompt(): string {
-  return `
+function buildWorkspaceSystemPrompt(
+  memoryItems?: WorkspaceMemoryItem[]
+): string {
+  let prompt = `
 You are a premium English language coach for Vietnamese professionals, operating the Active Correction Loop in a Workspace context.
 
 Your main goal:
 Take the user's draft text, correct and improve it based on the selected preset and context controls, explain the key changes, and suggest high-signal memory candidates for future review.
+`;
 
+  if (memoryItems && memoryItems.length > 0) {
+    prompt += `
+### USER'S SAVED MEMORIES (FROM NOTEBOOK)
+Below is a list of active vocabulary, phrases, mistakes, or tone patterns that this user has saved in their personal notebook in the past. 
+If the user repeats a saved mistake (matches "wrongText") or fails to use the correct phrase/vocabulary/tone pattern where it would fit naturally:
+1. Make sure to apply the correction in the improvedText.
+2. In the "changes" list, prefix the "reason" field with "[Nhắc nhở Sổ tay]" to trigger a subtle reminder.
+Example "reason": "[Nhắc nhở Sổ tay] Bạn đã từng lưu lỗi này. Nên dùng \"take a look at\" thay vì \"check\"."
+
+Saved notebook items:
+${JSON.stringify(
+  memoryItems.map((item) => ({
+    id: item.id,
+    type: item.type,
+    title: item.title,
+    wrongText: item.wrongText || undefined,
+    correctText: item.correctText || undefined,
+    phrase: item.phrase || undefined,
+    situation: item.situation || undefined,
+    explanation: item.explanation,
+  })),
+  null,
+  2
+)}
+`;
+  }
+
+  prompt += `
 ### Preset Rules:
 1. "quick_message":
    - Target: Slack, Teams, or chat app messages.
@@ -144,4 +187,5 @@ Take the user's draft text, correct and improve it based on the selected preset 
 - improvedText, original, improved, wrongText, correctText, phrase must be in English.
 - reason, title, situation, explanation, culturalContext must be in Vietnamese. All Vietnamese explanations must be encouraging, positive, and structured.
 `;
+  return prompt;
 }

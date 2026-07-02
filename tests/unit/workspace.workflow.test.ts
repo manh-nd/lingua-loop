@@ -117,4 +117,50 @@ describe('runWorkspaceCorrection', () => {
     expect(result.memoryCandidates).toHaveLength(1);
     expect(result.memoryCandidates?.[0].patternKey).toBe('valid_candidate');
   });
+
+  it('injects user active memory items into the prompt when provided', async () => {
+    const mockResponse = {
+      improvedText: 'Could you please take a look at this PR?',
+      changes: [
+        {
+          original: 'Please check PR',
+          improved: 'take a look at this PR',
+          reason:
+            '[Nhắc nhở Sổ tay] Nhắc lại ghi nhớ: Nên lịch sự hơn trong môi trường làm việc.',
+          category: 'tone',
+        },
+      ],
+      memoryCandidates: [],
+    };
+
+    const mockGenerateJson = vi.fn().mockResolvedValue(mockResponse);
+    const mockAiClient: AiClient = { generateJson: mockGenerateJson };
+
+    const input: WorkspaceInput = {
+      text: 'Please check PR',
+      preset: 'quick_message',
+    };
+
+    const memoryItems = [
+      {
+        id: 'mem_1',
+        type: 'mistake' as const,
+        title: 'Nhờ check PR lịch sự',
+        explanation: 'Nên dùng take a look thay vì check.',
+        wrongText: 'check PR',
+        correctText: 'take a look at PR',
+        category: 'tone',
+      },
+    ];
+
+    await runWorkspaceCorrection(input, {
+      aiClient: mockAiClient,
+      memoryItems,
+    });
+
+    expect(mockGenerateJson).toHaveBeenCalledTimes(1);
+    const callArgs = mockGenerateJson.mock.calls[0][0];
+    expect(callArgs.system).toContain("USER'S SAVED MEMORIES (FROM NOTEBOOK)");
+    expect(callArgs.system).toContain('Nhờ check PR lịch sự');
+  });
 });

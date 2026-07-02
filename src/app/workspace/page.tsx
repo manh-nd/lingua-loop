@@ -533,9 +533,30 @@ function WorkspacePageContent() {
                                 </span>
                               </div>
                             </div>
-                            <p className="text-foreground/90 leading-relaxed pl-1 text-[11px] font-medium">
-                              {change.reason}
-                            </p>
+                            {(() => {
+                              const isMemoryRecall = change.reason
+                                .toLowerCase()
+                                .startsWith('[nhắc nhở sổ tay]');
+                              const displayReason = isMemoryRecall
+                                ? change.reason.replace(
+                                    /^\[Nhắc nhở Sổ tay\]\s*/i,
+                                    ''
+                                  )
+                                : change.reason;
+
+                              return (
+                                <div className="flex flex-col gap-1.5 pl-1">
+                                  {isMemoryRecall && (
+                                    <span className="inline-flex items-center gap-1.5 text-3xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md w-fit select-none">
+                                      💡 Nhắc nhở từ Sổ tay của bạn
+                                    </span>
+                                  )}
+                                  <p className="text-foreground/90 leading-relaxed text-[11px] font-medium">
+                                    {displayReason}
+                                  </p>
+                                </div>
+                              );
+                            })()}
                           </div>
                         ))}
                       </div>

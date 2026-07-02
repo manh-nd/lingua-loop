@@ -213,6 +213,75 @@ Phase 1 is complete when the user can:
 9. Submit a later correction and have relevant MemoryItems influence the correction.
 10. Practice due MemoryItems through writing-first active Practice.
 
+#### Phase 1 Implementation Slices
+
+Phase 1 should be implemented through small vertical slices instead of one large rewrite.
+
+Slice 1: Correction Workspace foundation
+
+- Add the minimal dashboard app shell and route map.
+- Replace `/message` and `/explanation` UI with redirects into `/workspace` presets.
+- Add new database-backed tables for `correction_sessions`, `memory_candidates`, and `memory_items`.
+- Keep `live_sessions` and stable Gemini integration.
+- Stop treating experimental `learning_items` and localStorage Memory as long-term learning data.
+- Submit one workspace correction and return one Improved Version, What Changed & Why, and up to three Suggested Memories.
+- Save the CorrectionSession and pending MemoryCandidates to the database.
+- Let the user Save, Edit, or Ignore MemoryCandidates.
+- Create independent MemoryItem snapshots when candidates are saved.
+- Add a minimal `/memory` page with Suggested and Saved tabs.
+
+Slice 2: Memory-aware correction
+
+- Retrieve a small set of active MemoryItems for the signed-in user.
+- Pass the relevant items into the workspace correction prompt.
+- Show subtle, confidence-gated reminders when the user repeats a saved mistake.
+
+Slice 3: Writing-first Practice
+
+- Replace `/review` with `/practice`.
+- Generate active writing exercises from due MemoryItems.
+- Grade the user's answer and update simple scheduling fields.
+
+Slice 4: Secondary surface integration
+
+- Connect Reading Coach outputs to MemoryCandidates for Vocabulary, Reusable Phrase, and Tone Pattern items.
+- Connect Live Coach post-call analysis to MemoryCandidates without regressing the stable Gemini Live integration.
+
+#### Phase 1 Data Model Direction
+
+Experimental data and old local structures do not need compatibility migrations.
+
+Use plural snake_case table names:
+
+- `correction_sessions`
+- `memory_candidates`
+- `memory_items`
+- `practice_events`
+
+Use English field names in schema, code, and domain language. Field content may be Vietnamese when it is coaching copy for the user.
+
+Use database foreign keys only for user ownership (`user_id -> user.id`). Other relationships such as `source_ref_id`, `parent_session_id`, `source_candidate_id`, and `source_session_id` are app-managed references while the model is still moving quickly.
+
+MemoryCandidate status values:
+
+- `pending`
+- `saved`
+- `ignored`
+
+MemoryItem status values:
+
+- `active`
+- `archived`
+
+MemoryItem type values:
+
+- `mistake`
+- `reusable_phrase`
+- `vocabulary`
+- `tone_pattern`
+
+MemoryCandidate and MemoryItem should use shared core columns plus `payload jsonb` for type-specific details.
+
 ### Phase 2: Memory-Aware Live Coach
 
 Phase 2 upgrades Live Coach into the speaking surface of the Active Correction Loop.
